@@ -1,0 +1,86 @@
+####################################################
+#                                                  #
+#                     BACKUP                       #
+#                                                  #
+####################################################
+icon: mdi:cloud-upload-outline
+title: Backup
+path: backup
+cards:
+####################################################
+- type: vertical-stack
+  cards:
+  - type: entities
+    title: Repack DB
+    show_header_toggle: false 
+    entities:
+    - input_boolean.repack_db
+    - entity: sensor.db_size
+      secondary_info: last-changed
+    - input_number.day_to_keep
+    - input_text.previous_dimension_db
+    - input_datetime.repack_time
+    - entity: input_text.repack_status
+      secondary_info: last-changed
+    - script.repack_db
+
+  - type: entities
+    title: Backup Gdrive
+    show_header_toggle: false 
+    entities:
+    - entity: binary_sensor.snapshots_stale
+      secondary_info: last-changed
+    - entity: sensor.snapshot_backup
+      icon: mdi:google-drive
+      secondary_info: last-changed
+    - entity: sensor.ultimo_backup_gdrive
+      icon: mdi:backup-restore
+      secondary_info: last-changed
+####################################################
+- type: vertical-stack
+  cards:
+  - type: entities
+    title: Sensori Zigbee
+    show_header_toggle: false 
+    entities:
+    - input_boolean.zigbee_permit_join
+    - timer.zigbee_permit_join
+    - sensor.zigbee2mqtt_bridge_state
+    - binary_sensor.0x00124b001bb86234_router
+    - binary_sensor.0x00124b0014b92e8b_router
+    - switch.zigbee2mqtt_main_join
+    - input_select.zigbee2mqtt_log_level
+    - script.zigbee_map_update
+    - input_text.remove_sensor
+    - script.zigbee_remove
+    - script.zigbee_reload
+
+  - type: iframe
+    url: '/local/community/zigbee2mqtt_networkmap/map.html'
+
+####################################################
+- type: vertical-stack
+  cards:
+  - type: entities
+    title: Backup Dropbox
+    show_header_toggle: false 
+    entities:
+    - entity: input_boolean.dropbox_backup
+    - entity: input_boolean.dropbox_sync_completed
+    - entity: input_number.ritardo_upload
+    - entity: input_text.backup_status
+      secondary_info: last-changed
+    - entity: input_select.backup_day
+    - entity: input_datetime.backup_time
+
+  - type: custom:auto-entities
+    card:
+      type: entities
+      title: Link Quality Zigbee
+      show_header_toggle: false 
+    filter:
+      include:
+      - entity_id: "*_linkquality"
+        options:
+          secondary_info: last-changed
+

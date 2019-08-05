@@ -1,0 +1,185 @@
+
+####################################################
+#                                                  #
+#                       INFO                       #
+#                                                  #
+####################################################
+icon: mdi:lan
+title: Info
+path: info
+panel: true
+cards:
+- type: custom:layout-card
+  layout: vertical
+  cards:
+####################################################
+  - type: glance
+    show_state: false
+    columns: 3
+    entities:
+    - entity: binary_sensor.ping_broadlink_rm_mini_3
+      name: RM Mini 3
+      icon: mdi:remote
+    - entity: binary_sensor.ping_mysensors_gateway
+      name: MySensors
+      icon: mdi:signal-variant
+#    - entity: binary_sensor.ping_philips_hue_bridge
+#      name: Hue Bridge
+#      icon: mdi:bridge
+    - entity: binary_sensor.ping_xiaomi_aquara_gateway
+      name: Xiaomi GW
+      icon: mdi:circle-outline
+    - entity: binary_sensor.ping_pi_zero
+      name: Pi Zero W
+      icon: mdi:raspberry-pi
+    - entity: binary_sensor.ping_netatmo_relay
+      name: Netatmo
+      icon: mdi:thermostat
+
+  - type: glance
+    show_state: false
+    columns: 4
+    entities:
+    - entity: binary_sensor.ping_shelly_sala
+      name: Shelly Sala
+      icon: mdi:light-switch
+    - entity: binary_sensor.ping_shelly_studio
+      name: Shelly Studio
+      icon: mdi:light-switch
+    - entity: binary_sensor.ping_shelly_livia
+      name: Shelly Livia
+      icon: mdi:light-switch
+    - entity: binary_sensor.ping_shelly_faretti
+      name: Shelly Ingresso
+      icon: mdi:light-switch
+    - entity: binary_sensor.ping_shelly_condizionatori
+      name: Shelly Condizionatori
+      icon: mdi:light-switch
+    - entity: binary_sensor.ping_shelly_cucina
+      name: Shelly Cucina
+      icon: mdi:light-switch
+    - entity: binary_sensor.ping_sonoff_ripostiglio
+      name: Sonoff Ripostiglio
+      icon: mdi:light-switch
+    - entity: binary_sensor.ping_plug_lavastoviglie
+      name: Plug Lavastoviglie
+      icon: mdi:power-plug    
+    - entity: binary_sensor.ping_plug_lavatrice
+      name: Plug Lavatrice
+      icon: mdi:power-plug 
+    - entity: binary_sensor.ping_plug_cucina
+      name: Plug Cucina
+      icon: mdi:power-plug
+    - entity: binary_sensor.ping_plug_forno
+      name: Plug Forno
+      icon: mdi:power-plug
+
+  - type: glance
+    show_state: false
+    columns: 3
+    entities:
+    - entity: binary_sensor.ping_gh_cucina
+      name: GH Cucina
+      icon: mdi:google-home
+    - entity: binary_sensor.ping_gh_camera
+      name: GH Camera
+      icon: mdi:google-home
+    - entity: binary_sensor.ping_mijia360_cam
+      name: Mijia 360
+      icon: mdi:webcam
+#    - entity: binary_sensor.ping_dafang1_cam
+#      name: Dafang Ingresso
+#      icon: mdi:webcam
+#    - entity: binary_sensor.ping_dafang2_cam
+#      name: Dafang Livia
+#      icon: mdi:webcam
+#    - entity: sensor.imac_studio_templated
+#      name: Imac
+    
+  - break
+####################################################
+  - type: glance
+    columns: 2
+    entities:
+    - entity: binary_sensor.ping_zyxel_router
+      name: Router
+    - entity: sensor.external_ip
+      icon: mdi:counter
+
+  - type: horizontal-stack
+    cards:
+    - type: gauge
+      title: CPU Temp
+      unit_of_measurement: 'sec'
+      entity: sensor.speedtest_ping
+      severity:
+        green: 0
+        yellow: 50
+        red: 80
+    - type: gauge
+      title: FTTC Download
+      unit_of_measurement: 'Mbps'
+      entity: sensor.speedtest_download
+      severity:
+        green: 50
+        yellow: 30
+        red: 10
+    - type: gauge
+      title: FTTC Upload
+      unit_of_measurement: 'Mbps'
+      entity: sensor.speedtest_upload
+      severity:
+        green: 15
+        yellow: 10
+        red: 5
+
+  - type: history-graph
+    entities:
+      - sensor.speedtest_download
+      - sensor.speedtest_ping
+      - sensor.speedtest_upload
+  - break
+####################################################
+  - type: entities
+    show_header_toggle: false
+    entities:
+    - entity: person.gianpi
+      secondary_info: last-changed
+#    - entity: sensor.gianpi_room_location
+#      icon: mdi:bluetooth
+#      secondary_info: last-changed
+    - entity: device_tracker.gianpi_phone
+      secondary_info: last-changed
+    - entity: device_tracker.nut2
+      secondary_info: last-changed
+    - entity: device_tracker.nut3
+      secondary_info: last-changed
+    - entity: device_tracker.xiaomimi5
+      secondary_info: last-changed
+      icon: mdi:crosshairs-gps
+    - entity: sensor.xiaomimi5_availability_sensor
+      secondary_info: last-changed
+      icon: mdi:cellphone-android
+    - entity: proximity.home_gianpi
+      name: Proximity to home
+#    - entity: script.clean_knowndevices
+#      name: Clean known device file
+    - type: section
+    - entity: sensor.appdaemon_heartbeat
+      name: AppDaemon - Last Seen
+      icon: mdi:language-python
+
+  - type: entities
+    show_header_toggle: false
+    entities:
+    - entity: person.romi
+      secondary_info: last-changed
+    - entity: sensor.romi_room_location
+      icon: mdi:bluetooth
+      secondary_info: last-changed
+    - entity: device_tracker.romi_phone
+      secondary_info: last-changed
+    - entity: device_tracker.romi_huaweip9
+      secondary_info: last-changed
+    - entity: proximity.home_romi
+      name: Proximity to home

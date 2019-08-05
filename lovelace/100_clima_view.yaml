@@ -1,0 +1,70 @@
+####################################################
+#                                                  #
+#                    CLIMATE                       #
+#                                                  #
+####################################################
+icon: mdi:air-conditioner
+title: Caldaia e clima
+path: clima
+panel: true
+cards:
+### colonna 1
+- type: custom:layout-card
+  layout: vertical
+  cards:
+#  - type: thermostat
+#    entity: climate.netatmo_ingresso
+  - type: custom:simple-thermostat
+    entity: climate.netatmo_ingresso
+    sensors:
+    - sensor.temperature_158d0001d6be78
+    - sensor.humidity_158d0001d6be78
+  - type: custom:simple-thermostat    
+    entity: climate.netatmo_camera_rg
+  - type: custom:simple-thermostat     
+    entity: climate.netatmo_camera_livia
+  - break
+### colonna 2
+  - type: custom:simple-thermostat
+    entity: climate.daikin_fx_sala
+  - type: entities
+    title: Valvole
+    show_header_toggle: false 
+    entities:
+    - climate.netatmo_ingresso
+    - type: divider
+    - climate.netatmo_camera_rg
+    - climate.netatmo_camera_livia
+    - type: divider
+    - climate.valvola_salotto1
+    - climate.valvola_salotto2
+    - climate.valvola_salotto3
+    - climate.valvola_studio
+  - break
+### colonna 3
+  - type: entities
+    title: Modalità di funzionamento
+    show_header_toggle: false
+    entities:
+    - input_select.thermostat_mode
+    - sensor.thermostat_state
+    - sensor.boiler_state
+    - sensor.ac_runtime_today
+    - sensor.ac_runtime_yesterday
+  - type: entities
+    title: Sensori EQ-3
+    show_header_toggle: false
+    entities:
+    - sensor.apertura_valvola_salotto1
+    - sensor.apertura_valvola_salotto2
+    - sensor.apertura_valvola_salotto3
+    - sensor.apertura_valvola_studio
+  - type: glance
+    columns: 4
+    entities:
+    - sensor.term_ingresso
+    - sensor.temperature_158d0001d6be78 
+    - sensor.jmp_bedroom_13_13_2
+    - sensor.jmp_livia_21_21_1
+  - break
+

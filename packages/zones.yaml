@@ -1,0 +1,158 @@
+#################################################################
+#                                                               #
+#                       Packages/Zones                          #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'zones'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Zone
+    ################################################
+
+    zone.home:
+      <<: *customize
+      friendly_name: "Home"
+      icon: mdi:home
+
+    zone.gianpi_work:
+      <<: *customize
+      friendly_name: "Office Gianpi Siena"
+      icon: mdi:city
+    
+    zone.gianpi_work_firenze:
+      <<: *customize
+      friendly_name: "Office Gianpi Firenze"
+      icon: mdi:worker
+
+    zone.romi_work:
+      <<: *customize
+      friendly_name: "School Romi Siena"
+      icon: mdi:school
+
+    zone.ospedale_siena:
+      <<: *customize
+      friendly_name: "Ospedale Siena"
+      icon: mdi:hospital
+
+    zone.stazione_fs_siena:
+      <<: *customize
+      friendly_name: "Stazione FS Siena"
+      icon: mdi:train
+
+    zone.piazza_campo_siena:
+      <<: *customize
+      friendly_name: "Piazza del Campo"
+      icon: mdi:church
+
+    zone.fortezza_siena:
+      <<: *customize
+      friendly_name: "Fortezza Siena"
+      icon: mdi:castle
+      
+    zone.coop_siena:
+      <<: *customize
+      friendly_name: "Coop Siena"
+      icon: mdi:store
+
+    zone.parents:
+      <<: *customize
+      friendly_name: "Parents Grosseto"
+      icon: mdi:church
+
+####################################################
+#                                                  #
+#                     HOME                         #
+#                                                  #
+####################################################
+zone:
+  - name: Home
+    latitude: !secret home_lat
+    longitude: !secret home_long
+    radius: 120
+
+####################################################
+#                                                  #
+#                 GIANPI WORK                      #
+#                                                  #
+####################################################
+  - name: gianpi work
+    latitude: !secret gianpi_work_latitude
+    longitude: !secret gianpi_work_longitude
+    radius: 120
+    
+  - name: gianpi work firenze
+    latitude: 43.8011
+    longitude: 11.2315
+    radius: 120
+
+####################################################
+#                                                  #
+#                 ROMI WORK                        #
+#                                                  #
+####################################################
+  - name: romi work
+    latitude: !secret romi_work_latitude
+    longitude: !secret romi_work_longitude
+    radius: 120
+
+####################################################
+#                                                  #
+#                 ALTRI LUOGHI                     #
+#                                                  #
+####################################################
+  - name: ospedale siena
+    latitude: 43.3434
+    longitude: 11.3293
+    radius: 120
+
+  - name: stazione fs siena
+    latitude: 43.3313
+    longitude: 11.3224
+    radius: 120
+    
+  - name: piazza campo siena
+    latitude: 43.3184
+    longitude: 11.3316
+    radius: 120
+
+  - name: fortezza siena
+    latitude: 43.3222
+    longitude: 11.3233
+    radius: 120
+    
+  - name: coop siena
+    latitude: 43.3307
+    longitude: 11.3277
+    radius: 120
+
+  - name: parents
+    latitude: !secret parents_latitude
+    longitude: !secret parents_longitude
+    radius: 120
+
+#################################################################
+#                                                               #
+#                             END                               #
+#                                                               #
+#################################################################

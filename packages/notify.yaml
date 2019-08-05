@@ -1,0 +1,167 @@
+#################################################################
+#                                                               #
+#                       Packages/Notify                         #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'notify'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+        
+#################################################################
+#                                                               #
+#                           Notify                              #
+#                                                               #
+#################################################################
+#https://home-assistant.io/components/notify/
+#https://home-assistant.io/components/notify.smtp/
+notify:
+  - name: GoogleMail
+    platform: smtp
+    server: smtp.gmail.com
+    port: 587
+    timeout: 15
+    sender: !secret notification_sender
+    starttls: true
+    username: !secret notification_username
+    password: !secret notification_password
+    recipient: !secret notification_recipient
+    sender_name: My Home Assistant
+
+  - name: Telegram
+    platform: telegram
+    chat_id: !secret telegram_chatid
+ 
+  - name: android
+    platform: fcm-android
+
+#https://github.com/marcelveldt/hassio-addons-repo/tree/master/google-assistant-webserver
+  - name: Google Assistant
+    platform: rest
+    resource: http://192.168.1.101:5000/broadcast_message
+
+ #https://www.home-assistant.io/components/notify.file/
+#  - name: Energy
+#    platform: file
+#    filename: energylog.txt
+#    timestamp: yes
+
+#  - name: Rain
+#    platform: file
+#    filename: rainlog.txt
+#    timestamp: yes
+
+  - name: Gas
+    platform: file
+    filename: gaslog.txt
+    timestamp: yes
+
+  - name: Salt
+    platform: file
+    filename: saltlog.txt
+    timestamp: yes
+
+  - name: Water
+    platform: file
+    filename: waterlog.txt
+    timestamp: yes
+
+#################################################################
+#                                                               #
+#                        TELEGRAM BOT                           #
+#                                                               #
+#################################################################
+telegram_bot:
+  - platform: polling
+    api_key: !secret telegram_key
+    allowed_chat_ids:
+      - !secret telegram_chatid
+
+#################################################################
+#                                                               #
+#                             TTS                               #
+#                                                               #
+#################################################################
+# Text to speech
+tts:
+  - platform: google_translate
+    cache: true
+    cache_dir: /tmp/tts
+    time_memory: 300
+    language: 'it'
+    base_url: http://192.168.1.101:8123
+
+#################################################################
+#                                                               #
+#                        REST GA SDK                            #
+#                                                               #
+#################################################################
+
+# define as rest_command in configuration
+rest_command:
+  google_assistant_command:
+    url: 'http://192.168.1.101:5000/command?message={{ command }}'
+
+
+#################################################################
+#                                                               #
+#                       Speech Scripts                          #
+#                                                               #
+#################################################################
+script:
+  gianpi_briefing:
+    alias: Gianpiero Briefing
+    sequence:
+    - service: tts.google_translate_say
+      data_template:
+        entity_id: media_player.salotto
+        message: >
+          {% if now().strftime("%H")|int < 12 %}
+          Buongiorno Gianpiero
+          {% elif now().strftime("%H")|int < 18 %}
+          Buon Pomeriggio Gianpiero.
+          {% else %}
+          Buona Sera Gianpiero.
+          {% endif %}
+          Attualmente ci sono {{states.sensor.pws_temp_c.state|round}} gradi a Siena ma la temperatura percepita è {{states.sensor.pws_feelslike_c.state|round}} gradi. Oggi sarà {{states.sensor.pws_weather_1d_metric.state|replace(".", "")}}.
+
+#            {% if now().strftime("%H")|int < 9 and now().strftime("%w")|int > 0 and now().strftime("%w")|int < 6 %}
+#            The current drive to Powertec in traffic is {{states.sensor.commute_to_work.state}}
+#            {% endif %}
+
+#https://github.com/marcelveldt/hassio-addons-repo/tree/master/google-assistant-webserver
+# example usage in script
+  google_cmd_test:
+    sequence:
+    - service: rest_command.google_assistant_command
+      data:
+        command: "some command you want to throw at the assistant"
+#################################################################
+#                                                               #
+#                             SENSOR                            #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                   END OF CONFIGURATION FILE                   #
+#                                                               #
+#################################################################

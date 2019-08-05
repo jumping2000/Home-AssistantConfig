@@ -1,0 +1,840 @@
+#################################################################
+#                                                               #
+#                        Packages/Lights                        #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'lights'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Lights
+    ################################################
+
+    light.yeelight_color1_7811dc6847c2:
+      <<: *customize
+      hidden: true
+
+    ight.yeelight_bslamp1_7811dc905b0c:
+      <<: *customize
+      hidden: true  
+
+    light.gateway_light_f0b429b45c97:
+      <<: *customize
+      friendly_name: Xiaomi Gateway
+      icon: mdi:lightbulb-outline
+
+    light.luce_studio:
+      <<: *customize
+      icon: mdi:lightbulb
+
+    light.yeelight_paralume_sala:
+      <<: *customize
+      icon: mdi:lightbulb
+
+    light.yeelight_luce_bedside:
+      <<: *customize
+      icon: mdi:lightbulb
+
+    light.0x0017880110267875_light:
+      <<: *customize
+      friendly_name: Hue Light 1
+
+    light.0x00178801104a8efc_light:
+      <<: *customize
+      icon: mdi:lightbulb
+      friendly_name: Hue Light 2
+
+    light.0x00178801102668da_light:
+      <<: *customize
+      icon: mdi:lightbulb
+      friendly_name: Hue Light 3
+
+    light.0x00178801011e7ab6_light:
+      <<: *customize
+      icon: mdi:led-strip
+      friendly_name: Hue Lightstrip 1
+    
+    sensor.0x00178801020d34b3_action:
+      <<: *customize
+      friendly_name: HUE DIMMER Camera
+
+    light.xiaomi_philips_bedroom:
+      <<: *customize
+      icon: mdi:lightbulb
+
+    light.xiaomi_philips_ingresso:
+      <<: *customize
+      icon: mdi:lightbulb
+    
+    light.faretti_ingresso:
+      <<: *customize
+      icon: mdi:wall-sconce-flat
+
+#################################################################
+#                                                               #
+#                           Group                               #
+#                                                               #
+#################################################################
+group:
+####################################################
+#                     LIGHTS                       #
+####################################################
+  Bedroom Lights:
+    name: Luci Camera Letto
+    view: no
+    entities:
+    - light.yeelight_luce_bedside
+    - light.0x00178801104a8efc_light
+    - light.0x0017880110267875_light
+    - light.0x00178801102668da_light
+    - light.0x00178801011e7ab6_light #strip
+    - light.xiaomi_philips_bedroom
+
+  Lampadario Bedroom:
+    name: Luci Lampadario Bedroom
+    view: no
+    entities:
+    - light.0x00178801104a8efc_light
+    - light.0x0017880110267875_light
+    - light.0x00178801102668da_light
+
+  Yeelights:
+    name: Luci Yeelight
+    view: no
+    entities:
+    - light.yeelight_paralume_sala
+    - light.yeelight_luce_bedside
+
+  Ingresso Lights:
+    name: Luci Ingresso
+    view: no
+    entities:
+    - light.gateway_light_f0b429b45c97
+    - light.xiaomi_philips_ingresso
+    - light.faretti_ingresso
+
+  Xiaomi Philips Lights:
+    name: Luci Xiaomi Philips
+    view: no
+    entities:
+    - light.xiaomi_philips_bedroom
+    - light.xiaomi_philips_ingresso
+
+  Sala Lights:
+    name: Luci Sala
+    view: no
+    entities:
+    - light.applique_sala
+    - light.yeelight_paralume_sala
+
+#################################################################
+#                                                               #
+#                          YEELIGHT                             #
+#                                                               #
+################################################################# 
+yeelight:
+  devices:
+#   192.168.1.142:
+#   name: Yeelight Luce Studio
+    192.168.1.143:
+      name: Yeelight Paralume Sala
+      model: color1
+    192.168.1.141:
+      name: Yeelight Luce BEDSIDE
+      model: bslamp1
+    192.168.1.197:
+      name: Yeelight Luce DESKLAMP
+      model: lamp1
+
+################################################################
+#                                                              #
+#                PLATFORM  LIGHTS                              #
+#                                                              #
+################################################################
+#https://home-assistant.io/components/light/
+#https://www.home-assistant.io/components/light.xiaomi_miio/
+light:
+  - platform: xiaomi_miio
+    name: Xiaomi Philips Ingresso
+    host: 192.168.1.144
+    token: a4f943626220b9490f70070585f008dd
+
+  - platform: xiaomi_miio
+    name: Xiaomi Philips Bedroom
+    host: 192.168.1.145
+    token: f6438c708d68a39b90fa79be82233fb9
+
+  - platform: mqtt
+    name: "Applique Sala"
+    state_topic: "shellies/shelly1-8A8543/relay/0"
+    command_topic: "shellies/shelly1-8A8543/relay/0/command"
+    qos: 0
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    retain: false  
+
+  - platform: mqtt
+    name: "Applique Livia"
+    state_topic: "shellies/shelly1-8AF0DE/relay/0"
+    command_topic: "shellies/shelly1-8AF0DE/relay/0/command"
+    qos: 0
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    retain: false
+  
+  - platform: mqtt
+    name: "Luce Cucina"
+    state_topic: "shellies/shelly1-5B3549/relay/0"
+    command_topic: "shellies/shelly1-5B3549/relay/0/command"
+    qos: 0
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "Faretti Ingresso"
+    state_topic: "shellies/shellyswitch25-72FA44/relay/0"
+    command_topic: "shellies/shellyswitch25-72FA44/relay/0/command"
+    qos: 0
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "Luce secondo Bagno"
+    state_topic: "shellies/shellyswitch25-72FA44/relay/1"
+    command_topic: "shellies/shellyswitch25-72FA44/relay/1/command"
+    qos: 0
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "Luce Studio"
+    state_topic: "shellies/shelly1-32C383/relay/0" 
+    command_topic: "shellies/shelly1-32C383/relay/0/command"
+    qos: 0
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "Luce Ripostiglio"
+    state_topic: "stat/sonoff-01/POWER"
+    command_topic: "cmnd/sonoff-01/POWER"
+    availability_topic: "tele/sonoff-01/LWT"
+    qos: 0
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    optimistic: false
+    retain: false
+
+#################################################################
+#                                                               #
+#                         INPUT NUMBER                          #
+#                                                               #
+#################################################################
+input_select:
+  delay_luci:
+    name: "Ritardo Luci OFF"
+    options:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    initial: 2
+    icon: mdi:target
+
+input_boolean:
+  impostazioni_luci_plug:
+    name: Visualizza impostazioni
+    initial: true
+    icon: mdi:settings
+
+#################################################################
+#                                                               #
+#                            SCRIPT                             #
+#                                                               #
+#################################################################
+script:
+  applique_livia_off:
+    sequence:
+    - delay: '00:{{ states.input_select.delay_luci.state | int }}:00'
+    - service: light.turn_off
+      data:
+        entity_id: light.applique_livia
+
+  lightstrip_bedroom_off:
+    sequence:
+    - delay: '00:{{ states.input_select.delay_luci.state | int }}:00'
+    - service: light.turn_off
+      data:
+        entity_id: light.0x00178801011e7ab6_light
+
+  luce_studio_off:
+    sequence:
+    - delay: '00:{{ states.input_select.delay_luci.state | int }}:00'
+    - service: light.turn_off
+      data:
+        entity_id: light.luce_studio
+
+#################################################################
+#                                                               #
+#                         Automations                           #
+#                                                               #
+#################################################################
+automation:
+#########################################################
+#                                                       #
+#                 DIMMER PHILIOPS HUE                   #
+#                                                       #
+#########################################################
+
+  - alias: HUE Dimmer Bedroom -> On
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/hue_dimmer'
+    condition:
+      condition: template
+      value_template: "{{ 'on-press' == trigger.payload_json.action }}"
+    action:
+      service: light.turn_on
+      entity_id:
+      - group.lampadario_bedroom
+      - light.0x00178801011e7ab6_light
+
+  - alias: HUE Dimmer Bedroom -> Off
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/hue_dimmer'
+    condition:
+      condition: template
+      value_template: "{{ 'off-press' == trigger.payload_json.action }}"
+    action:
+      service: light.turn_off
+      entity_id:
+      - group.lampadario_bedroom
+      - light.0x00178801011e7ab6_light
+
+  - alias: HUE Dimmer Bedroom -> Brightness
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/hue_dimmer'
+    condition:
+      condition: or
+      conditions:
+      - condition: template
+        value_template: "{{ 'down-press' == trigger.payload_json.action }}"
+      - condition: template
+        value_template: "{{ 'up-press' == trigger.payload_json.action }}"
+    action:
+      service: light.turn_on
+      data_template:
+        entity_id:
+        - group.lampadario_bedroom
+        - light.0x00178801011e7ab6_light
+        brightness: '{{ trigger.payload_json.brightness }}'
+#########################################################
+#                                                       #
+#               PULSANTE CAMERA XIAOMI                  #
+#                                                       #
+#########################################################
+  - alias: 'Accensione Hue Strip'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000202fd3f'
+    condition:
+      condition: template
+      value_template: '{{ "long" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.0x00178801011e7ab6_light
+
+#----------------------------------------------------------
+  - alias: 'Accensione Hue Lights'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000202fd3f'
+    condition:
+      condition: template
+      value_template: '{{ "single" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id:
+        - group.lampadario_bedroom
+#        - light.0x00178801104a8efc_light
+#        - light.0x0017880110267875_light
+#        - light.0x00178801102668da_light
+
+#-----------------------------------------------------------
+  - alias: 'Accensione Xiaomi Philips Romi'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000202fd3f'
+    condition:
+      condition: template
+      value_template: '{{ "double" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id:
+        - light.xiaomi_philips_bedroom
+
+#-----------------------------------------------------------
+  - alias: 'Accensione Yeelight Bedside Gianpi'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000202fd3f'
+    condition:
+      condition: template
+      value_template: '{{ "triple" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id:
+        - light.yeelight_luce_bedside
+
+#########################################################
+#                                                       #
+#                PULSANTE SALA XIAOMI                   #
+#                                                       #
+#########################################################
+  - alias: 'Accensione Paralume Sala'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d0002016342'
+    condition:
+      condition: template
+      value_template: '{{ "single" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.yeelight_paralume_sala
+
+#----------------------------------------------------------
+  - alias: 'Accensione Faretti Ingresso'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d0002016342'
+    condition:
+      condition: template
+      value_template: '{{ "double" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.faretti_ingresso
+
+#--------------------------------------------------------
+  - alias: 'Accensione Luci Sala'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d0002016342'
+    condition:
+      condition: template
+      value_template: '{{ "long" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.applique_sala
+
+#--------------------------------------------------------
+  - alias: 'Accensione Luce Cucina'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d00013ecf04'
+    condition:
+      condition: template
+      value_template: '{{ "triple" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.luce_cucina
+
+#########################################################
+#                                                       #
+#               PULSANTE INGRESSO XIAOMI                #
+#                                                       #
+#########################################################
+  - alias: 'Accensione Luce Studio'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d00013ecf04'
+    condition:
+      condition: template
+      value_template: '{{ "double" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.luce_studio
+
+#----------------------------------------------------------
+  - alias: 'Accensione Luce Ingresso'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d00013ecf04'
+    condition:
+      condition: template
+      value_template: '{{ "single" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.xiaomi_philips_ingresso
+
+#--------------------------------------------------------
+  - alias: 'Accensione Faretti Ingresso2'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d00013ecf04'
+    condition:
+      condition: template
+      value_template: '{{ "long" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.faretti_ingresso
+
+#--------------------------------------------------------
+  - alias: 'Accensione Applique Livia'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d00013ecf04'
+    condition:
+      condition: template
+      value_template: '{{ "triple" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.applique_livia
+
+#--------------------------------------------------------
+  - alias: 'Accensione luce bagno'
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d00013ecf04'
+    condition:
+      condition: template
+      value_template: '{{ "quadruple" == trigger.payload_json.click }}'
+    action:
+      service: light.toggle
+      entity_id: light.luce_secondo_bagno
+      
+#########################################################
+#                                                       #
+#               Luminosità gateway Xiaomi               #
+#                                                       #
+#########################################################
+  - alias: 'Cambia Luminosità Luce Gateway'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: binary_sensor.motion_sensor_158d000223684f
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: sensor.day_night
+      state: 'Night'
+    - condition: numeric_state
+      below: '200'
+      entity_id: sensor.illumination_f0b429b45c97
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.gateway_light_f0b429b45c97
+        brightness_pct: 100
+        color_name: white
+    - delay: '00:01:00'
+    - service: light.turn_on
+      data:
+        entity_id: light.gateway_light_f0b429b45c97
+        brightness_pct: 10
+        color_name: white    
+
+#########################################################
+#                                                       #
+#              OPEN FRONT DOORS LIGHTS ON               #
+#                                                       #
+#########################################################
+# all'apertura porta accende due luci manda notifica e poi abbassa la luce del gateway  
+  - alias: 'Apertura Porta Principale Notturna'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00011854f0
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: sensor.day_night
+      state: 'Night'
+    action:
+    - service: light.turn_on
+      data:
+        entity_id:
+        - light.gateway_light_f0b429b45c97
+        - light.xiaomi_philips_ingresso
+        - light.faretti_ingresso
+        brightness_pct: 100
+    - service: notify.telegram
+      data:
+        title: '*-- ATTENZIONE --*'
+        message: 'Porta Ingresso Aperta in orario serale'
+      #- wait_template: "{{ is_state(trigger.entity_id, 'off') }}"
+    - delay: 00:00:15
+    - service: light.turn_on
+      data:
+        entity_id: light.gateway_light_f0b429b45c97
+        brightness_pct: 10
+
+#    - service: tts.google_translate_say
+#      entity_id: media_player.salotto
+#      data_template: 
+#        message: >-
+#          {{ [
+#          "bentornati a casa, ai vostri ordini " ,
+#          "bentornati a casa  Romina, Gianpi e Livia Maria " ,
+#          "che la forza sia con te " ,
+#          "ben tornati sono impaziente di eseguire i vostri comandi "
+#          ] |random }}
+#----------------------------------------------------------
+  - alias: 'Apertura Porta Principale Diurna Luce ON'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00011854f0
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: sensor.day_night
+      state: 'Day'
+    action:
+    - service: light.turn_on
+      entity_id: light.xiaomi_philips_ingresso
+
+#----------------------------------------------------------
+  - alias: 'Apertura Porta Principale Diurna Luce OFF'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00011854f0
+      to: 'off'
+      for:
+        minutes: 1
+    condition:
+    - condition: state
+      entity_id: sensor.day_night
+      state: 'Day'
+    action:
+    - service: light.turn_off
+      entity_id: light.xiaomi_philips_ingresso
+
+#########################################################
+#                                                       #
+#                TURN OFF/ON XIAOMI LIGHTS              #
+#                                                       #
+#########################################################
+  - alias: 'Spegni Luci Serali'
+    initial_state: true
+    trigger:
+      platform: sun
+      event: sunrise
+#     offset: '00:30:00'
+    action:
+    - service: light.turn_off
+      data:
+        entity_id: 
+        - light.gateway_light_f0b429b45c97
+        - light.xiaomi_philips_bedroom
+##########
+  - alias: 'Accendi Luce Romina'
+    trigger:
+      platform: sun
+      event: sunset
+#      offset: '01:00:00'
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: 
+        - light.xiaomi_philips_bedroom
+
+#########################################################
+#                                                       #
+#                      LUCE LIVIA                       #
+#                                                       #
+#########################################################
+  - alias: 'Accensione Applique Livia al passaggio'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id:  binary_sensor.motion_sensor_158d00010e4ea5
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: sensor.day_night
+      state: 'Night'
+    - condition: time
+      # At least one of the following is required.
+      after: '16:00:00'
+      before: '23:59:00'
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.applique_livia
+    - service: script.applique_livia_off
+
+#########################################################
+#                                                       #
+#                      LUCE STUDIO                      #
+#                                                       #
+#########################################################
+  - alias: 'Accensione Luce Studio al passaggio'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id:  binary_sensor.0xd0cf5efffe2d2e54_occupancy
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: sensor.day_night
+      state: 'Night'
+    - condition: time
+      # At least one of the following is required.
+      after: '16:00:00'
+      before: '23:59:00'
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.luce_studio
+    - service: script.luce_studio_off
+
+#########################################################
+#                                                       #
+#                     LUCE BEDROOM                      #
+#                                                       #
+#########################################################
+  - alias: 'Accensione Stripled Bedroom al passaggio'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id:  binary_sensor.motion_sensor_158d00013f7817
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: sensor.day_night
+      state: 'Night'
+    - condition: time
+      # At least one of the following is required.
+      after: '16:00:00'
+      before: '22:00:00'
+    action:
+    - service: light.turn_on
+      data:
+        entity_id: light.0x00178801011e7ab6_light
+    - service: script.lightstrip_bedroom_off
+
+#########################################################
+#                                                       #
+#       NOTIFY IF YEELIGHT e XIAOMI LIGHT OFFLINE       #
+#                                                       #
+#########################################################
+  - alias: 'Notify if Lights are Offline'
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id:
+          - light.yeelight_paralume_sala
+          - light.xiaomi_philips_ingresso
+          - light.gateway_light_f0b429b45c97
+          - light.applique_sala
+          - light.applique_livia
+          - light.faretti_ingresso
+          - light.luce_studio
+          - light.luce_stanzino
+          - light.luce_secondo_bagno
+          - light.luce_cucina
+          - light.0x00178801104a8efc_light
+          - light.0x0017880110267875_light
+          - light.0x00178801102668da_light
+          - light.0x00178801011e7ab6_light
+          #- light.xiaomi_philips_bedroom
+          #- light.yeelight_luce_bedside
+        to: 'unavailable'
+    action:
+      - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+      - service: script.my_notify
+        data_template:
+          mute: 1
+          title: "*-- LIGHTS-ATTENZIONE --*"
+          message: "{{ trigger.to_state.attributes.friendly_name }} è offline"
+          
+#----------------------------------------------------------
+  - alias: 'Notify if Lights are Online'
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id:
+          - light.yeelight_paralume_sala
+          - light.xiaomi_philips_ingresso
+          - light.gateway_light_f0b429b45c97
+          - light.applique_sala
+          - light.applique_livia
+          - light.faretti_ingresso
+          - light.luce_studio
+          - light.luce_stanzino
+          - light.luce_secondo_bagno
+          - light.luce_cucina
+          - light.0x00178801104a8efc_light
+          - light.0x0017880110267875_light
+          - light.0x00178801102668da_light
+          - light.0x00178801011e7ab6_light
+          #- light.xiaomi_philips_bedroom
+          #- light.yeelight_luce_bedside
+        from: 'unavailable'
+    action:
+      - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+      - service: script.my_notify
+        data_template:
+          mute: 1
+          title: "*-- LIGHTS-ATTENZIONE --*"
+          message: "{{ trigger.to_state.attributes.friendly_name }} è online di nuovo"
+          
+#################################################################
+#                                                               #
+#                    END OF CONFIGURATION                       #
+#                                                               #
+#################################################################

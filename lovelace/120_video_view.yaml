@@ -1,0 +1,73 @@
+   
+####################################################
+#                                                  #
+#                     CAMERA                       #
+#                                                  #
+####################################################
+icon: mdi:webcam
+title: Telecamere
+panel: true
+path: camera
+cards:
+- type: custom:layout-card
+  layout: vertical
+  cards:
+  - type: entities
+    title: Telecamera Ingresso
+    show_header_toggle: false
+    entities:
+    - switch.dafang1_h264_rtsp_server
+    - switch.dafang1_mjpeg_rtsp_server
+    - sensor.dafang1
+    #- device_tracker.dafang1
+    - sensor.dafang1_light_sensor
+    - switch.dafang1_ir_filter
+    - switch.dafang1_ir_led
+    - switch.dafang1_night_mode
+    - switch.dafang1_night_mode_auto
+    - switch.dafang1_blue_led
+    - switch.dafang1_yellow_led
+    - switch.dafang1_motion_detection
+    - switch.dafang1_motion_tracking
+    - binary_sensor.dafang1_motion_sensor
+
+  - break
+####################################################
+  - type: entities
+    title: Comandi Dafang Ingresso
+    show_header_toggle: false 
+    entities:
+    - cover.dafang1_move_left_right
+    - cover.dafang1_move_up_down
+    - script.reboot_dafang1
+  - type: picture-entity
+    entity: camera.dafang1
+  - type: entities
+    title: Comandi Dafang Livia
+    show_header_toggle: false 
+    entities:
+    - cover.dafang2_move_left_right
+    - cover.dafang2_move_up_down
+    - script.reboot_dafang2
+  - type: picture-entity
+    entity: camera.dafang2
+  - break
+####################################################
+  - type: entities
+    title: Telecamera Livia
+    show_header_toggle: false
+    entities:
+    - switch.dafang2_h264_rtsp_server
+    - switch.dafang2_mjpeg_rtsp_server
+    - sensor.dafang2
+    #- device_tracker.dafang2
+    - sensor.dafang2_light_sensor
+    - switch.dafang2_ir_filter
+    - switch.dafang2_ir_led
+    - switch.dafang2_night_mode
+    - switch.dafang2_night_mode_auto
+    - switch.dafang2_blue_led
+    - switch.dafang2_yellow_led
+    - switch.dafang2_motion_detection
+    - switch.dafang2_motion_tracking
+    - binary_sensor.dafang2_motion_sensor

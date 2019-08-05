@@ -1,0 +1,95 @@
+
+####################################################
+#                                                  #
+#                      METEO                       #
+#                                                  #
+####################################################
+icon: mdi:image-filter-drama
+title: Meteo
+path: meteo
+cards:
+  - type: vertical-stack
+    cards:
+### 1 colonna 
+    - type: iframe
+      aspect_ratio: 70%
+      #url: https://embed.windy.com/embed2.html?rain,32.487,-84.023,5
+      url: https://embed.windy.com/embed2.html?radar,42.401,11.332,7
+      title: Weather Radar
+    - type: picture-entity
+      entity: camera.telecamera_ir
+    - type: picture-entity
+      entity: camera.telecamera_pioggia
+### 2 colonna    
+  - type: vertical-stack
+    cards:
+    - type: entities
+      title: Condizioni DarkSky
+      show_header_toggle: false 
+      entities:
+      - sensor.dark_sky_summary_tmpl
+      - sensor.dark_sky_temperature
+      - sensor.dark_sky_humidity
+      - sensor.dark_sky_wind_speed
+      - sensor.dark_sky_wind_dir
+      - sensor.dark_sky_precip_intensity
+      - sensor.dark_sky_precip_probability
+      - sensor.dark_sky_hourly_summary_tmpl     
+    - type: entities
+      title: Previsioni DarkSky
+      show_header_toggle: false 
+      entities:
+      - sensor.forecast_0
+      - sensor.forecast_1
+      - sensor.forecast_2
+      - sensor.forecast_3
+      - sensor.forecast_4
+      - sensor.forecast_5
+      - sensor.forecast_6
+      - sensor.forecast_7
+### 3 colonna       
+  - type: vertical-stack
+    cards:        
+
+    - type: custom:mini-graph-card
+      entities:
+      - sensor.jmp_bedroom_13_13_2
+      - sensor.jmp_weather_14_14_1
+      name: Temperatura
+      hours_to_show: 24
+      points_per_hour: 12
+      line_width: 2
+      show:
+        legend: true
+        labels: true
+
+    - type: custom:mini-graph-card
+      entities:
+      - sensor.jmp_bedroom_13_13_3
+      - sensor.jmp_weather_14_14_2
+      name: Umidità
+      hours_to_show: 24
+      points_per_hour: 12
+      line_width: 2
+      show:
+        legend: true
+        labels: true
+
+    - type: glance
+      columns: 4
+      title: OpenUV Sensor
+      entities:
+      - sensor.current_ozone_level
+      - sensor.current_uv_index
+      - sensor.current_uv_level
+      - sensor.max_uv_index
+
+    - type: entities
+      title: Script Temperatura
+      show_header_toggle: false
+      entities:
+#      - input_text.notify_temp
+      - script.sala_temp
+      - script.balcone_temp
+      - script.bedroom_temp
+      - script.livia_temp

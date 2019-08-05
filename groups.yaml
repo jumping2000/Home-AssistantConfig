@@ -1,0 +1,369 @@
+#https://home-assistant.io/components/group
+
+####################################################
+#                                                  #
+#                     VIEWS                        #
+#                                                  #
+####################################################
+
+  Default_view:
+    name: Camere
+    view: yes
+    icon: mdi:home
+    entities: 
+      - group.location
+      - group.master_bedroom
+      - group.cucina
+      - group.sala
+      - group.camera_livia
+      - group.studio
+      - group.ingresso
+      - group.energia
+
+  Status Device:
+    view: yes
+    icon: mdi:factory
+    entities:
+      - group.devices
+      - group.network_performance
+      - group.xiaomi_battery
+      - group.mysensors_battery
+
+  HA:
+    view: yes
+    icon: mdi:home-assistant
+    entities:
+      - group.home_automation_device_status
+      - group.ha_server_monitor
+      - group.ha_version_info
+      - group.ha_logging_dimension
+
+  Automazione:
+    view: yes
+    icon: mdi:home-automation #car
+    entities:
+      - group.home_assistant_automations
+      - group.automazione_ingresso
+      - group.automazione_master_bedroom
+
+  Switches:
+    view: yes
+    icon: mdi:dip-switch
+    entities:
+      - group.bedroom_lights
+      - group.yeelights
+      - group.broadlink_ir_switches
+      - group.living_room_lights
+      - group.ingresso_lights
+      - group.interruttori
+      - group.sensori_movimento
+      - group.sensori_porta
+
+  Meteo:
+    view: yes
+    icon: mdi:weather-windy-variant
+    entities:
+      - sensor.day_of_week
+      - sensor.time_date      
+      - sensor.day_night
+      - sensor.moon
+      - sensor.season
+      - sun.sun
+      - sensor.sunrise_time
+      - sensor.sunset_time
+      - group.local_weather
+      - group.forecast4
+      - group.weather_sala_esterno
+      - group.weather_studio_esterno
+      - group.weather_rain
+      - group.weather_studio_interno
+      - group.weather_bedroom
+      - group.weather_cucina
+      - group.weather_camera_livia
+      - group.weather_ingresso
+
+  DarkSky:
+    view: yes
+    icon: mdi:weather-windy
+    entities:
+      - group.meteo_darksky
+      - group.previsioni_darksky
+      - camera.telecamera_ir
+      - camera.telecamera_pioggia
+  
+  Grafici:
+    view: yes
+    icon: mdi:chart-areaspline
+    entities:
+      - history_graph.temperatura_piante
+      - history_graph.temperatura_interna
+      - history_graph.temperatura_esterna
+      - history_graph.pressione
+      - history_graph.hum_interna
+      - history_graph.hum_esterna
+      - history_graph.energy_today
+      - camera.grafana_energy_meter
+       
+####################################################
+#                                                  #
+#                    GROUPS                        #
+#                                                  #
+####################################################
+
+
+####################################################
+#                  DEVICE INFO                     #
+####################################################
+
+
+####################################################
+#                   AUTOMATION                     #
+####################################################
+
+  Home Assistant Automations:
+  #deviceoffline.yaml
+    control: hidden
+    entities:
+      - automation.notify_if_ha_device_offline
+      - automation.notify_if_lights_are_offline
+      - automation.reset_motion_sensor_pir_studio
+  
+  Automazione Ingresso:
+    #automazione_ingresso.yaml
+    #control: hidden
+    entities:
+      - automation.spegni_luci_serali
+      - automation.accendi_luci_serali
+      - automation.apertura_porta_principale_notturna
+      - automation.accensione_luce_ingresso_diurna1
+      - automation.apertura_porta_principale_diurna
+      - automation.chiusura_porta_principale_diurna
+      - automation.accensione_luce_ingresso
+
+  Automazione Master Bedroom:
+    #pulsantecamera.yaml
+    control: hidden
+    entities:
+      - automation.accensione_luce_bedside
+      - automation.accensione_hue_strip
+      - automation.accensione_hue_lights
+  
+  Automazione Cucina:
+    #firealarm.yaml
+    control: hidden
+    entities:          
+      - automation.send_notification_on_fire_alarm
+      
+####################################################
+#                     ROOMS                        #
+####################################################
+
+  Sala:
+    - group.living_room_lights
+    - binary_sensor.door_window_sensor_158d00011c3087
+    - binary_sensor.door_window_sensor_158d00013e425d
+    - binary_sensor.motion_sensor_158d00010e4ea5
+    - sensor.flower_1_conductivity
+    - sensor.flower_1_light_intensity
+    - sensor.flower_1_moisture
+    - sensor.flower_1_temperature
+    - sensor.flower_2_conductivity
+    - sensor.flower_2_light_intensity
+    - sensor.flower_2_moisture
+    - sensor.flower_2_temperature
+
+  Cucina:
+    - sensor.thcucina_temp
+    - sensor.thcucina_hum
+    - binary_sensor.smoke_sensor_158d0001bb7dda      
+    - sensor.jmp_gassensor_18_18_1
+    - sensor.jmp_gassensor_18_18_2
+    - sensor.jmp_gassensor_18_18_3
+    - sensor.jmp_gassensor_18_18_4
+    - sensor.jmp_gassensor_18_18_5
+    - sensor.jmp_gassensor_18_18_6
+ 
+  Master Bedroom:
+    - group.bedroom_lights
+    - sensor.jmp_bedroom_13_13_1
+    - sensor.jmp_bedroom_13_13_2
+    - sensor.jmp_bedroom_13_13_3
+
+  Camera Livia:
+    - binary_sensor.motion_sensor_158d00013f7817
+    - sensor.jmp_livia_21_21_1
+    - sensor.jmp_livia_21_21_2
+
+  Studio:
+    - binary_sensor.door_window_sensor_158d000112aec3
+    - binary_sensor.pir_studio
+    - sensor.jmp_studio_22_22_1
+    - sensor.jmp_studio_22_22_2
+
+  Ingresso:
+    - light.gateway_light_f0b429b45c97
+    - binary_sensor.door_window_sensor_158d00011854f0
+    - binary_sensor.motion_sensor_158d000223684f
+    - sensor.illumination_158d000223684f
+    - sensor.temperature_158d0001d6be78
+    - sensor.humidity_158d0001d6be78
+    - sensor.xiaomipressure
+
+####################################################
+#                   SENSORS                        #
+####################################################
+
+  Energia:
+    - climate.netatmo1
+    - sensor.jmp_energy_12_12_2
+    - sensor.energy_day
+
+  Local Weather:
+    name: Previsione Siena
+    entities:
+      - sensor.pws_weather
+      - sensor.pws_precip_today_metric
+      - sensor.pws_precip_1d_mm
+      - sensor.pws_temp_c
+      - sensor.pws_feelslike_c
+      - sensor.pws_wind_string
+      - sensor.pws_relative_humidity
+      - sensor.pws_visibility_km
+
+  forecast4:
+    name: Previsione 4 giorni
+    entities:
+      - sensor.pws_weather_1d
+      - sensor.pws_weather_1n
+      - sensor.pws_weather_2d
+      - sensor.pws_weather_2n
+      - sensor.pws_weather_3d
+      - sensor.pws_weather_3n
+      - sensor.pws_weather_4d
+      - sensor.pws_weather_4n
+      - sensor.pws_weather_5d
+      - sensor.pws_weather_5n
+
+  Weather Bedroom:
+    name: THB Camera Matrimoniale
+    entities:
+      - sensor.jmp_bedroom_13_13_1
+      - sensor.jmp_bedroom_13_13_2
+      - sensor.jmp_bedroom_13_13_3
+
+  Weather Studio Interno:
+    name: TH Studio Interno
+    entities:
+      - sensor.jmp_studio_22_22_1
+      - sensor.jmp_studio_22_22_2
+
+  Weather Studio Esterno:
+    name: TH Studio Esterno
+    entities:
+      - sensor.jmp_weather_14_14_1
+      - sensor.jmp_weather_14_14_2
+
+  Weather Sala Esterno:
+    name: THB Sala Esterno
+    entities:
+      - sensor.jmp_weather_16_16_1
+      - sensor.jmp_weather_16_16_2
+      - sensor.jmp_weather_16_16_3
+      
+  Weather Rain:
+    name: RAIN Sala Esterno
+    entities:
+      - sensor.jmp_rain_17_17_1
+      - sensor.jmp_rain_17_17_2
+      - sensor.jmp_rain_17_17_3
+      - sensor.rain_day
+
+  Weather Cucina:
+    name: TH Cucina
+    entities:
+      - sensor.thcucina_temp
+      - sensor.thcucina_hum
+    
+  Weather Camera Livia:
+    name: TH Camera Livia
+    entities:    
+      - sensor.jmp_livia_21_21_1
+      - sensor.jmp_livia_21_21_2
+
+  Weather Ingresso:
+    name: THB Ingresso
+    entities:
+      - sensor.temperature_158d0001d6be78
+      - sensor.humidity_158d0001d6be78
+      - sensor.xiaomipressure
+
+  Plant Sensors:
+    name: Sensori Piante
+    entities:
+      - sensor.flower_1_battery
+      - sensor.flower_1_conductivity
+      - sensor.flower_1_light_intensity
+      - sensor.flower_1_moisture
+      - sensor.flower_1_temperature
+      - sensor.flower_2_battery
+      - sensor.flower_2_conductivity
+      - sensor.flower_2_light_intensity
+      - sensor.flower_2_moisture
+      - sensor.flower_2_temperature
+  
+  Gas Sensors:
+    name: Sensori Gas
+    entities:
+      - sensor.jmp_gassensor_18_18_1
+      - sensor.jmp_gassensor_18_18_2
+      - sensor.jmp_gassensor_18_18_3
+      - sensor.jmp_gassensor_18_18_4
+      - sensor.jmp_gassensor_18_18_5
+      - sensor.jmp_gassensor_18_18_6
+    
+####################################################
+#                   SWITCHES                       #
+####################################################
+
+  Broadlink IR Switches:
+    - switch.tv_lg
+    - switch.tv_lg_av1_av2
+    - switch.tv_lg_hdmi1_hdmi2
+    - switch.tv_lg_hdmi3
+
+#  Sonoff Switches:
+#    control: hidden
+#    entities:
+#      - switch.basic1
+
+  Sensori Movimento:
+    - binary_sensor.pir_studio
+    - binary_sensor.motion_sensor_158d00010e4ea5
+    - binary_sensor.motion_sensor_158d00013f7817
+    - binary_sensor.motion_sensor_158d000223684f
+    - sensor.illumination_158d000223684f
+
+  Interruttori:
+    - binary_sensor.switch_158d00013ecf04
+    - binary_sensor.switch_158d0002016342
+    - binary_sensor.switch_158d000202fd3f
+  
+  Sensori Porta:
+    - binary_sensor.door_window_sensor_158d000112aec3
+    - binary_sensor.door_window_sensor_158d00011854f0
+    - binary_sensor.door_window_sensor_158d00011c3087
+    - binary_sensor.door_window_sensor_158d00013e425d
+
+####################################################
+#                  LOCATION                        #
+####################################################
+
+  Location:
+    - device_tracker.gianpi_xiaomimi5
+    - input_boolean.vacation
+
+####################################################
+#                                                  #
+#           END OF CONFIGURATION FILE              #
+#                                                  #
+####################################################

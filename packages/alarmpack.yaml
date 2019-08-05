@@ -1,0 +1,466 @@
+#################################################################
+#                                                               #
+#                  Packages Alarm management                    #
+#                                                               #
+#################################################################
+
+homeassistant: 
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'alarmpack'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+
+    input_boolean.dss_mute_gateway_sounds:
+      <<: *customize
+      hidden: true
+    script.dss_play_triggered_sound:
+      <<: *customize    
+      hidden: true
+    script.dss_play_triggered_sound_loop:
+      <<: *customize
+      hidden: true
+    script.dss_play_pending_sound:
+      <<: *customize
+      hidden: true
+    script.dss_play_disarmed_sound:
+      <<: *customize
+      hidden: true
+    script.dss_triggered_sound_cancel:
+      <<: *customize
+      hidden: true
+    script.dss_light_flash:
+      <<: *customize
+      hidden: true
+    script.dss_light_flash_loop:
+      <<: *customize
+      hidden: true
+    script.dss_light_flash_cancel:
+      <<: *customize
+      hidden: true
+    script.dss_light_flash_away:
+      <<: *customize
+      hidden: true
+    script.dss_light_flash_loop_away:
+      <<: *customize
+      hidden: true
+    script.dss_light_flash_cancel_away:
+      <<: *customize
+      hidden: true
+    input_number.dss_gateway_welcome_delay:
+      <<: *customize
+      hidden: true
+
+#################################################################
+#                                                               #
+#                       INPUT BOOLEAN                           #
+#                                                               #
+#################################################################
+input_boolean:
+  dss_mute_gateway_sounds:
+    name: "Silenzia allarme / Spegni lampeggiante"
+    icon: mdi:volume-off
+  dss_lights_on_away_mode:
+    name: "Lampeggia quando Allarme in modalità AWAY"
+    icon: mdi:alarm-light
+
+#################################################################
+#                                                               #
+#                       INPUT NUMBER                            #
+#                                                               #
+#################################################################    
+## Input slider to control gateway volume ###
+input_number:
+  dss_gateway_alarm_volume:
+    name: "Volume 'Allarme'"
+    icon: mdi:volume-high
+    initial: '50'
+    min: 0
+    max: 100
+    step: 5
+  dss_gateway_pending_volume:
+    name: "Volume 'In attivazione'"
+    icon: mdi:volume-high
+    initial: '20'
+    min: 0
+    max: 100
+    step: 5
+  dss_gateway_disarmed_volume:
+    name: "Volume 'Disarmato'"
+    icon: mdi:volume-high
+    initial: '20'
+    min: 0
+    max: 100
+    step: 5
+
+#################################################################
+#                                                               #
+#                       INPUT SELECT                            #
+#                                                               #
+################################################################# 
+### Input select to select sound to play ###
+input_select:
+  dss_gateway_alarm_sound:
+    name: "Suoneria 'Allarme'"
+    icon: mdi:music
+    #le varie suonerie sono definite nel secrets.yaml. vedi nota alla fine del file
+    options: !secret options_elenco_suonerie
+    initial: "1 - Police car 2"
+  dss_gateway_pending_sound:
+    name: "Suoneria 'In attivazione'"
+    icon: mdi:music
+    #le varie suonerie sono definite nel secrets.yaml. vedi nota alla fine del file
+    options: !secret options_elenco_suonerie
+    initial: "10 - Doorbell"
+  dss_gateway_disarmed_sound:
+    name: "Suoneria 'Disarmato'"
+    icon: mdi:music
+    #le varie suonerie sono definite nel secrets.yaml. vedi nota alla fine del file
+    options: !secret options_elenco_suonerie
+    initial: "10 - Doorbell"
+    
+#################################################################
+#                                                               #
+#                            SCRIPT                             #
+#                                                               #
+#################################################################
+script:
+############################################################
+###                   sound management                   ###
+############################################################
+### Scripts to play gateway sounds ###
+  dss_play_triggered_sound:
+    alias: "Riproduci suono 'Allarme'"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.dss_mute_gateway_sounds
+        state: 'off'
+      - service: xiaomi_aqara.play_ringtone
+        data_template:
+          gw_mac: !secret xiaomi_gateway1_mac
+          ### id dell'allarme - id = 1 Police 1 ###
+          ringtone_id: "{{ states.input_select.dss_gateway_alarm_sound.state.split('-')[0] }}"
+          ringtone_vol: "{{ states.input_number.dss_gateway_alarm_volume.state | int }}"
+      - delay:
+          seconds: 5
+      - service: script.dss_play_triggered_sound_loop
+  dss_play_triggered_sound_loop:
+    alias: "Loop suono 'Allarme'"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.dss_mute_gateway_sounds
+        state: 'off'
+      - delay:
+          seconds: 1
+      - service: script.dss_play_triggered_sound
+  dss_play_pending_sound:
+    alias: "Riproduci suono 'In Attivazione'"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.dss_mute_gateway_sounds
+        state: 'off'
+      - service: xiaomi_aqara.play_ringtone
+        data_template:
+          gw_mac: !secret xiaomi_gateway1_mac
+        ### id dell'allarme - id = 1 Police 1 ###
+          ringtone_id: "{{ states.input_select.dss_gateway_pending_sound.state.split('-')[0] }}"
+          ringtone_vol: "{{ states.input_number.dss_gateway_pending_volume.state | int }}"
+  dss_play_disarmed_sound:
+    alias: "Riproduci suono 'Disarmato'"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.dss_mute_gateway_sounds
+        state: 'off'
+      - service: xiaomi_aqara.play_ringtone
+        data_template:
+          gw_mac: !secret xiaomi_gateway1_mac
+          ### id dell'allarme - id = 1 Police 1 ###
+          ringtone_id: "{{ states.input_select.dss_gateway_disarmed_sound.state.split('-')[0] }}"
+          ringtone_vol: "{{ states.input_number.dss_gateway_disarmed_volume.state | int }}"
+# CANCEL Siren when Disarm - refer to Automation
+  dss_triggered_sound_cancel:
+    alias: "Silenzia e spegni Allarme"
+    sequence:
+      - delay:
+          seconds: 1
+      - service: script.turn_off
+        data:
+          entity_id: script.dss_play_triggered_sound
+
+############################################################
+###          ALARM TRIGGER START FLASHING LIGHT          ###
+############################################################
+  # START FLASH  
+  dss_light_flash:
+    alias: "Accendi luce lampeggiante in 'Allarme'"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.dss_mute_gateway_sounds
+        state: 'off'
+      - service: light.turn_on
+        data:
+          entity_id: light.gateway_light_f0b429b45c97
+          color_name: red
+      - delay:
+        #### time for flash light on
+          seconds: .02
+      - service: light.turn_off
+        data:
+          entity_id: light.gateway_light_f0b429b45c97
+      - service: script.dss_light_flash_loop
+  # LOOP BACK TO START FLASH AGAIN         
+  dss_light_flash_loop:
+    alias: "Loop luce lampeggiante in 'Allarme'"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.dss_mute_gateway_sounds
+        state: 'off'
+      - delay:
+        #### time for flash light off
+          seconds: .02
+      - service: script.dss_light_flash
+  # CANCEL FLASHING 
+  dss_light_flash_cancel:
+    alias: "Spegni luce lampeggiante in 'Allarme'"
+    sequence:
+      - delay:
+          seconds: 1
+      - service: script.turn_off
+        data:
+          entity_id: script.dss_light_flash
+      - service: script.turn_off
+        data:
+          entity_id: script.dss_light_flash_loop
+      - service: light.turn_off
+        data:
+          entity_id: light.gateway_light_f0b429b45c97
+
+############################################################
+###          ALARM AWAY START FLASHING LIGHT             ###
+############################################################
+  # START FLASH  
+  dss_light_flash_away:
+    alias: "Accendi luce lampeggiante in 'Allarme' AWAY"
+    sequence:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: armed_away
+      - condition: state
+        entity_id: input_boolean.dss_lights_on_away_mode
+        state: 'on'
+      - service: light.turn_on
+        data:
+          entity_id: light.gateway_light_f0b429b45c97
+          color_name: red
+      - delay:
+        #### time for flash light on
+          seconds: .02
+      - service: light.turn_off
+        data:
+          entity_id: light.gateway_light_f0b429b45c97
+      - service: script.dss_light_flash_loop_away
+  # LOOP BACK TO START FLASH AGAIN         
+  dss_light_flash_loop_away:
+    alias: "Loop luce lampeggiante in 'Allarme' AWAY"
+    sequence:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: armed_away
+      - delay:
+      #### time for flash light off
+          seconds: 30
+      - service: script.dss_light_flash_away
+  # CANCEL FLASHING 
+  dss_light_flash_cancel_away:
+    alias: "Spegni luce lampeggiante in 'Allarme' AWAY"
+    sequence:
+      - delay:
+          seconds: 1
+      - service: script.turn_off
+        data:
+          entity_id: script.dss_light_flash_away
+      - service: script.turn_off
+        data:
+          entity_id: script.dss_light_flash_loop_away
+      - service: light.turn_off
+        data:
+          entity_id: light.gateway_light_f0b429b45c97
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+##-----------------------------------
+## Luce gateway accessa e rossa
+  - alias: '[Alarm] Away Mode Armed'
+    trigger:
+      platform: state
+      entity_id: alarm_control_panel.house
+      to: 'armed_away'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: "-- ALARM -- "
+          message: "The house alarm has been switched on in AWAY mode. Goodbye"
+      - service: script.dss_light_flash_cancel
+
+##-----------------------------------
+  - alias: '[Alarm] Home Mode Armed'
+    trigger:
+      platform: state
+      entity_id: alarm_control_panel.house
+      to: 'armed_home'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: "-- ALARM -- "
+          message: "The house alarm has been switched on in HOME mode. Goodnight"
+      - service: script.dss_light_flash_cancel
+      - service: script.dss_light_flash_cancel_away
+
+##-----------------------------------
+  - alias: '[Alarm] Away Mode Arming'
+    trigger:
+      platform: state
+      entity_id: alarm_control_panel.house
+      to: 'pending'
+    action:
+      - service: tts.google_translate_say
+        entity_id: media_player.salotto
+        data:
+          message: 'Allarme in attivazione, chiudi tutte le porte e finestre'
+      ### Turn off gateway mute to play sound ###
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.dss_mute_gateway_sounds
+      - service: script.dss_play_pending_sound
+      - service: script.dss_light_flash_cancel_away
+      - service: script.dss_light_flash
+
+##-----------------------------------
+  - alias: '[Alarm] Disarmed'
+    trigger:
+      platform: state
+      entity_id: alarm_control_panel.house
+      to: 'disarmed'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: "-- ALARM -- "
+          message: "ALLARME Disattivato"
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.dss_mute_gateway_sounds
+      - service: script.dss_light_flash_cancel
+      - service: script.dss_light_flash_cancel_away
+      - service: script.dss_triggered_sound_cancel
+      - delay:
+          seconds: 1
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.dss_mute_gateway_sounds
+      - service: script.dss_play_disarmed_sound
+
+##-----------------------------------     
+#spengo il lampeggiante quando armato AWAY, HOME o DISARMATO
+  - alias: "Spegni lampeggiante ad attivazione avvenuta"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      - platform: state
+        entity_id: alarm_control_panel.house
+        to: 'armed_away'
+        for:
+          seconds: 30
+      - platform: state
+        entity_id: alarm_control_panel.house
+        to: 'armed_home'
+        for:
+          seconds: 30
+      - platform: state
+        entity_id: alarm_control_panel.house
+        to: 'disarmed'
+    action:
+      ### Turn off gateway mute to play sound ###
+      - delay: '00:00:30'
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.dss_mute_gateway_sounds
+      - service: script.dss_light_flash_cancel
+
+##-----------------------------------
+  - alias: '[Alarm] Triggered'
+    trigger:
+      platform: state
+      entity_id: alarm_control_panel.house
+      to: 'triggered'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: "-- ALARM -- "
+          message: 'ALLARME SCATTATO!!! {{ states[states.alarm_control_panel.house.attributes.changed_by.split(".")[0]][ states.alarm_control_panel.house.attributes.changed_by.split(".")[1]].name }}'
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.dss_mute_gateway_sounds
+      - service: script.dss_play_triggered_sound
+      - service: script.dss_light_flash
+
+##-----------------------------------
+  - alias: '[Alarm] Warning'
+    trigger:
+      platform: state
+      entity_id: alarm_control_panel.house
+      to: 'warning'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: "-- ALARM -- "
+          message: 'ALARM Warning {{ states[states.alarm_control_panel.house.attributes.changed_by.split(".")[0]][ states.alarm_control_panel.house.attributes.changed_by.split(".")[1]].name }}'
+      - service: notify.telegram
+        data:
+          message: 'Hello, the house alarm has been tripped. Please deactivate'
+
+##-----------------------------------
+  - alias: Rilevamento movimenti e invio foto
+    hide_entity: true
+    trigger:
+    - entity_id: group.pir_sensors
+      platform: state
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: alarm_control_panel.house
+      state: armed_away
+    action:
+    - service: notify.telegram
+      data_template:
+        message: 'Rilevati Movimenti.'
+        data: 
+          photo:
+            url: 'https://www.jump2000.it{{states.camera.dafang1.attributes.entity_picture}}'
+            caption: '{{now().strftime("%d.%m.%Y-%H:%M:%S")}}'
+    - service: notify.telegram
+      data:
+        title: '*-- ATTENZIONE --*'
+        message: 'Rilevati Movimenti. Controlla casa'
+#################################################################
+#                                                               #
+#                              END                              #
+#                                                               #
+#################################################################

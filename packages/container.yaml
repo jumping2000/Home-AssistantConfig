@@ -1,0 +1,489 @@
+#################################################################
+#                                                               #
+#                   Packages/Container Control                  #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'container'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## switch
+    ################################################
+
+    switch.grafana:
+      <<: *customize
+      icon: mdi:chart-areaspline
+    switch.mosquitto:
+      <<: *customize
+      icon: mdi:check-network-outline
+    switch.mariadb:
+      <<: *customize
+      icon: mdi:database
+    switch.influxdb:
+      <<: *customize
+      icon: mdi:database-search
+    switch.nginx:
+      <<: *customize
+      icon: mdi:server
+    switch.google_assistant_web_server:
+      <<: *customize
+      icon: mdi:google-assistant
+    switch.esphome:
+      <<: *customize
+      icon: mdi:chip
+    switch.appdaemon:
+      <<: *customize
+      icon: mdi:language-python
+    switch.zigbee2mqtt:
+      <<: *customize
+      icon: mdi:zigbee
+    switch.glances:
+      <<: *customize
+      icon: mdi:server
+
+    ###############################################
+    switch.ha_dockermon_ha_dockermon:
+      <<: *customize
+      friendly_name: HA-Dockermon     
+    switch.ha_dockermon_hassio_supervisor:
+      <<: *customize
+      friendly_name: Hass.io Supervisor
+      icon: mdi:home-automation
+    switch.ha_dockermon_homeassistant:
+      <<: *customize
+      friendly_name: Home Assistant
+      icon: mdi:home-assistant
+    switch.ha_dockermon_nextcloud:
+      <<: *customize
+      friendly_name: NextCloud
+      icon: mdi:cloud-sync
+    switch.ha_dockermon_plex:
+      <<: *customize
+      friendly_name: Plex Media Server
+      icon: mdi:plex
+    switch.ha_dockermon_rutorrent:
+      <<: *customize
+      friendly_name: ruTorrent
+      icon: mdi:tor
+    switch.ha_dockermon_radarr:
+      <<: *customize
+      friendly_name: Radarr
+      icon: mdi:radar      
+
+    ################################################
+    ## sensor
+    ################################################
+    binary_sensor.hadockermon_ha_dockermon:
+      <<: *customize
+      friendly_name: HA-Dockermon     
+    binary_sensor.hadockermon_hassio_supervisor:
+      <<: *customize
+      friendly_name: Hass.io Supervisor
+      icon: mdi:home-automation
+    binary_sensor.hadockermon_homeassistant:
+      <<: *customize
+      friendly_name: Home Assistant
+      icon: mdi:home-assistant
+    binary_sensor.hadockermon_nextcloud:
+      <<: *customize
+      friendly_name: NextCloud
+      icon: mdi:cloud-sync
+    binary_sensor.hadockermon_plex:
+      <<: *customize
+      friendly_name: Plex Media Server
+      icon: mdi:plex
+    binary_sensor.hadockermon_rutorrent:
+      <<: *customize
+      friendly_name: ruTorrent
+      icon: mdi:tor
+    binary_sensor.hadockermon_radarr:
+      <<: *customize
+      friendly_name: Radarr
+      icon: mdi:radar
+    sensor.container_status:
+      <<: *customize
+      icon: mdi:file-find
+    sensor.container_critici_on:
+      <<: *customize
+      icon: mdi:numeric-5-circle
+#################################################################
+#                                                               #
+#                          GROUPS                               #
+#                                                               #
+#################################################################
+group:
+  docker_addons:
+    name: Docker Addons
+    control: hidden
+    entities:
+    - switch.grafana
+    - switch.mosquitto
+    - switch.mariadb
+    - switch.influxdb
+    - switch.nginx
+    - switch.google_assistant_web_server
+    - switch.esphome
+    - switch.appdaemon
+    - switch.zigbee2mqtt
+    - switch.glances
+
+#################################################################
+#                                                               #
+#                     INPUT TEXT / SELECT                       #
+#                                                               #
+#################################################################
+input_text:
+  container_1:
+    name: Container Critico 1
+    icon: mdi:numeric-1-box-multiple-outline
+
+  container_2:
+    name: Container Critico 2
+    icon: mdi:numeric-2-box-multiple-outline 
+
+  container_3:
+    name: Container Critico 3
+    icon: mdi:numeric-3-box-multiple-outline
+
+  container_4:
+    name: Container Critico 4
+    icon: mdi:numeric-4-box-multiple-outline 
+
+  container_5:
+    name: Container Critico 5
+    icon: mdi:numeric-5-box-multiple-outline
+
+#################################################################
+input_boolean:
+  controllo_container:
+    name: Controllo container critici
+    initial: off
+    icon: mdi:docker
+
+input_datetime:
+  container_off:
+    name: "Container OFF alle:"
+    has_date: false
+    has_time: true
+    initial: "01:08"
+
+input_number:
+  tempo_ripetizione:
+    name: Attesa ripetizione Notifica
+    icon: mdi:speaker
+    min: 0
+    max: 60
+    step: 5
+    unit_of_measurement: 'min'
+    initial: "20"
+    mode: box
+
+input_select:
+  lista_container_critici:
+    options: 
+      - not selected
+
+  container_status:
+    name: Stato Container Critici
+    options:
+      - Running
+      - Stopped
+    initial: Running
+
+#################################################################
+#                                                               #
+#                            SWITCH                             #
+#                                                               #
+#################################################################
+switch:
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_a0d7b954_grafana
+  name: Grafana
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+  
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_core_mosquitto
+  name: Mosquitto
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+  
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_a0d7b954_influxdb
+  name: InfluxDB
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+  
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_core_mariadb
+  name: MariaDB
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_core_nginx_proxy
+  name: Nginx
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_62c7908d_google_assistant_webserver
+  name: Google Assistant Web Server
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_15ef4d2f_esphome
+  name: ESPHome
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_a0d7b954_appdaemon3
+  name: Appdaemon
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+  
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_7ad98f9c_zigbee2mqtt
+  name: Zigbee2MQTT
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+
+- platform: rest
+  resource: http://127.0.0.1:8126/container/addon_a0d7b954_glances
+  name: Glances
+  body_on: '{"state": "start"}'
+  body_off: '{"state": "stop"}'
+  is_on_template: '{{ value_json is not none and value_json.state == "running" }}'
+
+#################################################################
+- platform: hadockermon
+  host: 192.168.1.101
+  port: 8126
+
+#################################################################
+#                                                               #
+#                             SENSOR                            #
+#                                                               #
+#################################################################
+binary_sensor:
+  platform: hadockermon
+  host: 192.168.1.101
+  port: 8126
+  stats: true
+  name: hadockermon
+
+sensor:
+## stato del sistema
+- platform: template
+  sensors:
+    container_status:
+      entity_id: input_select.container_status
+      value_template: '{{ states.input_select.container_status.state}}'
+      friendly_name: 'Status Container Critici'
+ ## conteggio container critici ON   
+    container_critici_on:
+      entity_id: sensor.time
+      value_template: >-
+        {% macro container_acceso() %}
+        {% set domains = ['switch'] %}
+        {% set entity_container_acceso = states.input_select.lista_container_critici.attributes.options | join(', ') %}
+        {{ states | selectattr('domain','in', domains) | selectattr('state','in','on') | selectattr('entity_id','in',entity_container_acceso) | list  | count }}
+        {% endmacro %} 
+        {{ container_acceso () | int  }}
+      friendly_name: 'Numero Container Critici ON'
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+# quando viene rilevato che i container critici "on" sono meno di 5
+# per 2 minuti e sono nello stato "Running" aggiorno lo stato a "Stopped"
+- alias: Transazione da Running a Stopped
+  initial_state: true
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.container_critici_on
+    below: 5
+    for:
+      minutes: 2
+  condition:
+  - condition: state
+    entity_id: input_select.container_status
+    state: Running
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.container_status
+      option: Stopped
+
+#################################################################
+# quando viene rilevato che tutti i container critici sono online 
+# lo stato passa a "Running"
+- alias: Transazione da Stopped a Running
+  initial_state: true
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.container_critici_on
+    above: 4
+  condition:
+  - condition: state
+    entity_id: input_select.container_status
+    state: Stopped
+  action:
+  - service: input_select.select_option
+    data:
+      entity_id: input_select.container_status
+      option: Running
+
+#################################################################
+# Quando lo stato del sistema diventa stopped avverto tramite notifica
+- alias: Alert when a critical container goes offline
+  initial_state: true
+  trigger:
+  - platform: state
+    entity_id: input_select.container_status
+    to: Stopped
+  - platform: time_pattern
+    minutes: '/5'
+  condition:
+  - condition: template
+    value_template: >-
+      {% if states.automation.alert_when_a_critical_container_goes_offline.last_triggered is not none %}
+        {% if as_timestamp(now()) | int - as_timestamp(states.automation.alert_when_a_critical_container_goes_offline.attributes.last_triggered) | int > (states('input_number.tempo_ripetizione') |int * 60) %} True {% else %} False
+        {% endif %}
+      {% else %}
+      False
+      {% endif %}
+  - condition: state
+    entity_id: input_select.container_status
+    state: Stopped
+  action:
+  - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+  - service: script.my_notify
+    data_template:
+      mute: 1
+      title: '-- ATTENZIONE --'
+      message: >-
+        {% macro container_spento() %}
+        {% set domains = ['switch'] %}
+        {% set entity_container_spento = states.input_select.lista_container_critici.attributes.options | join(', ')%}
+        {{ states | selectattr('domain','in', domains) | selectattr('state','in','off') | selectattr('entity_id','in',entity_container_spento) | map(attribute='name') | join(', ') }}
+        {% endmacro %} 
+        {{ container_spento() }}
+        "I seguenti container non sono operativi, verifica se è un comportamento normale: {{ container_spento() }}"
+
+#################################################################
+- alias: Stop some container at night
+  initial_state: true
+  trigger:
+    platform: template
+    value_template: >-
+      {{ states('sensor.time') == (states.input_datetime.container_off.attributes.timestamp | int | timestamp_custom('%H:%M', False)) }}
+  condition:
+    condition: and
+    conditions:
+      - condition: template
+        value_template: "{{ (is_state('switch.ha_dockermon_plex', 'on') or is_state('switch.ha_dockermon_rutorrent','on') or is_state('switch.ha_dockermon_radarr','on') or is_state('switch.esphome','on') or is_state('switch.glances','on')) }}"
+      - condition: time
+        before: '08:00:00'
+  action:
+    - service: switch.turn_off
+      entity_id:
+      - switch.ha_dockermon_plex
+      - switch.ha_dockermon_rutorrent
+      - switch.ha_dockermon_radarr
+      - switch.esphome
+      - switch.glances
+
+#################################################################
+- alias: aggiorna lista controllo container
+  initial_state: true
+  trigger:
+  - platform: state
+    entity_id: input_text.container_1, input_text.container_2, input_text.container_3, input_text.container_4, input_text.container_5
+  - platform: homeassistant
+    event: start
+  action:
+  - service: input_select.set_options
+    data_template:
+      entity_id: input_select.lista_container_critici
+      options:  
+        - >-
+          {%- for device in states -%}
+          {%- if device.name|lower == states.input_text.container_1.state|lower -%}
+          {{ device.entity_id }}
+          {%- elif device.entity_id|lower == states.input_text.container_1.state|lower -%}
+          {{ device.entity_id }}
+          {%- endif -%}
+          {%- endfor -%}
+        - >-
+          {%- for device in states -%}
+          {%- if device.name|lower == states.input_text.container_2.state|lower -%}
+          {{ device.entity_id }}
+          {%- elif device.entity_id|lower == states.input_text.container_2.state|lower -%}
+          {{ device.entity_id }}
+          {%- endif -%}
+          {%- endfor -%}
+        - >-
+          {%- for device in states -%}
+          {%- if device.name|lower == states.input_text.container_3.state|lower -%}
+          {{ device.entity_id }}
+          {%- elif device.entity_id|lower == states.input_text.container_3.state|lower -%}
+          {{ device.entity_id }}
+          {%- endif -%}
+          {%- endfor -%}
+        - >-
+          {%- for device in states -%}
+          {%- if device.name|lower == states.input_text.container_4.state|lower -%}
+          {{ device.entity_id }}
+          {%- elif device.entity_id|lower == states.input_text.container_4.state|lower -%}
+          {{ device.entity_id }}
+          {%- endif -%}
+          {%- endfor -%}
+        - >-
+          {%- for device in states -%}
+          {%- if device.name|lower == states.input_text.container_5.state|lower -%}
+          {{ device.entity_id }}
+          {%- elif device.entity_id|lower == states.input_text.container_5.state|lower -%}
+          {{ device.entity_id }}
+          {%- endif -%}
+          {%- endfor -%}
+
+#################################################################
+#                                                               #
+#                    END OF CONFIGURATION                       #
+#                                                               #
+#################################################################

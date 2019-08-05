@@ -1,0 +1,287 @@
+#################################################################
+#                                                               #
+#                    Packages/Zigbee2mqtt                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'zigbee'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensori
+    ################################################
+    input_select.zigbee2mqtt_log_level:
+      <<: *customize
+      friendly_name: "Log Level"
+    
+    timer.zigbee_permit_join:
+      <<: *customize
+      friendly_name: "Tempo rimasto"
+
+    input_boolean.zigbee_permit_join:
+      <<: *customize
+      friendly_name: "Permetti il join"
+
+    sensor.zigbee2mqtt_bridge_state:
+      <<: *customize
+      friendly_name: "Stato del bridge"
+    
+    switch.zigbee2mqtt_main_join:
+      <<: *customize
+      friendly_name: "Join principale"
+    
+    switch.zigbee_map_update:
+      <<: *customize      
+      icon: 'mdi:graphql'
+
+#################################################################
+#                                                               #
+#                      CUSTOM COMPONENT                         #
+#                                                               #
+################################################################# 
+zigbee2mqtt_networkmap:
+
+panel_iframe:
+  networkmap:
+    title: 'Zigbee Map'
+    icon: 'mdi:graphql'
+    url: '/local/community/zigbee2mqtt_networkmap/map.html'
+
+#################################################################
+#                                                               #
+#                           GROUP                               #
+#                                                               #
+################################################################# 
+group:
+  zigbee_group:
+    view: no
+    control: hidden
+    name: Zigbee2mqtt
+    entities:
+      - input_boolean.zigbee_permit_join
+      - timer.zigbee_permit_join
+      - sensor.zigbee2mqtt_bridge_state
+      - switch.zigbee2mqtt_main_join
+      - automation.enable_zigbee_joining
+      - automation.disable_zigbee_joining
+      - automation.disable_zigbee_joining_by_timer
+      - input_select.zigbee2mqtt_log_level
+      - script.zigbee_map_update
+      - automation.zigbee2mqtt_log_level
+
+#################################################################
+#                                                               #
+#                             Input                             #
+#                                                               #
+################################################################# 
+input_select:
+  zigbee2mqtt_log_level:
+    name: Zigbee2mqtt Log Level
+    options:
+     - debug
+     - info
+     - warn
+     - error
+    initial: error
+    icon: mdi:format-list-bulleted
+
+input_boolean:
+  zigbee_permit_join:
+    name: Allow devices to join
+    initial: off
+    icon: mdi:cellphone-wireless
+
+  zigbee_map_update:
+    name: Zigbee Map Update
+    initial: off
+
+input_text:
+  remove_sensor:
+    name: "Sensore da Rimuovere"
+    initial: "-"
+    icon: mdi:textbox
+#################################################################
+#                                                               #
+#                           TIMER                               #
+#                                                               #
+################################################################# 
+timer:
+  zigbee_permit_join:
+    name: Time remaining
+    duration: 180
+#
+#120 sec=2min
+#Updated this to the number of seconds you wish
+#################################################################
+#                                                               #
+#                          Sensors                              #
+#                                                               #
+################################################################# 
+sensor:
+  - platform: mqtt
+    name: "Zigbee2mqtt Bridge state"
+    state_topic: "zigbee2mqtt/bridge/state"
+    icon: mdi:zigbee
+
+#################################################################
+#                                                               #
+#                          Switch                               #
+#                                                               #
+################################################################# 
+switch:
+  - platform: mqtt
+    name: "Zigbee2mqtt Main join"
+    state_topic: "zigbee2mqtt/bridge/config/permit_join"
+    command_topic: "zigbee2mqtt/bridge/config/permit_join"
+    payload_on: "true"
+    payload_off: "false"
+
+#################################################################
+#                                                               #
+#                          Script                               #
+#                                                               #
+################################################################# 
+script:
+  zigbee_remove:
+    alias: Rimuovi sensore Zigbee
+    sequence:
+    - service: mqtt.publish
+      data_template:
+        topic: "zigbee2mqtt/bridge/config/remove"
+        payload: "{{ states('input_text.remove_sensor') }}"
+
+  zigbee_map_update:
+    alias: Update Zigbee Map
+    sequence:
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.zigbee_map_update
+
+  zigbee_reload:
+    alias: Riavvia Addon Zigbee
+    sequence:
+    - service: hassio.addon_restart
+      data:
+        addon: "7ad98f9c_zigbee2mqtt"
+        
+#################################################################
+#                                                               #
+#                       Automation                              #
+#                                                               #
+################################################################# 
+automation:
+# Change log without restast zigbee2mqtt
+#automation.zigbee2mqtt_log_level
+  - alias: Zigbee2mqtt Log Level
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: input_select.zigbee2mqtt_log_level
+        to: debug
+      - platform: state
+        entity_id: input_select.zigbee2mqtt_log_level
+        to: info
+      - platform: state
+        entity_id: input_select.zigbee2mqtt_log_level
+        to: warn
+      - platform: state
+        entity_id: input_select.zigbee2mqtt_log_level
+        to: error
+    action:
+      - service: mqtt.publish
+        data:
+          payload_template: '{{ states(''input_select.zigbee2mqtt_log_level'') }}'
+          topic: zigbee2mqtt/bridge/config/log_level
+          
+############
+  - alias: Enable Zigbee joining
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: state
+      entity_id: input_boolean.zigbee_permit_join
+      to: 'on'
+    action:
+    - service: mqtt.publish
+      data:
+        topic: zigbee2mqtt/bridge/config/permit_join
+        payload: 'true'
+    - service: timer.start
+      data:
+        entity_id: timer.zigbee_permit_join
+        
+############
+  - alias: Disable Zigbee joining
+    initial_state: true
+    trigger:
+    - entity_id: input_boolean.zigbee_permit_join
+      platform: state
+      to: 'off'
+    action:
+    - service: mqtt.publish
+      data:
+        payload: 'false'
+        topic: zigbee2mqtt/bridge/config/permit_join
+    - service: timer.cancel
+      data:
+        entity_id: timer.zigbee_permit_join
+        
+############
+  - alias: Disable Zigbee joining by timer
+    initial_state: true
+    hide_entity: true
+    trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.zigbee_permit_join
+    action:
+    - service: mqtt.publish
+      data:
+        topic: zigbee2mqtt/bridge/config/permit_join
+        payload: 'false'
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.zigbee_permit_join
+        
+############
+  - alias: 'Zigbee Map Auto Update'  
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_boolean.zigbee_map_update
+      to: 'on'
+    - platform: time_pattern
+      minutes: '/21'
+      seconds: 0
+    action:
+    - service: zigbee2mqtt_networkmap.update
+    - delay: '00:00:05'
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.zigbee_map_update
+        
+#################################################################
+#                                                               #
+#                  END OF CONFIGURATION FILE                    #
+#                                                               #
+#################################################################

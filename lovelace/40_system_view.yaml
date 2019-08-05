@@ -1,0 +1,180 @@
+
+####################################################
+#                                                  #
+#                   HA DEVICE                      #
+#                                                  #
+####################################################
+icon: mdi:home-assistant
+title: system HA
+path: system
+cards:  
+  - type: vertical-stack
+    cards:
+####################################################   
+## Custom tracker
+    - type: glance
+      title: Tecnoware ERA+ 1100
+      columns: 3
+      entities:
+      - sensor.tecnoware_ups_status
+      - sensor.tecnoware_ups_battery_runtime
+#      - sensor.tecnoware_ups_input_voltage
+      - sensor.tecnoware_ups_output_voltage
+    - type: horizontal-stack
+      cards:
+      - type: gauge
+        title: Battery Charge
+        unit_of_measurement: '%'
+        entity: sensor.tecnoware_ups_battery_charge
+        severity:
+          green: 90
+          yellow: 40
+          red: 0
+      - type: gauge
+        title: UPS Load
+        unit_of_measurement: '%'
+        entity: sensor.tecnoware_ups_load
+        severity:
+          green: 0
+          yellow: 40
+          red: 90
+
+    - type: entities
+      show_header_toggle: false 
+      entities:
+      - sensor.hacs
+      - type: divider
+      - sensor.potential_breaking_changes
+      - sensor.hass_installed_version
+      - sensor.hass_available_to_install_version
+      - sensor.hass_current_stable_version
+      - sensor.hass_current_beta_version
+      - sensor.hass_current_dev_version
+      - sensor.hass_current_supervisor_version
+      - binary_sensor.hass_update_available
+
+####################################################
+  - type: vertical-stack
+    cards:
+    - type: horizontal-stack
+      cards:
+      - type: gauge
+        title: CPU Temp
+        unit_of_measurement: '°C'
+        entity: sensor.cpu_temperature
+        severity:
+          green: 0
+          yellow: 55
+          red: 70
+      - type: gauge
+        title: CPU Usuage
+        unit_of_measurement: '%'
+        entity: sensor.processor_use
+        severity:
+          green: 0
+          yellow: 40
+          red: 85
+      - type: gauge
+        title: RAM Usuage
+        unit_of_measurement: '%'
+        entity: sensor.memory_use_percent
+        severity:
+          green: 0
+          yellow: 45
+          red: 85
+
+    - type: horizontal-stack
+      cards:
+      - type: custom:bar-card
+        entity: sensor.db_size
+        title_position: inside
+        padding: 2px
+        align: split
+        icon_position: inside
+        min: 0
+        max: 900
+
+      - type: custom:bar-card
+        entity: sensor.home_assistant_log
+        title_position: inside
+        padding: 2px
+        align: split
+        icon_position: inside
+        min: 0
+        max: 5
+
+    - type: entities
+      show_header_toggle: false 
+      entities:
+      - input_select.log_level
+      - sensor.processor_use
+      - sensor.stat_cpu_mean
+  #    - sensor.disk_use_percent_home
+      - sensor.disk_use
+      - sensor.disk_free
+      - sensor.memory_use_percent
+      - sensor.memory_free
+      - sensor.cpu_temperature
+  #    - sensor.time_online
+  #    - sensor.last_boot_templated
+      - type: divider
+      - sensor.ha_uptime
+      - sensor.nuc_uptime
+      - sensor.last_boot_date_time
+      - type: divider
+      - sensor.load_1m
+      - sensor.load_5m
+  #    - sensor.load_15m
+
+####################################################
+  - type: vertical-stack
+    cards:
+    - type: entities
+      title: Batterie Scariche
+      show_header_toggle: false
+      entities:
+      - type: custom:auto-entities
+        card:
+          type: custom:bar-card
+          severity:
+            - value: 25
+              color: '#bf4040'
+            - value: 75
+              color: '#bf9540'
+            - value: 100
+              color: '#40bf40'
+          title_position: inside
+          padding: 0px
+          align: split
+          show_icon: true
+          icon: mdi:battery
+        filter:
+          include:
+          - entity_id: "*_battery"
+            state: '<20'
+            options:
+              secondary_info: last-changed
+
+    - type: entities
+      title: Batterie Sensori
+      show_header_toggle: false
+      entities:
+      - type: custom:auto-entities
+        card:
+          type: custom:bar-card
+          severity:
+            - value: 25
+              color: '#bf4040'
+            - value: 75
+              color: '#bf9540'
+            - value: 100
+              color: '#40bf40'
+          title_position: inside
+          columns: 2
+          padding: 0px
+          align: split
+          show_icon: true
+          icon: mdi:battery
+        filter:
+          include:
+          - entity_id: "*_battery"

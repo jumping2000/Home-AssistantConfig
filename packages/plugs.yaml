@@ -1,0 +1,515 @@
+#################################################################
+#                                                               #
+#                    Packages/Plug & Power                      #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'plugs'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Plugs
+    ################################################
+
+    switch.plug_lavastoviglie:
+      <<: *customize
+      icon: mdi:power-plug
+      friendly_name: Presa Lavastoviglie
+    sensor.lavastoviglie_power:
+      <<: *customize
+      icon: mdi:flash-outline
+      friendly_name: Potenza Lavastoviglie
+    sensor.lavastoviglie_energy:
+      <<: *customize
+      icon: mdi:circle-slice-8
+      friendly_name: Energia Lavastoviglie
+    sensor.lavastoviglie_energy_today:
+      <<: *customize
+      icon: mdi:circle-slice-3
+      friendly_name: Energia Lavastoviglie oggi
+
+
+    switch.plug_lavatrice:
+      <<: *customize
+      icon: mdi:power-plug
+      friendly_name: Presa Lavatrice
+    sensor.lavatrice_power:
+      <<: *customize
+      icon: mdi:flash-outline
+      friendly_name: Potenza Lavatrice
+    sensor.lavatrice_energy_today:
+      <<: *customize
+      icon: mdi:circle-slice-3
+      friendly_name: Energia Lavatrice oggi
+
+    sensor.lavatrice_energy_yesterday:
+      <<: *customize
+      icon: mdi:circle-slice-5
+      friendly_name: Energia ieri
+    sensor.lavatrice_energy_total:
+      <<: *customize
+      icon: mdi:circle-slice-8
+      friendly_name: Energia totale
+    sensor.lavatrice_voltage:
+      <<: *customize
+      icon: mdi:flash-circle
+      friendly_name: Tensione
+    sensor.lavatrice_current:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Corrente
+    sensor.lavatrice_power_factor:
+      <<: *customize
+      icon: mdi:angle-acute
+      friendly_name: Fattore di potenza
+    sensor.lavatrice_reactive_power:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Potenza reattiva
+    sensor.lavatrice_apparent_power:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Potenza apparente
+
+    switch.plug_cucina:
+      <<: *customize
+      icon: mdi:power-plug
+      friendly_name: Presa Cucina
+    sensor.cucina_power:
+      <<: *customize
+      icon: mdi:flash-outline
+      friendly_name: Potenza Cucina
+    sensor.cucina_energy_today:
+      <<: *customize
+      icon: mdi:circle-slice-3
+      friendly_name: Energia Cucina oggi
+
+    sensor.cucina_energy_yesterday:
+      <<: *customize
+      icon: mdi:circle-slice-5
+      friendly_name: Energia ieri
+    sensor.cucina_energy_total:
+      <<: *customize
+      icon: mdi:circle-slice-8
+      friendly_name: Energia totale
+    sensor.cucina_voltage:
+      <<: *customize
+      icon: mdi:flash-circle
+      friendly_name: Tensione
+    sensor.cucina_current:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Corrente
+    sensor.cucina_power_factor:
+      <<: *customize
+      icon: mdi:angle-acute
+      friendly_name: Fattore di potenza
+    sensor.cucina_reactive_power:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Potenza reattiva
+    sensor.cucina_apparent_power:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Potenza apparente
+
+    switch.plug_forno:
+      <<: *customize
+      icon: mdi:power-plug
+      friendly_name: Presa Forno
+    sensor.forno_power:
+      <<: *customize
+      icon: mdi:flash-outline
+      friendly_name: Potenza Forno
+    sensor.forno_energy_today:
+      <<: *customize
+      icon: mdi:circle-slice-3
+      friendly_name: Energia Forno oggi
+
+    sensor.forno_energy_yesterday:
+      <<: *customize
+      icon: mdi:circle-slice-5
+      friendly_name: Energia ieri
+    sensor.forno_energy_total:
+      <<: *customize
+      icon: mdi:circle-slice-8
+      friendly_name: Energia totale
+    sensor.forno_voltage:
+      <<: *customize
+      icon: mdi:flash-circle
+      friendly_name: Tensione
+    sensor.forno_current:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Corrente
+    sensor.forno_power_factor:
+      <<: *customize
+      icon: mdi:angle-acute
+      friendly_name: Fattore di potenza
+    sensor.forno_reactive_power:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Potenza reattiva
+    sensor.forno_apparent_power:
+      <<: *customize
+      icon: mdi:current-ac
+      friendly_name: Potenza apparente
+
+#################################################################
+#                                                               #
+#                           Group                               #
+#                                                               #
+#################################################################
+group:
+  prese_smart_home:
+    name: Prese smart home
+    view: no
+    entities:
+    - switch.plug_cucina
+    - sensor.cucina_power
+    - sensor.cucina_energy_today
+    - switch.plug_lavatrice
+    - sensor.lavatrice_power
+    - sensor.lavatrice_energy_today
+    - switch.plug_lavastoviglie
+    - sensor.lavastoviglie_power
+    - sensor.lavastoviglie_energy_today
+    - switch.plug_forno
+    - sensor.forno_power
+    - sensor.forno_energy_today
+    - script.check_sonoff_version
+    - script.update_sonoffs
+    - sensor.ultima_release_sonoff
+    - sensor.versione_sonoff_powr2_forno
+    - sensor.versione_sonoff_basic_ripostiglio
+    - sensor.versione_blitzwolf_lavatrice
+    - sensor.versione_blitzwolf_cucina
+
+#################################################################
+#                                                               #
+#                           Switch                              #
+#                                                               #
+#################################################################       
+switch:        
+#  - platform: orvibo
+#    discovery: false
+#    switches:
+#      - host: 192.168.1.158
+#        name: Orviboplug1
+#        mac: AC:CF:23:97:70:58
+
+  - platform: broadlink
+    host: 192.168.1.159
+    mac: '34:EA:34:75:BE:23'
+    type:  sp3
+    friendly_name: "Plug Lavastoviglie"
+
+  - platform: mqtt
+    name: "Plug Lavatrice"
+    state_topic: "stat/blitzwolf-01/POWER"
+    command_topic: "cmnd/blitzwolf-01/POWER"
+    availability_topic: "tele/blitzwolf-01/LWT"
+  #  qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: false
+
+  - platform: mqtt
+    name: "Plug Cucina"
+    state_topic: "stat/blitzwolf-02/POWER"
+    command_topic: "cmnd/blitzwolf-02/POWER"
+    availability_topic: "tele/blitzwolf-02/LWT"
+#    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: false
+
+  - platform: mqtt
+    name: "Plug Forno"
+    state_topic: "stat/sonoff-02/POWER"
+    command_topic: "cmnd/sonoff-02/POWER"
+    availability_topic: "tele/sonoff-02/LWT"
+#    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    retain: false
+
+  - platform: mqtt
+    name: "Plug condizionatori"
+    state_topic: "shellies/shelly1pm-B1DABA/relay/0"
+    command_topic: "shellies/shelly1pm-B1DABA/relay/0/command"
+#    qos: 0
+    payload_on: "on"
+    payload_off: "off"
+    optimistic: false
+    retain: false
+
+#################################################################
+#                                                               #
+#                           Sensor                              #
+#                                                               #
+################################################################# 
+utility_meter:
+  lavastoviglie_energy_today:
+    source: sensor.lavastoviglie_energy
+    cycle: daily
+#################################################################
+#                                                               #
+#                           Sensor                              #
+#                                                               #
+################################################################# 
+sensor:
+# - platform: broadlink_power
+#    name: "Power Cucina"
+#    host: 192.168.1.159
+#    mac: '34:EA:34:75:BE:23'
+
+  - platform: template
+    sensors:
+      lavastoviglie_power:
+        friendly_name: "Power"
+        value_template: "{{ float(states.switch.plug_lavastoviglie.attributes.current_power_w) }}"
+        unit_of_measurement: 'W'
+
+  - platform: integration
+    source: sensor.lavastoviglie_power
+    name: lavastoviglie_energy
+    unit_prefix: k
+    round: 2
+
+################################################################# 
+  - platform: mqtt
+    name: "Lavatrice Energy Today"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Today"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Lavatrice Energy Yesterday"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Yesterday"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Lavatrice Energy Total"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Total"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Lavatrice Power"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Power"] }}'
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "Lavatrice Voltage"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Voltage"] }}'
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "Lavatrice Power Factor"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Factor"] }}'
+  - platform: mqtt
+    name: "Lavatrice Current"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Current"] }}'
+    unit_of_measurement: "A"
+  - platform: mqtt
+    name: "Lavatrice Apparent Power"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["ApparentPower"] }}'
+    unit_of_measurement: "VA"
+  - platform: mqtt
+    name: "Lavatrice Reactive Power"
+    state_topic: "tele/blitzwolf-01/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["ReactivePower"] }}'
+    unit_of_measurement: "VAr"
+
+################################################################# 
+  - platform: mqtt
+    name: "Cucina Energy Today"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Today"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Cucina Energy Yesterday"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Yesterday"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Cucina Energy Total"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Total"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Cucina Power"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Power"] }}'
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "Cucina Voltage"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Voltage"] }}'
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "Cucina Power Factor"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Factor"] }}'
+  - platform: mqtt
+    name: "Cucina Current"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Current"] }}'
+    unit_of_measurement: "A"
+  - platform: mqtt
+    name: "Cucina Apparent Power"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["ApparentPower"] }}'
+    unit_of_measurement: "VA"
+  - platform: mqtt
+    name: "Cucina Reactive Power"
+    state_topic: "tele/blitzwolf-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["ReactivePower"] }}'
+    unit_of_measurement: "VAr"
+
+################################################################# 
+  - platform: mqtt
+    name: "Forno Energy Today"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Today"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Forno Energy Yesterday"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Yesterday"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Forno Energy Total"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Total"] }}'
+    unit_of_measurement: "kWh"
+  - platform: mqtt
+    name: "Forno Power"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Power"] }}'
+    unit_of_measurement: "W"
+  - platform: mqtt
+    name: "Forno Voltage"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Voltage"] }}'
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "Forno Power Factor"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Factor"] }}'
+  - platform: mqtt
+    name: "Forno Current"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["Current"] }}'
+    unit_of_measurement: "A"
+  - platform: mqtt
+    name: "Forno Apparent Power"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["ApparentPower"] }}'
+    unit_of_measurement: "VA"
+  - platform: mqtt
+    name: "Forno Reactive Power"
+    state_topic: "tele/sonoff-02/SENSOR"
+    value_template: '{{ value_json["ENERGY"]["ReactivePower"] }}'
+    unit_of_measurement: "VAr"
+
+
+#  - platform: mqtt
+#    state_topic: "tele/sonoff-01/INFO1"
+#    name: "Sonoff Info1"
+#    json_attributes:
+#      - Module
+#      - Version
+#      - FallbackTopic
+#  - platform: mqtt
+#    state_topic: "tele/sonoff-01/INFO2"
+#    name: "Sonoff Info2"
+#    json_attributes:
+#      - WebServerMode
+#      - Hostname
+#      - IPAddress
+#  - platform: mqtt
+#    state_topic: "tele/sonoff-01/STATE"
+#    name: "Sonoff State"
+#    json_attributes:
+#      - Time
+#      - Uptime
+#      - Vcc
+#      - POWER
+#      - Wifi
+
+#################################################################
+#                                                               #
+#                             AUTOMATION                        #
+#                                                               #
+#################################################################
+automation:
+  - alias: "Spegnimento notturno lavatrice"
+    initial_state: true
+    hide_entity: true
+    trigger:
+    - platform: time
+      at: '00:30:00'
+    action:
+    - service: switch.turn_off
+      entity_id:
+      - switch.plug_lavatrice
+      - switch.plug_cucina
+
+  - alias: "Spegnimento notturno lavastoviglie"
+    initial_state: true
+    hide_entity: true
+    trigger:
+    - platform: time
+      at: '00:30:00'
+    - platform: time
+      at: '08:00:00'
+    action:
+    - service: switch.toggle
+      entity_id:
+      - switch.plug_forno
+      - switch.plug_lavastoviglie
+
+  - alias: "Spegnimento notturno condizionatori"
+    initial_state: true
+    hide_entity: true
+    trigger:
+    - platform: time
+      at: '00:30:00'
+    action:
+    - service: switch.turn_off
+      entity_id:
+      - switch.plug_condizionatori
+
+#################################################################
+#                                                               #
+#                   END CONFIGURATION                           #
+#                                                               #
+#################################################################

@@ -1,0 +1,685 @@
+#################################################################
+#                                                               #
+#                   Packages/Climate Control                    #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'climate'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## climate
+    ################################################
+    climate.netatmo_ingresso:
+      <<: *customize
+      friendly_name: Termostato Netatmo
+    
+    climate.netatmo_camera_livia:
+      <<: *customize
+      friendly_name: Valvola Camera Livia
+
+    climate.netatmo_camera_rg:
+      <<: *customize
+      friendly_name: Valvola Bedroom
+
+    ################################################
+    ## sensor
+    ################################################
+
+    sensor.apertura_valvola_salotto1:
+      <<: *customize
+      icon: mdi:timer-sand
+    sensor.apertura_valvola_salotto2:
+      <<: *customize
+      icon: mdi:timer-sand
+    sensor.apertura_valvola_salotto3:
+      <<: *customize
+      icon: mdi:timer-sand
+    sensor.apertura_valvola_studio:
+      <<: *customize
+      icon: mdi:timer-sand
+    climate.valvola_salotto1:
+      <<: *customize
+      friendly_name: Valvola Salotto 1
+    climate.valvola_salotto2:
+      <<: *customize
+      friendly_name: Valvola Salotto 2
+    climate.valvola_salotto3:
+      <<: *customize
+      friendly_name: Valvola Salotto 3
+    climate.valvola_studio:
+      <<: *customize
+      friendly_name: Valvola Studio
+
+#################################################
+#    binary_sensor.finestra_aperta_valvola_salotto1:
+#      <<: *customize
+#      icon: mdi:window-closed
+#    binary_sensor.low_battery_valvola_salotto1:
+#      <<: *customize
+#      icon: mdi:battery-outline  
+#    binary_sensor.finestra_aperta_valvola_salotto2:
+#      <<: *customize
+#      icon: mdi:window-closed
+#    binary_sensor.low_battery_valvola_salotto2:
+#      <<: *customize
+#      icon: mdi:battery-outline
+#################################################
+
+    sensor.term_ingresso:
+      <<: *customize
+      icon: mdi:thermometer
+      friendly_name: "Temp Ingresso"
+      unit_of_measurement: '°C'
+
+    sensor.valv_bedroom:
+      <<: *customize
+      icon: mdi:thermometer
+      friendly_name: "Temp Valv Bedroom"
+      unit_of_measurement: '°C'
+
+    sensor.valv_livia:
+      <<: *customize
+      icon: mdi:thermometer
+      friendly_name: "Temp Valv Camera Livia"
+      unit_of_measurement: '°C'
+
+    sensor.term_ingresso_target:
+      <<: *customize
+      icon: mdi:oil-temperature
+      friendly_name: "Temp Target Ingresso"
+      unit_of_measurement: '°C'
+
+    sensor.valv_bedroom_target:
+      <<: *customize
+      icon: mdi:thermometer
+      friendly_name: "Temp Target Valv Bedroom"
+      unit_of_measurement: '°C'
+
+    sensor.valv_livia_target:
+      <<: *customize
+      icon: mdi:thermometer
+      friendly_name: "Temp Target Valv Camera Livia"
+      unit_of_measurement: '°C'
+
+#THERMOSTAT
+    sensor.thermostat_state:
+      <<: *customize
+      friendly_name: "Stato Operativo Termostato"
+      icon: mdi:fan
+    sensor.boiler_state:
+      <<: *customize
+      friendly_name: "Stato Caldaia"
+      icon: mdi:thermostat-box
+    sensor.ac_runtime_today:
+      <<: *customize
+      friendly_name: Runtime Oggi
+    sensor.ac_runtime_yesterday:
+      <<: *customize
+      friendly_name: Runtime Ieri
+
+#################################################################
+#                                                               #
+#                     Netatmo Component                         #
+#                                                               #
+#################################################################
+netatmo:
+  api_key: !secret netatmo2_key
+  secret_key: !secret netatmo2_secret
+  username: !secret netatmo2_user
+  password: !secret netatmo2_pass
+  discovery: false
+
+#################################################################
+#                                                               #
+#                             GROUP                             #
+#                                                               #
+#################################################################
+group:
+  riscaldamento:
+    name: 'Termostati Riscaldamento'
+    control: hidden
+    entities:
+      - climate.netatmo_ingresso
+      - climate.netatmo_camera_rg
+      - climate.netatmo_camera_livia
+      - climate.valvola_salotto1
+      - climate.valvola_salotto2
+      - input_select.thermostat_mode
+
+#################################################################
+#                                                               #
+#                           CLIMATE                             #
+#                                                               #
+#################################################################
+climate:
+  - platform: netatmo
+
+#  - platform: eq3btsmart
+#    devices:
+#      valvola_studio:
+#        mac: '00:1a:22:0e:af:4a'
+
+  - platform: mqtt 
+    qos: 1 
+    name: Valvola Salotto1
+    current_temperature_topic: thermostat/salotto1/current_temperature 
+    temperature_state_topic: thermostat/salotto1/target_temperature
+    temperature_command_topic: thermostat/salotto1/target_temperature/set 
+    mode_state_topic: thermostat/salotto1/mode 
+    mode_command_topic: thermostat/salotto1/mode/set 
+    away_mode_state_topic: thermostat/salotto1/away 
+    away_mode_command_topic: thermostat/salotto1/away/set
+    payload_on: 'on'
+    payload_off: 'off'
+    temp_step: 0.5
+    modes: 
+      - heat 
+      - manual 
+      - boost 
+      - eco
+      - 'on'
+      - 'off'
+  
+  - platform: mqtt 
+    qos: 1 
+    name: Valvola Salotto2
+    current_temperature_topic: thermostat/salotto2/current_temperature
+    temperature_state_topic: thermostat/salotto2/target_temperature 
+    temperature_command_topic: thermostat/salotto2/target_temperature/set 
+    mode_state_topic: thermostat/salotto2/mode 
+    mode_command_topic: thermostat/salotto2/mode/set 
+    away_mode_state_topic: thermostat/salotto2/away 
+    away_mode_command_topic: thermostat/salotto2/away/set
+    payload_on: 'on'
+    payload_off: 'off'
+    temp_step: 0.5
+    modes: 
+      - heat 
+      - manual 
+      - boost 
+      - eco
+      - 'on'
+      - 'off'
+
+  - platform: mqtt 
+    qos: 1 
+    name: Valvola Salotto3
+    current_temperature_topic: thermostat/salotto3/current_temperature
+    temperature_state_topic: thermostat/salotto3/target_temperature 
+    temperature_command_topic: thermostat/salotto3/target_temperature/set 
+    mode_state_topic: thermostat/salotto3/mode 
+    mode_command_topic: thermostat/salotto3/mode/set 
+    away_mode_state_topic: thermostat/salotto3/away 
+    away_mode_command_topic: thermostat/salotto3/away/set
+    payload_on: 'on'
+    payload_off: 'off'
+    temp_step: 0.5
+    modes: 
+      - heat 
+      - manual 
+      - boost 
+      - eco
+      - 'on'
+      - 'off'
+
+  - platform: mqtt 
+    qos: 1 
+    name: Valvola Studio
+    current_temperature_topic: thermostat/studio/current_temperature
+    temperature_state_topic: thermostat/studio/target_temperature 
+    temperature_command_topic: thermostat/studio/target_temperature/set 
+    mode_state_topic: thermostat/studio/mode 
+    mode_command_topic: thermostat/studio/mode/set 
+    away_mode_state_topic: thermostat/studio/away 
+    away_mode_command_topic: thermostat/studio/away/set
+    payload_on: 'on'
+    payload_off: 'off'
+    temp_step: 0.5
+    modes: 
+      - heat 
+      - manual 
+      - boost 
+      - eco
+      - 'on'
+      - 'off'
+
+#################################################################
+#                                                               #
+#                       BINARY SENSOR                           #
+#                                                               #
+#################################################################
+#binary_sensor:
+#  - platform: mqtt
+#    state_topic: thermostat/salotto1/low_battery
+#    name: "Low Battery Valvola Salotto1"
+#  - platform: mqtt
+#    state_topic: thermostat/salotto1/window_open
+#    name: "Finestra Aperta Valvola Salotto1"
+#  - platform: mqtt
+#    state_topic: thermostat/salotto2/low_battery
+#    name: "Low Battery Valvola Salotto2"
+#  - platform: mqtt
+#    state_topic: thermostat/salotto2/window_open
+
+#################################################################
+#                                                               #
+#                            SENSOR                             #
+#                                                               #
+#################################################################
+sensor:
+  - platform: mqtt
+    state_topic: thermostat/salotto1/valve_state
+    name: "Apertura Valvola Salotto1"
+    unit_of_measurement: "%"
+
+  - platform: mqtt
+    state_topic: thermostat/salotto2/valve_state
+    name: "Apertura Valvola Salotto2"
+    unit_of_measurement: "%"
+
+  - platform: mqtt
+    state_topic: thermostat/salotto3/valve_state
+    name: "Apertura Valvola Salotto3"
+    unit_of_measurement: "%"
+
+  - platform: mqtt
+    state_topic: thermostat/studio/valve_state
+    name: "Apertura Valvola Studio"
+    unit_of_measurement: "%"
+
+  - platform: template
+    sensors:
+      thermostat_state:
+        entity_id: sensor.time
+        value_template: '{{ states.climate.netatmo_ingresso.attributes.operation_mode }}'
+
+  - platform: template
+    sensors:
+      boiler_state:
+        entity_id: sensor.time
+        value_template: "{{is_state_attr('climate.netatmo_ingresso', 'boiler_status', true) }}"
+
+  - platform: history_stats
+    name: ac_runtime_today
+    entity_id: sensor.boiler_state
+    state: 'True'
+    type: time
+    start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+    end: '{{ now() }}'
+
+  - platform: history_stats
+    name: ac_runtime_yesterday
+    entity_id: sensor.boiler_state
+    state: 'True'
+    type: time
+    end: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+    duration:
+      hours: 24
+
+################################################################
+  - platform: template
+    sensors:
+      term_ingresso:
+        value_template: >
+          {{ (states.climate.netatmo_ingresso.attributes.current_temperature) | round(1) }}
+        device_class: temperature
+
+      valv_bedroom:
+        value_template: >
+          {{ (states.climate.netatmo_camera_rg.attributes.current_temperature) | round(1) }}
+        device_class: temperature
+
+      valv_livia:
+        value_template: >
+          {{ (states.climate.netatmo_camera_livia.attributes.current_temperature) | round(1) }}
+        device_class: temperature
+
+      term_ingresso_target:
+        value_template: >
+          {{ (states.climate.netatmo_ingresso.attributes.temperature) | round(1) }}
+        device_class: temperature
+
+      valv_bedroom_target:
+        value_template: >
+          {{ (states.climate.netatmo_camera_rg.attributes.temperature) | round(1) }}
+        device_class: temperature
+
+      valv_livia_target:
+        value_template: >
+          {{ (states.climate.netatmo_camera_livia.attributes.temperature) | round(1) }}
+        device_class: temperature
+
+#################################################################
+#                                                               #
+#                       INPUT NUMBER                            #
+#                                                               #
+#################################################################    
+input_select:
+  thermostat_mode:
+    name: Set Thermostat Mode
+    options:
+      - Auto
+      - Manual
+      - Heat
+      - Cool
+      - Eco
+      - 'Off'
+    initial: Auto
+    icon: mdi:thermostat-box
+## Input slider to set temp ###
+input_number:
+  clima_temp_comfort:
+    name: "T° Comfort"
+    initial: '19.5'
+    min: 5
+    max: 25
+    step: 0.5
+    icon: mdi:thermometer
+  clima_temp_target_bedroom:
+    name: "T° Bedroom"
+    initial: '19'
+    min: 5
+    max: 25
+    step: 0.5
+    icon: mdi:thermometer
+  clima_temp_target_livia:
+    initial: '19'
+    name: "T° Livia"
+    min: 5
+    max: 25
+    step: 0.5
+    icon: mdi:thermometer
+  clima_temp_target_sala:
+    initial: '19.5'
+    name: "T° Sala"
+    min: 5
+    max: 25
+    step: 0.5
+    icon: mdi:thermometer
+
+#################################################################
+input_boolean:
+  heater_schedule_active:
+    name: Schedulazione Riscaldamento HA
+    initial: true
+    icon: mdi:calendar
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+##########################################################
+## Turn OFF Thermostat when Door Opens for Extended Period
+##########################################################
+  - alias: Turn off quando si aprono le finestre
+    initial_state: false
+    trigger:
+    - platform: state
+      entity_id: group.windows
+      to: 'on'
+      for:
+        minutes: 5
+    condition:
+    - condition: state
+      entity_id: sensor.boiler_state
+      state: 'True'
+    action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.netatmo_ingresso
+        temperature: 12
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.netatmo_camera_livia
+        temperature: 12
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.netatmo_camera_rg
+        temperature: 12
+    - service: notify.telegram
+      data_template:
+        title: '* Riscaldamento* - Stato Finestre APERTE'
+        message: 'Finestre aperte alle: {{ states.sensor.time.state }}'
+
+##########################################################
+## Turn ON quando si chiudono le finestre
+##########################################################
+  - alias: Turn on quando si chiudono le finestre
+    initial_state: false
+    trigger:
+    - platform: state
+      entity_id: group.windows
+      to: 'off'
+      for:
+        minutes: 3
+    condition:
+    - condition: state
+      entity_id: input_boolean.heater_schedule_active
+      state: 'on'
+    action:
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_ingresso
+        operation_mode: 'auto'
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.thermostat_mode
+        option: 'Auto'
+    - service: notify.telegram
+      data_template:
+        title: '* Riscaldamento - Stato SCHEDULE*'
+        message: 'Finestre chiuse alle: {{ states.sensor.time.state }}'
+
+##########################################################
+## Turn OFF Heater On Demand
+##########################################################
+  - alias: Turn Off Riscaldamento
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_select.thermostat_mode
+      to: 'Off'
+    - platform: state
+      entity_id: input_boolean.heater_schedule_active
+      to: 'Off'
+    action:
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_ingresso
+        operation_mode: 'off'
+    - service: notify.telegram
+      data_template:
+        title: '*Riscaldamento - Spegnimento Manuale*'
+        message: 'Termostato spento alle: {{ states.sensor.time.state }}'
+
+##########################################################
+## Turn ECO Heater On Demand
+##########################################################
+  - alias: Turn Eco Riscaldamento
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_select.thermostat_mode
+      to: 'Eco'
+    action:
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_ingresso
+        operation_mode: 'eco'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_camera_rg
+        operation_mode: 'eco'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_camera_livia
+        operation_mode: 'eco'
+    - service: notify.telegram
+      data_template:
+        title: '*Riscaldamento - Stato ECO*'
+        message: 'Termostato ECO alle: {{ states.sensor.time.state }}'
+
+##########################################################
+## Turn ON Heater On Demand
+##########################################################
+  - alias: Accensione Manuale Riscaldamento
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_select.thermostat_mode
+      to: 'Manual'
+    action:
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.netatmo_ingresso
+        temperature: "{{ states.input_number.clima_temp_comfort.state | float }}"
+    - delay: '00:00:5'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.netatmo_camera_rg
+        temperature: "{{ states.input_number.clima_temp_target_bedroom.state | float }}"
+    - delay: '00:00:5'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.netatmo_camera_livia
+        temperature: "{{ states.input_number.clima_temp_target_livia.state | float }}"
+    - delay: '00:00:5'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.valvola_salotto1
+        temperature: '{{ states.input_number.clima_temp_target_sala.state | float }}'
+    - delay: '00:00:10'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.valvola_salotto2
+        temperature: '{{ states.input_number.clima_temp_target_sala.state | float - 1 }}'
+    - delay: '00:00:10'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.valvola_salotto3
+        temperature: '{{ states.input_number.clima_temp_target_sala.state | float - 1 }}'
+    - delay: '00:00:5'
+    - service: notify.telegram
+      data_template:
+        title: '*Riscaldamento - Accensione Manuale*'
+        message: 'Target: Ingresso: {{ states.sensor.term_ingresso_target.state }} °C - Livia: {{ states.sensor.valv_livia_target.state }} °C - Bedroom: {{ states.sensor.valv_bedroom_target.state }} °C'
+
+##########################################################
+## Notifica accensione caldaia e accensione valvole sala
+##########################################################
+  - alias: Notifica accensione caldaia
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.boiler_state
+      to: 'True'
+    action:
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.valvola_salotto1
+        temperature: '19.5'
+    - delay: '00:00:10'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.valvola_salotto2
+        temperature: '19.5'
+    - delay: '00:00:10'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.valvola_salotto3
+        temperature: '19.5'
+    - delay: '00:00:10'
+    - service: climate.set_temperature
+      data_template:
+        entity_id: climate.valvola_studio
+        temperature: '19.5'
+    - service: notify.telegram 
+      data_template:
+        title: '*Riscaldamento - Verifica Accensione*'
+        message: 'Caldaia accesa alle: {{ states.sensor.time.state }}'
+
+##########################################################
+## Notifica spegnimento caldaia
+##########################################################
+  - alias: Notifica spegnimento caldaia
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.boiler_state
+      to: 'false'
+    action:
+    - service: notify.telegram 
+      data_template:
+        title: '*Riscaldamento - Verifica Spegnimento*'
+        message: 'Caldaia spenta alle: {{ states.sensor.time.state }}'
+
+##########################################################
+## Turn SCHEDULE - AUTO
+##########################################################
+  - alias: Turn ON Schedule
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_select.thermostat_mode
+      to: 'Auto'
+    action:
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_ingresso
+        operation_mode: 'auto'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_camera_rg
+        operation_mode: 'auto'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.netatmo_camera_livia
+        operation_mode: 'auto'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.valvola_salotto1
+        operation_mode: 'heat'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.valvola_salotto2
+        operation_mode: 'heat'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.valvola_salotto3
+        operation_mode: 'heat'
+    - service: climate.set_operation_mode
+      data:
+        entity_id: climate.valvola_studio
+        operation_mode: 'heat'
+    - service: notify.telegram
+      data_template:
+        title: '*Riscaldamento - Ripristino Schedulazione*'
+        message: 'Schedulazione ripristinata alle: {{ states.sensor.time.state }}'
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

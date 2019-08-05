@@ -1,0 +1,371 @@
+#################################################################
+#                                                               #
+#                   Packages/Media Control                      #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'media'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+#################################################################
+#                                                               #
+#                           MEDIA                               #
+#                                                               #
+#################################################################
+
+media_player:
+  - platform: smartir
+    name: LG TV Salotto
+    unique_id: lg_tv_salotto
+    device_code: 1001
+    controller_data: 192.168.1.109
+
+#cast:
+#  media_player:
+#    - host: 192.168.1.107
+
+#################################################################
+#                                                               #
+#                           SWITCH                              #
+#                                                               #
+#################################################################
+switch:
+  - platform: broadlink
+    host: 192.168.1.109
+    mac: 78:0F:77:00:0E:AC
+    type: rm_mini
+
+#----------------------------------------------------------------
+  - platform: template
+    switches:
+     tv_lg:
+       value_template: "{{ is_state('input_boolean.tv_lg', 'on') }}"
+       turn_on:
+         service: script.lg_tv_on
+       turn_off:
+         service: script.lg_tv_off
+         
+  - platform: template
+    switches:
+     tv_lg_mute:
+       value_template: "{{ is_state('input_boolean.tv_lg', 'on') }}"
+       turn_on:
+         service: script.lg_tv_mute
+       turn_off:
+         service: script.lg_tv_mute
+ 
+  - platform: template
+    switches:
+     tv_lg_input:
+       value_template: "{{ is_state('input_boolean.tv_lg', 'on') }}"
+       turn_on:
+         service: script.lg_tv_input
+       turn_off:
+         service: script.lg_tv_input
+
+  - platform: template
+    switches:
+     tv_lg_canali:
+       value_template: "{{ is_state('input_boolean.tv_lg', 'on') }}"
+       turn_on:
+         service: script.lg_tv_next
+       turn_off:
+         service: script.lg_tv_prev
+         
+  - platform: template
+    switches:
+     tv_lg_volume:
+       value_template: "{{ is_state('input_boolean.tv_lg', 'on') }}"
+       turn_on:
+         service: script.lg_tv_volup
+       turn_off:
+         service: script.lg_tv_voldown
+
+#################################################################
+#                                                               #
+#                        INPUT BOOLEAN                          #
+#                                                               #
+#################################################################
+input_boolean:
+  tv_lg:
+    name: Attiva TV LG con GH
+    initial: on
+    icon: mdi:google-home
+
+#################################################################
+#                                                               #
+#                        TV IR Scripts                          #
+#                                                               #
+#################################################################        
+script:
+# ON  
+  lg_tv_on:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109
+          packet:
+            - "JgBYAAABKpIUERQRFDUUERQRFBEUERMSEzYUNhMSEzYUNhM2FDYUNhMRFBEUERQ2ExEUERQRFBEUNRQ2FDYTEhM2FDYTNhQ2FAAFJQABKkgUAAxVAAEqSBQADQU="
+# OFF
+  lg_tv_off:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109
+          packet:
+            - "JgBYAAABKpIUERQRFDUUERQRFBEUERMSEzYUNhMSEzYUNhM2FDYUNhMRFBEUERQ2ExEUERQRFBEUNRQ2FDYTEhM2FDYTNhQ2FAAFJQABKkgUAAxVAAEqSBQADQU="
+# PREV
+  lg_tv_prev:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109
+          packet:
+            - "JgBQAAABKJMUERQRFDYTEhMRFBEUERQREzYUNhQREzYUNhQ2EzYUNhQ1FBEUERQRFBETEhMRFBEUERQ2EzYUNhQ1FDYUNhM2FAAFJgABJ0sTAA0FAAAAAAAAAAA="
+# NEXT
+  lg_tv_next:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109
+          packet:
+            - "JgBQAAABKJQSExETEjgSExEUERMSExITEjgROBITEjgROBI4EjgROBITEhMRFBETEhMSExITEhMROBI4EjgROBI4ETkROBI4EQAFKAABKEoSAA0FAAAAAAAAAAA="
+# VOL UP
+  lg_tv_volup:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKZIUERQRFDYTERQRFBEUERQREzYUNhQREzYUNhQ1FDYUNhMSEzYUERQRFBETERQRFBEUNhMSEzYUNhM2FDYUNhM2FAAFJgABKUkUAA0FAAAAAAAAAAA="
+# VOL DOWN
+  lg_tv_voldown:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKJMTEhMSEzcSExISExIUERMSEzcTNhQREzYUNhQ2EzYUNhQ2EzYUERQRExITERQRFBEUERQREzYUNhQ1FDYUNhM2FAAFJgABKEoTAA0FAAAAAAAAAAA="
+# VOL MUTE
+  lg_tv_mute:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKJQRFBETEjgRFBEUERMSExITEjgROBITEjgROBI4ETkROBI4ERQRExI4EhMRFBEUERMSExI4ETgSExI4ETgSOBE5EQAFKAABKEoSAA0FAAAAAAAAAAA="
+# 1
+  lg_tv_1:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERQREzYUERQRFBEUERMSEzYUNhMSEzYUNhM2FDYUNhM2FBEUERQREzYUERQRFBETEhM2FDYUNRQRFDYUNRQ2FAAFJQABKkgUAA0FAAAAAAAAAAA="
+# 2
+  lg_tv_2:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERQRFDUUERQRFBEUERQREzYUNhQREzYUNhQ1FDYUNhMSEzYUERQRFDUUERQRFBEUNRQRFDYUNRQRFDYUNhM2FAAFJgABKUkTAA0FAAAAAAAAAAA="
+# 3
+  lg_tv_3:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMSEzYUERQRFBETERQRFDYUNRQRFDYUNRQ2FDYTNhQ2FDUUERQRFDYTEhMRFBEUERQRFDUUNhQRFDUUNhQ2EwAFJgABKkgUAA0FAAAAAAAAAAA="
+# 4  
+  lg_tv_4:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERQREzYUERQRFBETEhMRFDYUNhMRFDYUNhM2FDYUNRQRFBEUNhQREzYUERQRFBETNhQ2FBETNhQRFDYTNhQ2FAAFJQABKkgUAA0FAAAAAAAAAAA="
+# 5
+  lg_tv_5:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMRFDYUERQRExITERQRFDYUNRQRFDYUNRQ2FDYTNhQ2FBETNhQRFDYUERMRFBEUERQ2ExITNhQRFDYTNhQ2FAAFJQABKkgUAA0FAAAAAAAAAAA="
+# 6
+  lg_tv_6:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKJQRFBETEjgRFBEUERMSExITEjgROBITEjgROBI4ETgSOBEUETgSOBITEjcTEhMSExITNhMSExITNxITEjcUNhM2FAAFJQABKUkUAA0FAAAAAAAAAAA="
+# 7
+  lg_tv_7:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMSEzYUERQRFBETERQRFDYUNRQRFDYUNhM2FDYUNRQ2FDYTNhQRFDYTEhMRFBEUERQRFBETNhQRFDYTNhQ2FAAFJQABKkgUAA0FAAAAAAAAAAA="
+# 8  
+  lg_tv_8:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBYAAABKpIUERQREzYUERQRFBETERQRFDYUNRQRFDYUNhM2FDYUNRQRFBEUERQ1FDYUERQRExITNhQ2FDUUERQRFDYTNhQ2FAAFJQABKUkUAAxVAAEpSRMADQU="
+# 9
+  lg_tv_9:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMRFDYUERQRExITERQRFDYUNRQRFDYUNRQ2FDYTNhQ2FBETEhM2FDYUERMRFBEUERQ2EzYUERQRFDYTNhQ2FAAFJQABKkgUAA0FAAAAAAAAAAA="
+# 0
+  lg_tv_0:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpEUERQRFDYTEhMRFBEUERQRFDUUNhQRFDUUNhQ2EzYUNhQRExITERQRFDYUERMRFBEUNhQ1FDYUNhMSEzYUNhQ1FAAFJgABKUkUAA0FAAAAAAAAAAA="
+# INPUT
+  lg_tv_input:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBYAAABKpIUERMSEzYUERQRFBETERQRFDYUNRQRFDYUNRQ2FDYTNhQ2FDUUERQ2FBEUERMRFBEUERQRFDUUERQ2FDYTNhQ2FAAFJQABKkgUAAxVAAEqSBQADQU="
+
+# INFO
+  lg_tv_info:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMRFDYTEhMSExEUERQREzcUNRQREzcTNhQ2FDUVNRMSEzYUERQ2FBETNhQREzcTNhQREzcTERQ2ExITNhQREwAFJgABKUkUAA0FAAAAAAAAAAA="
+# EXIT
+  lg_tv_exit:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIWDxUQFjMXDhYPFRAVEBUPFjQVNRUPFjQVNRUxGDUVNBY0FTUVDxQ2FTUUEBQ2FRATEhQQFTUTEhQRFDUUERQ2EwAFJQABKkgVAA0FAAAAAAAAAAA="
+
+# UP
+  lg_tv_up:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBIAAABKpIUEBUQFDYUERQRFBAUERQRFDYUNRQRFDUVNRQ2FDUUNhQRFBAVEBQRFBEUERM2FBEUNhQ1FDYTNhQ2FDYUEBU1FAANBQ=="
+# DOWN
+  lg_tv_down:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMRFDYTEhQRExITERQREzcTNhQRFDYUNRQ2FDYTNhQ2FBAUERQRFBETEhM2FBEUERM3EzYTNxM2FDYTEhQ1FAAFJQABKkgUAA0FAAAAAAAAAAA="
+
+# LEFT
+  lg_tv_left:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKZIWDxUQFTQWDxYPFRAVEBUPFjQVNRUPFjQVNRU0FjQVNBY0FTUVNBYPFBEVEBUQFQ8WDxQRFRAVNBY0FTUVNBU1FQAFIwABKkgUAA0FAAAAAAAAAAA="
+# RIGHT
+  lg_tv_right:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKZIUERMSEzYUERQRFBEUERQQFTUUNhQQFDYUNhQ1FDYUNRUQFDYUNRQRFBEUERMSFBAVNRMSExIUNRQ2EzYUNhM2FAAFJQABKUkUAA0FAAAAAAAAAAA="
+
+# OK
+  lg_tv_ok:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKZIVEBQRFDYUEBUQFBEUERMSFDUUNhQREzYUNhQ1FTUUNhQQFRAUNhQRFBAUERQ2ExITNhQ2FBAVNRQ2FDUUERQ2FAAFJAABKkgVAA0FAAAAAAAAAAA="
+# BACK
+  lg_tv_back:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKZIUERMSFDUUERQRFBEUERQQFTUTNxMRFDYTNxM2FDYTNhQRFBETEhQ1FBEUNhQQFRAUNhQ1FTUUERQ1FRAUNhQ1FQAFJAABKkgUAA0FAAAAAAAAAAA=="
+
+# RED
+  lg_tv_red:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMRFDYUERMSFBAUERMSFDUVNRQREzYVNRQ2EzYUNhQREzYUERMSEzYVNRQ2FBAUNhMSEzYUNhQRExITERQ2FAAFIgABLEgUAA0FAAAAAAAAAAA="
+# GREEN
+  lg_tv_green:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIVDxQRFDYVEBMRFBEVEBUQEzYWNBMSFTQUNhU1EzYUNhM2FBEUERMSEzYVNRM2FBEWDxU1EzYUNhMSExEUERQ2FAAFJAABKkgVAA0FAAAAAAAAAAA="
+
+# BLUE
+  lg_tv_blue:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKpIUERMSFTQTEhMSExITERQRFDYVNBYPFDYTNhQ2FTQUNhU1FRATERYPFRATNxM2FBETEhM2FDQVNxU0ExITEhU0FQAFJAABKkgWAA0FAAAAAAAAAAA="
+# YELLOW
+  lg_tv_yellow:
+    sequence:
+      - service: broadlink.send
+        data:
+          host: 192.168.1.109 
+          packet:
+            - "JgBQAAABKZIUERMSEzYUERQRExIUERMRFDYTNxMRFTUVNRQ1FDYUNRQ2EzcTERYPFBETNxM2FBETEhMSEzYUNhQ1FBEUERM3EwAFJgABKUkUAA0FAAAAAAAAAAA="
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

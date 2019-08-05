@@ -1,0 +1,255 @@
+#################################################################
+#                                                               #
+#                    Packages/Climatizzatore                    #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'condizionatore'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+    sensor.conditioning_status:
+      <<: *customize
+      icon: mdi:air-conditioner
+
+#################################################################
+#                                                               #
+#                     SMARTIR Component                         #
+#                                                               #
+#################################################################
+smartir:
+
+#################################################################
+#                                                               #
+#                           CLIMATE                             #
+#                                                               #
+#################################################################
+climate:
+  - platform: smartir
+    name: Daikin FX Sala
+    unique_id: living_ac
+    device_code: 1101
+    controller_data: 192.168.1.109
+    temperature_sensor: sensor.temperature_158d0001d6be78
+    humidity_sensor: sensor.humidity_158d0001d6be78
+
+#################################################################
+#                                                               #
+#                            SENSOR                             #
+#                                                               #
+#################################################################
+sensor:
+  - platform: template
+    sensors:
+      conditioning_status:
+        entity_id: input_select.ac_status
+        value_template: '{{ states.input_select.ac_status.state}}'
+        friendly_name: 'Status Climatizzatore'
+      split_number:
+        entity_id: input_select.split_number
+        value_template: '{{ states.input_select.split_number.state}}'
+        friendly_name: 'Numero split attivi'
+
+#################################################################
+#                                                               #
+#                 INPUT BOOLEAN SELECT DATETIME                 #
+#                                                               #
+#################################################################  
+input_select:
+  ac_status:
+    name: Stato Climatizzatore
+    options:
+      - Idle/Off
+      - Boosting
+      - Running
+    initial: Idle/Off
+
+  split_number:
+    name: Numero split attivi
+    options:
+      - 0
+      - 1
+      - 2
+    initial: 0
+
+#################################################################
+#                                                               #
+#                            GROUP                              #
+#                                                               #
+#################################################################  
+group:
+  ac:
+    name: 'Climatizzatore'
+    control: hidden
+    entities:
+    - sensor.ac_status
+    - switch.plug_condizionatori
+    - sensor.condizionatori_power
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+# When power is detected, and the ac is not in 
+# the Boosting state, change the status of the ac
+# to Boosting. 
+ 
+  - alias: Climatizzatore active quando rileva potenza
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.climatizzatore_power
+      above: 300
+      for:
+        minutes: 1
+    condition:
+      condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.ac_status
+        state: Idle/Off
+      - condition: state
+        entity_id: sensor.ac_status
+        state: Running
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.ac_status
+        option: Boosting
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.split_number
+        option: 1
+    - condition: and
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.climatizzatore_power
+        above: 500 
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.split_number
+        option: 2
+
+#################################################################
+# When the power drops, move the state of the ac to Running.
+  - alias: Climatizzatore running quando potenza scende
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.condizionatori_power
+      below: 260
+      for:
+        minutes: 1
+    condition:
+    - condition: state
+      entity_id: input_select.ac_status
+      state: Boosting
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.ac_status
+        option: Running
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.split_number
+        option: 2
+    - condition: and
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.climatizzatore_power
+        below: 150 
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.split_number
+        option: 1
+#################################################################
+# Wait 1 minute when the power in down and the state is
+# boosting or running then we decide the ac has finished.
+ 
+  - alias: Climatizzatore idle dopo il timeout
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.condizionatori_power
+      below: 9
+      for:
+        minutes: 1
+    condition:
+      condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.ac_status
+        state: Boosting
+      - condition: state
+        entity_id: sensor.ac_status
+        state: Running
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.ac_status
+        option: Idle/Off
+
+################################################################
+  - alias: Manda alert quando climatizzatore inizia
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.ac_status
+      from: 'Idle/Off'
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        message: 'Il climatizzatore è in funzione'
+
+#################################################################
+  - alias: Manda alert quando climatizzatore spento
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.ac_status
+      from: 'Running'
+      to: 'Idle/Off'
+    - platform: state
+      entity_id: sensor.ac_status
+      from: 'Boosting'
+      to: 'Idle/Off'
+    condition:
+    - condition: state
+      entity_id: input_select.ac_status
+      state: 'Idle/Off'
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: "*-- Attenzione --*"
+        message: "Climatizzatore spento, che caldo!!"
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

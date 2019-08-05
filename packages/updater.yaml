@@ -1,0 +1,202 @@
+#################################################################
+#                                                               #
+#                      Packages/updater                         #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'updater'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+    ################################################
+    ## Binary Sensor
+    ################################################
+
+    binary_sensor.hass_update_available:
+      <<: *customize
+      friendly_name: 'Update Available Hass'
+      device_class: problem
+
+    ################################################
+    ## Sensor
+    ################################################
+
+    sensor.hass_installed_version:
+      <<: *customize
+      friendly_name: 'Hass.io Installed Version'
+      icon: mdi:check-circle
+
+    sensor.hass_available_to_install_version:
+      <<: *customize
+      friendly_name: 'Hass.io Available to Install Version'
+      icon: mdi:new-box
+
+    sensor.hass_current_stable_version:
+      <<: *customize
+      friendly_name: 'Hass.io Current Stable Version'
+      icon: mdi:check-outline
+
+    sensor.hass_current_beta_version:
+      <<: *customize
+      friendly_name: 'Hass.io Beta Release'
+      icon: mdi:beta
+
+    sensor.hass_current_dev_version:
+      <<: *customize
+      friendly_name: 'Hass.io Dev Release'
+      icon: mdi:alpha
+
+    sensor.hass_current_supervisor_version:
+      <<: *customize
+      friendly_name: 'Hass.io Current Supervisor Version'
+      icon: mdi:worker
+
+    sensor.hass_current_hassos_version:
+      <<: *customize
+      friendly_name: 'Hass.io Current HassOS Version'
+      icon: mdi:checkbox-markedcheck-decagram
+
+################################################
+## Updater
+## https://www.home-assistant.io/components/updater/
+## https://www.home-assistant.io/docs/backend/updater/
+################################################
+
+updater:
+  reporting: true # collect basic information about this instance and its environment
+  include_used_components: true # report components to developers
+
+#################################################################
+#                                                               #
+#                             GROUP                             #
+#                                                               #
+################################################################# 
+group:
+  host_updates:
+    name: 'Updates'
+    entities:
+      - updater.updater
+      - sensor.hass_installed_version
+      - sensor.hass_available_to_install_version
+      - sensor.hass_current_stable_version
+      - sensor.hass_current_beta_version
+      - sensor.hass_current_dev_version
+      - sensor.hass_current_supervisor_version
+      - binary_sensor.hass_update_available
+      - binary_sensor.hass_beta_available
+
+#################################################################
+#                                                               #
+#                              SENSOR                           #
+#                                                               #
+################################################################# 
+
+sensor:
+  - platform: command_line
+    name: Hass Installed Version
+    command: "cat /config/.HA_VERSION"
+
+  - platform: version
+    name: Hass Available to Install Version
+    beta: true
+    image: qemux86-64
+    source: hassio
+
+  - platform: rest
+    resource: https://s3.amazonaws.com/hassio-version/stable.json
+    name: Hass Current Stable Version
+    scan_interval: 7200
+    value_template: "{{ value_json.homeassistant['qemux86-64'] }}"
+
+  - platform: rest
+    resource: https://s3.amazonaws.com/hassio-version/beta.json
+    name: Hass Current Beta Version
+    scan_interval: 7200
+    value_template: "{{ value_json.homeassistant['qemux86-64'] }}"
+
+  - platform: rest
+    resource: https://s3.amazonaws.com/hassio-version/dev.json
+    name: Hass Current Dev Version
+    scan_interval: 7200
+    value_template: "{{ value_json.homeassistant['qemux86-64'] }}"
+
+  - platform: rest
+    resource: https://s3.amazonaws.com/hassio-version/stable.json
+    name: Hass Current Supervisor Version
+    scan_interval: 7200
+    value_template: '{{ value_json.supervisor }}'
+
+  - platform: rest
+    resource: https://s3.amazonaws.com/hassio-version/stable.json
+    name: Hass Current HassOS Version
+    scan_interval: 7200
+    value_template: "{{ value_json.hassos['intel-nuc'] }}"
+
+#################################################################
+#                                                               #
+#                        Binary Sensor                          #
+#                                                               #
+################################################################# 
+binary_sensor:
+  - platform: template
+    sensors:
+      hass_update_available:
+        value_template: >-
+          {{ states.sensor.hass_current_stable_version.state != 'unavailable' and 
+             states.sensor.hass_current_stable_version.state > states.sensor.hass_installed_version.state
+              }}
+        friendly_name: Hass Update Available
+
+  - platform: template
+    sensors:
+      hass_beta_available:
+        value_template: >-
+          {{ states.sensor.hass_current_beta_version.state != 'unavailable' and 
+            states.sensor.hass_current_beta_version.state > states.sensor.hass_installed_version.state
+              }}
+        friendly_name: Hass Beta Available
+
+#################################################################
+#                                                               #
+#                         Automations                           #
+#                                                               #
+#################################################################
+automation:
+  - alias: 'HA Update Available'
+    initial_state: 'on'
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.hass_update_available
+      to: 'on'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Home Assistant Update*'
+        message: 'Home Assistant version {{ states.sensor.hass_current_stable_version.state }} is now available for Hass.io'
+
+##-----------------------------------
+  - alias: 'HA Beta Available'
+    initial_state: 'on'
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.hass_beta_available
+      to: 'on'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: 'Home Assistant Beta Update*'
+        message: 'Home Assistant Beta version {{ states.sensor.hass_current_beta_version.state }} is now available for Hass.io'

@@ -1,0 +1,172 @@
+#################################################################
+#                                                               #
+#                       Packages/Sensori                        #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'bt_presence'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+    sensor.nut2_presence:
+      <<: *customize
+      icon: mdi:bluetooth-settings
+
+    sensor.nut3_presence:
+      <<: *customize
+      icon: mdi:bluetooth-settings
+
+    sensor.nut3_rssi:
+      <<: *customize
+      icon: mdi:router-wireless-settings
+
+    sensor.nut2_rssi:
+      <<: *customize
+      icon: mdi:router-wireless-settings
+
+    sensor.realistic_nut3_rssi:
+      <<: *customize
+      icon: mdi:router-wireless-settings
+      friendly_name: "Nut3 RSSI "
+
+    sensor.realistic_nut2_rssi:
+      <<: *customize
+      icon: mdi:router-wireless-settings
+      friendly_name: "Nut2 RSSI"
+
+#################################################################
+#                                                               #
+#                       SHELL e SCRIPT                          #
+#                                                               #
+#################################################################
+shell_command:
+  clean_knowndevices: "/bin/bash /config/www/script/clean_knowndevices.sh"
+
+script:
+  clean_knowndevices:
+    sequence:
+      - service: shell_command.clean_knowndevices
+#################################################################
+#                                                               #
+#                            Sensori                            #
+#                                                               #
+#################################################################
+sensor:     
+  - platform: template
+    sensors:
+      nut3_distance:
+        friendly_name: "Distanza Nut3"
+        value_template: >
+          {% if is_state("sensor.nut3_presence", "home") %}
+            {{(10**((-60-(states.sensor.realistic_nut3_rssi.state | int)) / 30)) | round(2)}}
+          {% endif %}
+        unit_of_measurement: 'm'
+        icon_template: mdi:counter
+
+      nut2_distance:
+        friendly_name: "Distanza Nut2"
+        value_template: >
+          {% if is_state("sensor.nut2_presence", "home") %}
+            {{(10**((-60-(states.sensor.realistic_nut2_rssi.state | int)) / 30)) | round(2)}}
+          {% endif %} 
+        unit_of_measurement: 'm'
+        icon_template: mdi:counter
+
+  - platform: mqtt
+    name: "Nut3 Presence"
+    state_topic: blescan/presence/nut3
+  
+  - platform: mqtt
+    name: "Nut3 RSSI"
+    state_topic: blescan/presence/nut3/rssi
+    unit_of_measurement: "dBm"
+    
+  - platform: mqtt
+    name: "Nut2 Presence"
+    state_topic: blescan/presence/nut2
+    
+  - platform: mqtt
+    name: "Nut2 RSSI"
+    state_topic: blescan/presence/nut2/rssi
+    unit_of_measurement: "dBm"
+  
+  - platform: filter
+    name: "Realistic Nut3 RSSI"
+    entity_id: sensor.nut3_rssi
+    filters:
+    - filter: outlier
+      window_size: 4
+      radius: 4.0
+    - filter: lowpass
+      time_constant: 10
+      precision: 2
+
+  - platform: filter
+    name: "Realistic Nut2 RSSI"
+    entity_id: sensor.nut2_rssi
+    filters:
+    - filter: outlier
+      window_size: 4
+      radius: 4.0
+    - filter: lowpass
+      time_constant: 10
+      precision: 2
+
+#################################################################
+#                                                               #
+#                     Google Home BT TRacker                    #
+#                                                               #
+#################################################################
+#googlehome:
+#  devices:
+#Google Home Mini Kitchen
+#    - host: 192.168.1.104
+#      rssi_threshold: -100
+#      track_alarms: true
+#Google Home Mini Bedroom
+#    - host: 192.168.1.110
+#      rssi_threshold: -100
+#      track_alarms: true
+
+#################################################################
+#                                                               #
+#                          Automation                           #
+#                                                               #
+#################################################################
+automation:
+  - alias: "Pulizia file known devices"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: time
+      at: '07:07:00'
+    action:
+    - service: script.clean_knowndevices
+
+#################################################################
+#                                                               #
+#                             END                               #
+#                                                               #
+#################################################################

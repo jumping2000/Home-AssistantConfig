@@ -1,0 +1,112 @@
+####################################################
+#                                                  #
+#                     ALARM                        #
+#                                                  #
+####################################################
+icon: mdi:shield-home
+name: Sicurezza
+path: sicurezza
+cards:
+  - type: vertical-stack
+    cards:
+# 1 colonna
+    - type: alarm-panel
+      name: House Alarm
+      entity: alarm_control_panel.house
+      states:
+        - arm_home
+        - arm_away
+        - arm_night
+    - type: entities
+      title: Allarme
+      show_header_toggle: false
+      entities:
+      - binary_sensor.smoke_sensor_158d0001bb7dda
+      - binary_sensor.0x00158d00023372ec_water_leak
+      - input_boolean.dss_mute_gateway_sounds
+      - input_boolean.dss_lights_on_away_mode
+      - input_number.dss_gateway_alarm_volume
+      - input_number.dss_gateway_pending_volume
+      - input_number.dss_gateway_disarmed_volume
+      - input_select.dss_gateway_alarm_sound
+      - input_select.dss_gateway_pending_sound
+      - input_select.dss_gateway_disarmed_sound
+## 2 colonna
+  - type: vertical-stack
+    cards:
+    - type: entities
+      entities:
+      - type: section
+        label: Soglie di alert e Temi
+      - entity: input_number.battery_alert_threshold
+      - entity: input_boolean.low_batteries
+      - entity: input_number.soglia_max_temp
+      - entity: input_number.soglia_min_temp
+      - input_text.clear_mqtt_topic
+      - input_select.delay_luci
+      - input_select.choose_theme_frontend
+
+    - type: glance
+      show_state: false
+      columns: 4
+      entities:
+      - binary_sensor.door_window_sensor_158d000112aec3
+      - binary_sensor.door_window_sensor_158d00011854f0
+      - binary_sensor.door_window_sensor_158d00011c3087
+      - binary_sensor.door_window_sensor_158d00013e425d
+      - binary_sensor.door_window_sensor_158d0002329f47
+      - binary_sensor.door_window_sensor_158d000232ac82
+      - binary_sensor.door_window_sensor_158d0002425ae8
+
+    - type: entities
+      show_state: false
+      entities:
+      - entity: binary_sensor.motion_sensor_158d00010e4ea5
+        secondary_info: last-changed
+      - entity: binary_sensor.motion_sensor_158d00013f7817
+        secondary_info: last-changed
+      - entity: binary_sensor.motion_sensor_158d000223684f
+        secondary_info: last-changed
+      - entity: binary_sensor.0xd0cf5efffe2d2e54_occupancy
+        secondary_info: last-changed
+
+## 3 colonna
+  - type: vertical-stack
+    cards:
+    - type: entities
+#      title: Automazioni
+      show_header_toggle: false 
+      entities:
+      - sensor.count_automations
+      - sensor.count_automations_on
+      - sensor.count_lights
+      - sensor.count_lights_on
+      - sensor.count_switchs
+      - sensor.count_sensors
+      - sensor.count_scripts
+      - sensor.count_binarysensors
+      - input_boolean.notifiche_accese
+      - input_boolean.heater_schedule_active
+      - automation.accensione_applique_livia_al_passaggio
+      - automation.accensione_stripled_bedroom_al_passaggio
+      - automation.accensione_luce_studio_al_passaggio
+      - automation.spegni_luci_serali
+      - automation.accendi_luce_romina
+      - automation.spegnimento_notturno_lavatrice
+      - automation.spegnimento_notturno_lavastoviglie
+      - automation.spegnimento_notturno_condizionatori
+    - type: conditional
+      conditions:
+        - entity: input_boolean.notifiche_accese
+          state: "on"
+      card:  
+        type: entities
+#     Automazioni false
+        show_header_toggle: false
+        entities:
+          - automation.new_device_tracked
+          - automation.update_gh
+          - automation.welcome_home_gianpi
+          - automation.welcome_home_romina
+          - automation.turn_off_quando_si_aprono_le_finestre
+          - automation.turn_on_quando_si_chiudono_le_finestre

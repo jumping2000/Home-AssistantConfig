@@ -1,0 +1,234 @@
+
+####################################################
+#                                                  #
+#                       LIGHTS                     #
+#                                                  #
+####################################################
+icon: mdi:lightbulb-on
+title: Luci
+path: lights
+cards:
+  - type: vertical-stack
+    cards:
+    - type: entities
+      title: Luci Camera
+      entities:
+      - light.yeelight_luce_bedside
+      - light.0x0017880110267875_light
+      - light.0x00178801104a8efc_light
+      - light.0x00178801102668da_light
+      - light.0x00178801011e7ab6_light
+      - light.xiaomi_philips_bedroom
+    - type: entities
+      title: Luci Sala - Cucina
+      show_header_toggle: false
+      entities:
+      - light.applique_sala
+      - light.yeelight_paralume_sala
+      - light.luce_cucina
+    - type: entities
+      title: Sensori Luminosità
+      show_header_toggle: false
+      entities:
+      - entity: sensor.illumination_158d000223684f
+        secondary_info: last-changed
+      - entity: sensor.illumination_f0b429b45c97
+        secondary_info: last-changed
+#seconda colonna
+  - type: vertical-stack
+    cards:
+    - type: entities
+      title: Luci Ingresso
+      show_header_toggle: false
+      entities:
+      - light.faretti_ingresso
+      - light.gateway_light_f0b429b45c97
+      - light.xiaomi_philips_ingresso
+    - type: entities
+      title: Luci Studio
+      show_header_toggle: false
+      entities:
+      - light.luce_studio
+      - light.yeelight_luce_desklamp
+    - type: entities
+      title: Altre Luci
+      show_header_toggle: false
+      entities:
+      - light.applique_livia
+      - light.luce_ripostiglio
+      - light.luce_secondo_bagno
+    - type: entities
+      title: Interruttori
+      show_header_toggle: false
+      entities:
+      - entity: sensor.0x00158d00013ecf04_click
+        secondary_info: last-changed
+      - entity: sensor.0x00158d0002016342_click
+        secondary_info: last-changed
+      - entity: sensor.0x00158d000202fd3f_click
+        secondary_info: last-changed
+      - entity: sensor.0x00178801020d34b3_action
+        secondary_info: last-changed
+      - entity:  sensor.0x00158d000269e844_action
+        secondary_info: last-changed          
+
+#terza colonna
+  - type: vertical-stack
+    cards:
+######### 1 riga ######### 
+    - type: horizontal-stack
+      cards:
+      - type: "custom:button-card"
+        entity: light.applique_sala
+        icon: mdi:sofa
+        color: auto
+        action: toggle
+        name: Sala
+      - type: "custom:button-card"
+        entity: light.applique_livia
+        color: auto
+        icon: mdi:bed-empty
+        action: toggle
+        name: Livia
+      - type: "custom:button-card"
+        entity: light.faretti_ingresso
+        color: auto
+        icon: mdi:wall-sconce-flat
+        action: toggle
+        name: Ingresso
+      - type: "custom:button-card"
+        entity: light.luce_ripostiglio
+        icon: mdi:ceiling-light
+        color: auto
+        action: toggle
+        name: Ripostiglio
+
+######### 2 riga ######### 
+    - type: horizontal-stack
+      cards:
+      - type: "custom:button-card"
+        entity: light.xiaomi_philips_bedroom
+        icon: mdi:lamp
+        color: auto
+        action: toggle
+        name: Romi
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.yeelight_luce_bedside
+        color: auto
+        icon: mdi:lamp
+        action: toggle
+        name: Gianpi
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.yeelight_paralume_sala
+        color: auto
+        icon: mdi:lamp
+        action: toggle
+        name: Paralume TV
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.xiaomi_philips_ingresso
+        icon: mdi:floor-lamp
+        color: auto
+        action: toggle
+        name: Ingresso
+        style:
+          - font-size: 12px
+          - font-weight: bold
+
+######### 3 riga ######### 
+    - type: horizontal-stack
+      cards:
+      - type: "custom:button-card"
+        entity: light.0x0017880110267875_light
+        icon: mdi:ceiling-light
+        color: auto
+        action: toggle
+        name: Hue 1
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.0x00178801104a8efc_light
+        color: auto
+        icon: mdi:ceiling-light
+        action: toggle
+        name: Hue 2
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.0x00178801102668da_light
+        color: auto
+        icon: mdi:ceiling-light
+        action: toggle
+        name: Hue 3
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.0x00178801011e7ab6_light
+        icon: mdi:led-strip
+        color: auto
+        action: toggle
+        name: Hue Strip
+        style:
+          - font-size: 12px
+          - font-weight: bold
+
+######### 4 riga ######### 
+    - type: horizontal-stack
+      cards:
+      - type: "custom:button-card"
+        entity: light.luce_cucina
+        icon: mdi:ceiling-light
+        color: auto
+        action: toggle
+        name: Cucina
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.luce_secondo_bagno
+        icon: mdi:toilet
+        color: auto
+        action: toggle
+        name: Bagno
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.gateway_light_f0b429b45c97
+        color: auto
+        icon: mdi:router-wireless
+        action: toggle
+        name: Xiaomi
+        style:
+          - font-size: 12px
+          - font-weight: bold
+      - type: "custom:button-card"
+        entity: light.luce_studio
+        icon: mdi:ceiling-light
+        color: auto
+        action: toggle
+        name: Studio
+        style:
+          - font-size: 12px
+          - font-weight: bold
+
+#################################################################
+    - type: entities
+      title: Scene
+      show_header_toggle: false 
+      entities:
+      - scene.bedroom_artic_aurora
+      - scene.bedroom_tropical_twilight
+      - scene.living_room_bright
+      - scene.media_room_red_pantsuit

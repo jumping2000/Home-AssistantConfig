@@ -1,0 +1,157 @@
+#################################################################
+#                                                               #
+#                        Packages/Camera                        #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'camera'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+    ################################################
+    ## sensor
+    ################################################
+
+#    script.reboot_dafang1:
+#      <<: *customize
+#      friendly_name: Reboot Dafang 1
+#    
+#    script.reboot_dafang2:
+#      <<: *customize
+#      friendly_name: Reboot Dafang 2
+####################################################
+#                                                  #
+#                    FFMPEG                        #
+#                                                  #
+####################################################
+#ffmpeg:
+#  ffmpeg_bin: /usr/bin/ffmpeg
+####################################################
+#                                                  #
+#                    TELECAMERE                    #
+#                                                  #
+####################################################
+camera:
+  - platform: generic
+    still_image_url: https://api.sat24.com/animated/IT/infraPolair/3/W_dot_%20Europe%20Standard%20Time/9263758  
+    name: Telecamera IR
+  - platform: generic
+    still_image_url: https://api.sat24.com/animated/IT/rainTMC/3/W_dot_%20Europe%20Standard%20Time/6012921  
+    name: Telecamera Pioggia
+#  - platform: ffmpeg
+#    name: dafang1
+#    input: -rtsp_transport tcp -i rtsp://192.168.1.161:8554/unicast
+#  - platform: ffmpeg
+#    name: dafang2
+#    input: -rtsp_transport tcp -i rtsp://192.168.1.162:8554/unicast
+#  - platform: generic
+#    name: DaFang1
+#    username: root
+#    password: ismart12
+#    authentication: basic
+#    still_image_url: https://192.168.1.161/cgi-bin/currentpic.cgi
+#    verify_ssl: false
+#    scan_interval: 5
+#  - platform: generic
+#    name: DaFang2
+#    username: root
+#    password: ismart12
+#    authentication: basic
+#    still_image_url: https://192.168.1.162/cgi-bin/currentpic.cgi
+#    verify_ssl: false
+#    scan_interval: 5
+#  - platform: generic
+#    name: Telecamera Livia Maria
+#    still_image_url: http://192.168.1.150/cgi-bin/currentpic.cgi?width=1920&height=1080
+#  - platform: generic
+#    name: Grafana Power Image
+#    still_image_url: 'http://192.168.1.101:3000/render/d-solo/680D0Azgz/sensori?orgId=1&panelId=6&from=1530736912474&to=1530823312475&width=600&height=300&tz=UTC%2B02%3A00&from=now-1d/d&to=now/d'
+#    username: !secret grafana_user
+#    password: !secret grafana_pass
+#  - platform: local_file
+#    name: Grafana Energy Meter
+#    file_path: /home/homeassistant/.homeassistant/downloads/energymeter.png
+#  - platform: local_file
+#    name: Grafana Power Meter
+#    file_path: /home/homeassistant/.homeassistant/downloads/powermeter.png
+#################################################################
+#                                                               #
+#                           Sensori                             #
+#                                                               #
+#################################################################
+####################################################
+#                                                  #
+#                  DAFANG STATUS                   #
+#                                                  #
+####################################################
+#sensor:  
+#  - platform: mqtt
+#    state_topic: "myhome/dafang1"
+#    name: "dafang1"
+#    json_attributes:
+#      - uptime
+#      - ssid
+#      - bitrate
+#      - signal_level
+#      - link_quality
+#      - noise_level
+
+#  - platform: mqtt
+#    state_topic: "myhome/dafang2"
+#    name: "dafang2"
+#    json_attributes:
+#      - uptime
+#      - ssid
+#      - bitrate
+#      - signal_level
+#      - link_quality
+#      - noise_level
+
+####################################################
+#                                                  #
+#                  DAFANG REBOOT                   #
+#                                                  #
+####################################################
+#rest_command:
+#  reboot_dafang1:
+#    url: https://root:ismart12@192.168.1.161/cgi-bin/action.cgi?cmd=reboot
+#    method: GET
+#
+#  reboot_dafang2:
+#    url: https://root:ismart12@192.168.1.162/cgi-bin/action.cgi?cmd=reboot
+#    method: GET
+#
+#script:
+#  reboot_dafang1:
+#    sequence:
+#      service: rest_command.reboot_dafang1
+#
+#  reboot_dafang2:
+#    sequence:
+#      service: rest_command.reboot_dafang2
+#################################################################
+#                                                               #
+#                          Automation                           #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                  End of Configuration                         #
+#                                                               #
+#################################################################

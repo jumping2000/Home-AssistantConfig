@@ -1,0 +1,40 @@
+   
+####################################################
+#                                                  #
+#                     diff                         #
+#                                                  #
+####################################################
+title: Differenziata
+icon: 'mdi:delete-empty'
+path: elettrodomestici
+cards:
+  - type: picture-elements
+    image: /local/images/sfondo.jpg
+    elements:
+      
+    ### Lavatrice
+    - type: image 
+      entity: sensor.washing_machine_status
+      image: /local/images/washing-machine.png
+      style:
+        left: 25%
+        top: 75%
+        width: 15%
+    - type: image 
+      entity: sensor.dishwasher_status
+      image: /local/images/dishwasher.png
+      style:
+        left: 50%
+        top: 75%
+        width: 15%
+    - type: image 
+      entity: sensor.oven_status
+      image: /local/images/oven.png
+      style:
+        left: 75%
+        top: 75%
+        width: 15%
+      
+      
+
+

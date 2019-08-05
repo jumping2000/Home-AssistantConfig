@@ -1,0 +1,311 @@
+# start https://community.home-assistant.io/t/chromecast-radio-with-station-and-player-selection/12732
+# volume slider https://community.home-assistant.io/t/input-number-volume-slider-for-yamaha-receiver-google-home/39845/37
+# altre fonti https://community.home-assistant.io/t/automation-trigger-volume-change/42882/8?u=caiosweet
+# come trovare le radio es. https://community.home-assistant.io/t/how-to-send-play-tunein-radio-to-google-home/29980/6
+# Xiaomi cube con radio https://gist.github.com/jonkristian/6a0ef7b04168b13b2b1ff3a378e13716
+
+
+###############################################################################
+# Customization
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'radio'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## script
+    ################################################
+
+    script.radio:
+      friendly_name: Avvia Riproduzione
+      icon: mdi:play
+    script.pause_playback:
+      friendly_name: Pausa
+      icon: mdi:pause
+    script.stop_playback:
+      friendly_name: Stop
+      icon: mdi:stop
+
+###############################################################################
+# VIEW / TAB
+#group:
+#  multimedia:
+#    name: Multimedia
+#    view: yes
+#    icon: mdi:cast
+#    entities:
+#      - group.radio # Contiene selettori, script e automazioni
+#      - media_player.salotto # Nome da App Google Home
+#      # Il gruppo va creato con APP Google Home (il nome da utilizzare va cercato nei servizi es. media_player.gruppo_media)
+#      - media_player.gruppo_media # gruppo creato da app Google Home
+
+###############################################################################
+# GROUP
+group:
+  radio:
+    name: Radio
+    control: hidden
+    icon: mdi:radio
+    entities:
+      - input_select.radio_station
+      - input_select.chromecast_radio
+      - script.radio
+      - script.stop_playback
+      - script.pause_playback
+      - input_number.google_mini_sala
+      - input_number.google_mini_camera
+      - input_number.gruppo_casa_gh
+
+###############################################################################
+# INPUT
+###############################################################################
+input_select:
+  radio_station: # Selezione radio
+    name: 'Seleziona Stazione Radio:'
+    options:
+      - RDS #http://stream1.rds.it:8000/apprds128
+      - RDS2 #http://stream1.rds.it:8000/rds64k
+      - RDS3 #https://stream.rds.radio/rds/app128.stream/chunklist.m3u8 https://stream.rds.radio/rds/app128.stream/media-ui5xg51ez_181230.aac
+      - RTL 102.5
+      - RADIO 105 #http://icecast.105.net/105.mp3 http://icecast.unitedradio.it/Radio105.mp3
+      - RADIO BRUNO
+      - RADIO 80
+      - RADIO SUBASIO
+      - RTS 80s 90s TODAY
+      - RADIO IBIZA
+      - RADIO CAFE
+      - R101
+      - VERONICA MY RADIO
+      - SOUL RADIO
+      - KISS KISS NAPOLI
+      - RADIO MARTE
+      - KISS KISS
+      - KISS KISS ITALIA
+      - RADIO DEEJAY
+      #- NONE # Può essere usato come stop
+    initial: RDS
+    icon: mdi:radio
+
+  chromecast_radio: # Selezione sorgenti
+    name: 'Seleziona Sorgente Audio:'
+    options:
+      - Salotto
+      - Camera
+      - Tutti
+      - NONE 
+# Puo' essere usato come stop
+    initial: Salotto
+    icon: mdi:speaker-wireless
+###########################################################
+input_number:
+  google_mini_sala:
+    name: Salotto Vol.
+    icon: mdi:volume-high
+    initial: '30'
+    min: 0
+    max: 100
+    step: 5
+
+  google_mini_camera:
+    name: Camera Vol.
+    icon: mdi:volume-high
+    initial: '30'
+    min: 0
+    max: 100
+    step: 5
+
+  gruppo_casa_gh:
+    name: GH Casa
+    icon: mdi:volume-high
+    initial: '30'
+    min: 0
+    max: 100
+    step: 5
+
+###############################################################################
+# AUTOMATIONS
+automation:
+  - alias: Ascolta Radio
+    initial_state: true
+    hide_entity: True
+    trigger:
+      - platform: state
+        entity_id: input_select.radio_station, input_select.chromecast_radio
+    action:
+      - service: script.radio
+
+###########################################################
+### GH SALA
+###########################################################
+  - alias: Imposta posizione slider Google Mini Sala
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: media_player.salotto
+    condition:
+      - condition: template
+        value_template: "{{ not is_state_attr('media_player.salotto', 'volume_level', states('input_number.google_mini_sala') | int / 100) }}"
+    action:
+      - service: input_number.set_value
+        entity_id: input_number.google_mini_sala
+        data_template:
+          value: "{{ trigger.to_state.attributes.volume_level | multiply(100) | int }}"
+
+  - alias: Imposta volume Google Mini Sala
+    trigger:
+      - platform: state
+        entity_id: input_number.google_mini_sala
+    condition:
+      - condition: template
+        value_template: "{{ not is_state_attr('media_player.salotto', 'volume_level', states('input_number.google_mini_sala') | int / 100) }}"
+    action:
+      - service: media_player.volume_set
+        entity_id: media_player.salotto
+        data_template:
+          volume_level: "{{  states('input_number.google_mini_sala') | int / 100  }}"        
+
+###########################################################
+### GH CAMERA
+###########################################################
+  - alias: Imposta posizione slider Google Mini Camera
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: media_player.bedroom
+    condition:
+      - condition: template
+        value_template: "{{ not is_state_attr('media_player.bedroom', 'volume_level', states('input_number.google_mini_camera') | int / 100) }}"
+    action:
+      - service: input_number.set_value
+        entity_id: input_number.google_mini_camera
+        data_template:
+          value: "{{ trigger.to_state.attributes.volume_level | multiply(100) | int }}"
+
+###########################################################
+
+  - alias: Imposta volume Google Mini Camera
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: input_number.google_mini_camera
+    condition:
+      - condition: template
+        value_template: "{{ not is_state_attr('media_player.bedroom', 'volume_level', states('input_number.google_mini_camera') | int / 100) }}"
+    action:
+      - service: media_player.volume_set
+        entity_id: media_player.bedroom
+        data_template:
+          volume_level: "{{  states('input_number.google_mini_camera') | int / 100  }}"
+
+###########################################################
+### GH GRUPPO CASA
+###########################################################
+  - alias: Imposta posizione slider Google Gruppo Casa
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: media_player.gruppo_casa
+    condition:
+      - condition: template
+        value_template: "{{ not is_state_attr('media_player.gruppo_casa', 'volume_level', states('input_number.gruppo_casa_gh') | int / 100) }}"
+    action:
+      - service: input_number.set_value
+        entity_id: input_number.gruppo_casa_gh
+        data_template:
+          value: "{{ trigger.to_state.attributes.volume_level | multiply(100) | int }}"
+
+  - alias: Imposta volume Google Mini Camera
+    initial_state: true
+    trigger:
+      - platform: state
+        entity_id: input_number.gruppo_casa_gh
+    condition:
+      - condition: template
+        value_template: "{{ not is_state_attr('media_player.gruppo_casa', 'volume_level', states('input_number.gruppo_casa_gh') | int / 100) }}"
+    action:
+      - service: media_player.volume_set
+        entity_id: media_player.gruppo_casa
+        data_template:
+          volume_level: "{{  states('input_number.gruppo_casa_gh') | int / 100  }}"
+
+###########################################################
+#  - alias: Voce riproduzione automatica del testo
+#    initial_state: true
+#    hide_entity: true
+#    trigger:
+#      - platform: state
+#        entity_id: input_text.voce_testo_da_riprodurre
+#    action:
+#      - service: script.riproduci_messaggio_tts
+#        data_template:
+#          message: >-
+#            {{ states('input_text.voce_testo_da_riprodurre') }}
+
+###########################################################
+# SCRIPTS
+###########################################################
+script:
+  radio:
+    alias: Play Radio su Chromecast Audio
+    sequence:
+      - service: media_player.play_media
+        data_template:
+          entity_id: &mplayer >
+            {% if is_state("input_select.chromecast_radio", "Salotto") %} media_player.salotto
+            {% elif is_state("input_select.chromecast_radio", "Camera") %} media_player.bedroom
+            {% elif is_state("input_select.chromecast_radio", "Tutti") %} media_player.gruppo_casa
+            {% endif %}
+          media_content_id: >
+            {% if is_state("input_select.radio_station", "RDS") %} http://stream1.rds.it:8000/apprds128
+            {% elif is_state("input_select.radio_station", "RDS2") %} http://stream1.rds.it:8000/rds64k
+            {% elif is_state("input_select.radio_station", "RDS3") %} https://stream.rds.radio/rds/app128.stream/chunklist.m3u8
+            {% elif is_state("input_select.radio_station", "RTL 102.5") %} http://shoutcast.rtl.it:3020/stream/1/
+            {% elif is_state("input_select.radio_station", "RADIO 105") %} http://icecast.unitedradio.it/Radio105.mp3
+            {% elif is_state("input_select.radio_station", "RADIO BRUNO") %} http://188.165.242.32:8062/;
+            {% elif is_state("input_select.radio_station", "RADIO 80") %} http://ice04.fluidstream.net/radio80.mp3
+            {% elif is_state("input_select.radio_station", "RADIO SUBASIO") %} http://icy.unitedradio.it/Subasio.mp3
+            {% elif is_state("input_select.radio_station", "RTS 80s 90s TODAY") %} http://hyades.shoutca.st:9113/;
+            {% elif is_state("input_select.radio_station", "RADIO IBIZA") %} http://wma08.fluidstream.net:8080/ibiza.aac
+            {% elif is_state("input_select.radio_station", "RADIO CAFE") %} http://onair11.xdevel.com:8000/;
+            {% elif is_state("input_select.radio_station", "R101") %} http://icecast.unitedradio.it/r101_mp3
+            {% elif is_state("input_select.radio_station", "VERONICA MY RADIO") %} http://veronica02.fluidstream.it/fluid06.mp3
+            {% elif is_state("input_select.radio_station", "SOUL RADIO") %} http://soulradio04.live-streams.nl/soultunmp3
+            {% elif is_state("input_select.radio_station", "KISS KISS NAPOLI") %} http://ice08.fluidstream.net/KKNapoli.aac
+            {% elif is_state("input_select.radio_station", "RADIO MARTE") %} http://onair18.xdevel.com:8212/
+            {% elif is_state("input_select.radio_station", "KISS KISS") %} http://wma08.fluidstream.net:8080/KissKiss.mp3
+            {% elif is_state("input_select.radio_station", "KISS KISS ITALIA") %} http://wma07.fluidstream.net:3616/;stream.nsv
+            {% elif is_state("input_select.radio_station", "RADIO DEEJAY") %} http://radiodeejay-lh.akamaihd.net/i/RadioDeejay_Live_1@189857/master.m3u8
+            {% endif %}
+          media_content_type: 'audio/mp4'
+
+  stop_playback:
+    alias: Stop stream
+    sequence:
+      - service: media_player.media_stop
+        data_template:
+          entity_id: *mplayer
+
+  pause_playback:
+    alias: Pausa stream
+    sequence:
+      - service: media_player.media_play_pause
+        data_template:
+          entity_id: *mplayer
+
+#################################################################
+#                                                               #
+#                    END OF CONFIGURATION                       #
+#                                                               #
+#################################################################

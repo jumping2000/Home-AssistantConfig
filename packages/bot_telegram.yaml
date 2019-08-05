@@ -1,0 +1,1148 @@
+#################################################################
+#                                                               #
+#                      Packages/BOT Telegram                    #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'bot_telegram'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+#################################################################
+#                                                               #
+#                         Automation                            #
+#                                                               #
+################################################################# 
+automation:
+####################################################
+#                                                  #
+#                   Start   Stop                   #
+#                                                  #
+####################################################
+  - alias: '[System] Hass Start'
+    initial_state: true
+    trigger:
+      platform: homeassistant
+      event: start
+    action:
+    - service: mqtt.publish
+      data:
+        topic: shellies/command
+        payload: announce
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        call_introduzione: 1
+        title: '*HA Start*'
+#        message: 'IP WAN: {{ states.sensor.external_ip.state }}'
+    - delay: '00:00:04'
+    - service: notify.telegram
+      data_template:
+        title: '*HA HOME*'
+        message: 'IP WAN: {{ states.sensor.external_ip.state }}. Scegli i comandi'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F3E0" }} Home:/home, {{ "\U0001F6AA" }} Sensori:/sensori, {{ "\U0001F40C" }} Power:/power'
+          - '{{ "\U0001F4A1" }} Luci:/lights, {{ "\U0001F50C" }} Prese:/plugs, {{ "\U0001F4F8" }} Telecamere:/camera'
+    - service: shell_command.log
+      data_template:
+        text: >
+          - HA Start. WAN IP: '{{ states.sensor.external_ip.state }}'
+    - service: notify.ios_ipadgianpi_beta
+      data:
+        title: "Home Assistant"
+        message: "Avvio effettuato"
+
+  - alias: '[System] Hass Stopped'
+    initial_state: true
+    trigger:
+      platform: homeassistant
+      event: shutdown
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        call_spegni: 1
+        title: '*HA Stop*'
+
+  - alias: 'New Device Tracked'
+    initial_state: false
+    trigger:
+      platform: event
+      event_type: device_tracker_new_device
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        mute: 1
+        title: '*New Device*'
+        message: "New Device Tracked: {{trigger.event.data.host_name}} ({{trigger.event.data.entity_id}})"
+
+####################################################
+#                                                  #
+#                       HOME                       #
+#                                                  #
+####################################################
+  - alias: "Command home"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/home'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*HA HOME*'
+        message: 'Scegli i comandi'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F3E0" }} Home:/home, {{ "\U0001F6AA" }} Sensori:/sensori, {{ "\U0001F40C" }} Power:/power'
+          - '{{ "\U0001F4A1" }} Luci:/lights, {{ "\U0001F50C" }} Prese:/plugs, {{ "\U0001F4F8" }} Telecamere:/camera'
+
+      
+####################################################
+#                                                  #
+#                     SENSORI                      #
+#                                                  #
+####################################################
+  - alias: "Sensori"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/sensori'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Sensori*'
+        message: 'Scegli i comandi'
+        data:
+          inline_keyboard:
+          - 'PC-Temp:/rpitemp, CPU:/rpicpu, Temp:/temperature, Hum:/humidity'
+          - 'Livia:/cameralivia-temp, Studio:/studio-temp, SalaEst:/salaest'
+          - 'StudioEst:/studioest, Bedroom:/bedroom-temp, IP-WAN:/ipwan'
+          - '{{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                     CPU TEMP                     #
+#                                                  #
+####################################################
+  - alias: "PC temperature"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/rpitemp'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*PC CPU Temperature*'
+        message: '{{ states.sensor.cpu_temperature.state }} °C '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+#    - service: shell_command.log
+#      data_template:
+#        text: >
+#          - Rpi CPU Temp: '{{ states.sensor.cpu_temperature.state }} C'
+
+####################################################
+#                                                  #
+#                   Tutte le Temp                  #
+#                                                  #
+####################################################           
+  - alias: 'Telegram bot that reply to temp'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/temperature'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: "*Temperature Casa*"
+        message: >
+          {% macro temp_level() %}
+          {% for state in states.sensor %}{% if (state.name.endswith('emp') or state.name.endswith('emperature'))%}{{state.name}} = {{state.state_with_unit}}
+          {% endif %}{% endfor %}
+          {% endmacro %}
+          {{ temp_level() }}
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }}  UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                   Tutte le Hum                   #
+#                                                  #
+####################################################           
+  - alias: 'Telegram bot that reply to hum'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/humidity'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: "*Umidità Casa*"
+        message: >
+          {% macro hum_level() %}
+          {% for state in states.sensor %}{% if state.name.endswith('um')%}{{state.name}} = {{state.state_with_unit}}
+          {% endif %}{% endfor %}{% endmacro %}
+          {{ hum_level() }}
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                  MASTER BEDROOM                  #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to bedroom temperature'
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/bedroom-temp'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Master Bedroom*'
+        message: 'Ci sono {{states.sensor.jmp_bedroom_13_13_2.state}} °C e {{states.sensor.jmp_bedroom_13_13_3.state}} % di umidità nella camera padronale'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                  CAMERA LIVIA                    #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to Livia room temperature'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/cameralivia-temp'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Camera Livia*'
+        message: 'Ci sono {{states.sensor.jmp_livia_21_21_1.state}} °C e {{states.sensor.jmp_livia_21_21_2.state}} % di umidità in camera di Livia'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                     STUDIO                       #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to studio temperature'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/studio-temp'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Studio*'
+        message: 'Ci sono {{states.sensor.jmp_studio_22_22_1.state}} °C e {{states.sensor.jmp_studio_22_22_2.state}} % di umidità nello studio'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                       SALA                       #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to entrance temperature'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/sala-temp'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Sala*'
+        message: 'Ci sono {{states.sensor.temperature_158d0001d6be78.state}} °C e {{states.sensor.humidity_158d0001d6be78.state}} % di umidità in ingresso'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                        CPU %                     #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to CPU use'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/rpicpu'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: '*PC CPU*'
+          message: 'CPU Use: {{states.sensor.processor_use.state}} %'
+          data:
+            inline_keyboard:
+            - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#               BALCONE SALA ESTERNO               #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to external living room temperature'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/salaest'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: '*Balcone Sala*'
+          message: 'Ci sono {{states.sensor.jmp_weather_16_16_2.state}} C e {{states.sensor.jmp_weather_16_16_3.state}} % di umidità fuori al balcone'
+          data:
+            inline_keyboard:
+            - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                BALCONE STUDIO ESTERNO            #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to external studio temperature'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/studioest'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: '*Balcone Studio*'
+          message: 'Ci sono {{states.sensor.jmp_weather_14_14_1.state}} C e {{states.sensor.jmp_weather_14_14_2.state}} % di umidità fuori al balcone'
+          data:
+            inline_keyboard:
+            - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                        IP WAN                    #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to IP WAN'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/ipwan'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: '*IP WAN*'
+          message: 'Indirizzo IP è {{ states.sensor.external_ip.state }}'
+          data:
+            inline_keyboard:
+            - '{{ "\U0001F53C" }} UP:/sensori, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                     POWER                        #
+#                                                  #
+####################################################
+  - alias: "Potenza"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/power'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Sensori di Potenza*'
+        message: 'Scegli i comandi'
+        data:
+          inline_keyboard:
+          - 'Pot Casa:/potenza, Pot Lav:/pot_lavatrice, Pot Lavast:/pot_lavastoviglie'
+          - 'Pot Cucina:/pot_cucina, Pot Forno:/pot_forno, Pot Cond:/pot_cond'
+          - 'Rain:/rain'
+          - '{{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                      RAIN                        #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to daily rain'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/rain'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Pioggia*'
+        message: 'Pioggia oggi: {{states.sensor.rain_day.state}} mm'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#          Consumo istantaneo lavatrice            #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to power lavatrice'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/pot_lavatrice'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Potenza Lavatrice*'
+        message: 'Potenza istantanea lavatrice: {{ states.sensor.lavatrice_power.state }} W'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#          Consumo istantaneo  lavastoviglie       #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to power cucina'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/pot_lavastoviglie'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Potenza Lavastoviglie*'
+        message: 'Potenza istantanea lavastoviglie: {{ states.sensor.lavastoviglie_power.state }} W'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#          Consumo istantaneo cucina               #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to power cucina'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/pot_cucina'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Potenza Cucina*'
+        message: 'Potenza istantanea presa cucina: {{ states.sensor.cucina_power.state }} W'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#          Consumo istantaneo  forno               #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to power cucina'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/pot_forno'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Potenza Forno*'
+        message: 'Potenza istantanea forno: {{ states.sensor.forno_power.state }} W'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#          Consumo istantaneo condizionatori      #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to power condizionatori'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/pot_cond'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Potenza Condizionatori*'
+        message: 'Potenza istantanea condizionatori: {{ states.sensor.condizionatori_power.state }} W'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#            Consumo istantaneo casa               #
+#                                                  #
+####################################################           
+  - alias: 'Telegram bot that reply to power'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/potenza'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Potenza Casa*'
+        message: 'Potenza istantanea: {{ states.sensor.jmp_energy_12_12_1.state }} W'
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                     PLUGS                        #
+#                                                  #
+####################################################
+  - alias: "Telegram plug"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/plugs'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Sensori*'
+        message: 'Scegli i comandi'
+        data:
+          inline_keyboard:
+          - 'SW Lav:/sw_lavatrice, SW Lavast:/sw_lavastoviglie, SW Cucina:/sw_cucina'
+          - 'SW Cond:/sw_cond, SW Forno:/sw_forno'
+          - '{{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#           Accensione PLUG Condizionatori         #
+#                                                  #
+####################################################
+  - alias: "Telegram plug condizionatori"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/sw_cond'
+    action:
+    - service: switch.toggle
+      entity_id:
+        - switch.plug_condizionatori
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Switch Condizionatori*'
+        message: 'Stato: {{ states.switch.plug_condizionatori.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#             Accensione PLUG Lavatrice            #
+#                                                  #
+####################################################
+  - alias: "Telegram plug lavatice"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/sw_lavatrice'
+    action:
+    - service: switch.toggle
+      entity_id:
+        - switch.plug_lavatrice
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Switch Lavatrice*'
+        message: 'Stato: {{ states.switch.plug_lavatrice.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#          Accensione PLUG Lavastoviglie           #
+#                                                  #
+####################################################
+  - alias: "Telegram plug lavastoviglie"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/sw_lavastoviglie'
+    action:
+    - service: switch.toggle
+      entity_id:
+        - switch.plug_lavastoviglie
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Switch presa lavastoiglie*'
+        message: 'Stato: {{ states.switch.plug_lavastoviglie.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#             Accensione PLUG Cucina               #
+#                                                  #
+####################################################
+  - alias: "Telegram plug cucina"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/sw_cucina'
+    action:
+    - service: switch.toggle
+      entity_id:
+        - switch.plug_cucina
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Switch Cucina*'
+        message: 'Stato: {{ states.switch.plug_cucina.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#               Accensione PLUG forno              #
+#                                                  #
+####################################################
+  - alias: "Telegram plug forno"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/sw_forno'
+    action:
+    - service: switch.toggle
+      entity_id:
+        - switch.plug_forno
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Switch presa forno*'
+        message: 'Stato: {{ states.switch.plug_forno.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/power, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                 LIGHT / SWITCH                   #
+#                                                  #
+####################################################
+  - alias: "Telegram Luci"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/lights'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Illuminazione*'
+        message: 'Scegli i comandi'
+        data:
+          inline_keyboard:
+          - 'L Bedroom:/l_bed, L Sala:/l_sala, L Livia:/l_livia, L Ingresso:/l_ingresso'
+          - 'L Ripo:/l_ripo, L Studio:/l_studio, L cucina:/l_cucina, Bedside:/l_bedside_gianpi'
+          - 'Paralume I:/l_paralume_i, Paralume S:/l_paralume_s,  Romina:/l_bedside_romi'
+          - '{{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#               Accensione Luce Bedroom            #
+#                                                  #
+####################################################
+  - alias: "Telegram luci bedroom"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_bed'
+    action:
+    - service: light.toggle
+      entity_id:
+        - group.lampadario_bedroom
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Luce Bedroom*'
+        message: 'Stato: {{ states.group.lampadario_bedroom.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+         
+####################################################
+#                                                  #
+#               Accensione Luce Sala               #
+#                                                  #
+####################################################
+  - alias: "Telegram luci sala"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_sala'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.applique_sala
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Luce Sala*'
+        message: 'Stato: {{ states.light.applique_sala.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#               Accensione Luce Livia              #
+#                                                  #
+####################################################
+  - alias: "Telegram luce Livia"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_livia'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.applique_livia
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Luce Livia*'
+        message: 'Stato: {{ states.light.applique_livia.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#            Accensione Luce Ripostiglio           #
+#                                                  #
+####################################################
+  - alias: "Telegram luce ripostiglio"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_ripo'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.luce_ripostiglio
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Luce Ripostiglio*'
+        message: 'Stato: {{ states.light.luce_ripostiglio.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#               Accensione Paralume Sala           #
+#                                                  #
+####################################################
+  - alias: "Telegram paralume sala"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_paralume_s'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.yeelight_paralume_sala
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Paralume Sala*'
+        message: 'Stato: {{ states.light.yeelight_paralume_sala.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#            Accensione Paralume Ingresso          #
+#                                                  #
+####################################################
+  - alias: "Telegram paralume ingresso"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_paralume_i'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.xiaomi_philips_ingresso
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Paralume Sala*'
+        message: 'Stato: {{ states.light.xiaomi_philips_ingresso.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#            Accensione applique Ingresso          #
+#                                                  #
+####################################################
+  - alias: "Telegram applique ingresso"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_ingresso'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.applique_ingresso
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Applique Ingresso*'
+        message: 'Stato: {{ states.light.applique_ingresso.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#            Accensione Bedside Gianpi             #
+#                                                  #
+####################################################
+  - alias: "Telegram bedside gianpi"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_bedside_gianpi'
+    action:
+    - service: light.toggle
+      entity_id:
+        -  light.yeelight_luce_bedside
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Bedside Gianpi*'
+        message: 'Stato: {{ states. light.yeelight_luce_bedside.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#            Accensione Bedside Romi             #
+#                                                  #
+####################################################
+  - alias: "Telegram bedside Romi"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_bedside_romi'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.xiaomi_philips_bedroom
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Bedside Romi*'
+        message: 'Stato: {{ states.light.xiaomi_philips_bedroom.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#               Accensione Luce Studio             #
+#                                                  #
+####################################################
+  - alias: "Telegram luce studio"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_studio'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.luce_studio
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Luce Studio*'
+        message: 'Stato: {{ states.light.luce_studio.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#               Accensione Luce Cucina             #
+#                                                  #
+####################################################
+  - alias: "Telegram luce cucina"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/l_cucina'
+    action:
+    - service: light.toggle
+      entity_id:
+        - light.luce_cucina
+    - delay: '00:00:04' 
+    - service: notify.telegram
+      data_template:
+        title: '*Luce Cucina*'
+        message: 'Stato: {{ states.light.luce_cucina.state }} '
+        data:
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/lights, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                      CAMERA                      #
+#                                                  #
+####################################################
+  - alias: "Telecamere"
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/camera'
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '*Telecamere*'
+        message: 'Scegli i comandi'
+        data:
+          inline_keyboard:
+          - 'Dafang1:/dafang1, Dafang2:/dafang2'
+          - '{{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                    DAFANG 1                      #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to camera1'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/dafang1'
+    action:
+    - service: notify.telegram
+      data_template:
+        message: 'Snapshot Dafang 1'
+        data: 
+          photo:
+            url: 'https://www.jump2000.it{{states.camera.dafang1.attributes.entity_picture}}'
+            caption: '{{now().strftime("%d.%m.%Y-%H:%M:%S")}}'
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/camera, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                     DAFANG 2                     #
+#                                                  #
+####################################################
+  - alias: 'Telegram bot that reply to camera1'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_callback
+      event_data:
+        data: '/dafang2'
+    action:
+    - service: notify.telegram
+      data_template:
+        message: 'Snapshot Dafang 1'
+        data: 
+          photo:
+            url: 'https://www.jump2000.it{{states.camera.dafang2.attributes.entity_picture}}'
+            caption: '{{now().strftime("%d.%m.%Y-%H:%M:%S")}}'
+          inline_keyboard:
+          - '{{ "\U0001F53C" }} UP:/camera, {{ "\U0001F3E0" }} Home:/home'
+
+####################################################
+#                                                  #
+#                       HELP                       #
+#                                                  #
+####################################################           
+  - alias: 'Telegram bot that reply to help'
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: event
+      event_type: telegram_command
+      event_data:
+        command: '/help'
+    action:
+      - service: notify.telegram
+        data_template:
+          title: 'HELP'
+          message: 'Comandi disponibili: /pi-temp, /bedroom-temp, /cucina-temp, /cameralivia-temp, /studio-temp, /ingresso-temp, /balconesala-temp, /balconestudio-temp, /potenza, /temperature'
+
+####################################################
+#                                                  #
+#                Shell Command Log                 #
+#                                                  #
+#################################################### 
+shell_command:
+  log: /bin/bash -c "[ -d /config/logs/shell/$(date +%Y-%m) ] || mkdir /config/logs/shell/$(date +%Y-%m); echo '{{ now().strftime("%Y-%m-%d %H:%M:%S") }} {{text}}' >> /config/logs/shell/$(date +%Y-%m)/day-$(date +%d).log"
+#################################################################
+#                                                               #
+#                   END OF CONFIGURATION FILE                   #
+#                                                               #
+#################################################################

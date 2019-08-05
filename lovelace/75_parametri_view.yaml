@@ -1,0 +1,273 @@
+####################################################
+#                                                  #
+#                     SETTING                      #
+#                                                  #
+####################################################
+icon: mdi:settings
+title: Parametri Device
+path: parametri
+cards:
+####################################################
+- type: vertical-stack
+  cards:
+  - type: entities
+    title: Prese e Switch Tasmota
+    show_header_toggle: false 
+    entities:
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Blitzwolf Lavatrice
+      items:
+      - sensor.blitzwolf_01_power
+      - sensor.blitzwolf_01_uptime
+      - sensor.blitzwolf_01_signal_strenght
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Blitzwolf Cucina
+      items:
+      - sensor.blitzwolf_02_power
+      - sensor.blitzwolf_02_uptime
+      - sensor.blitzwolf_02_signal_strenght
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Sonoff Basic Ripostiglio
+      items:
+      - sensor.sonoff_01_power
+      - sensor.sonoff_01_uptime
+      - sensor.sonoff_01_signal_strenght
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Sonoff POW R2 Forno
+      items:
+      - sensor.sonoff_02_power
+      - sensor.sonoff_02_uptime
+      - sensor.sonoff_02_signal_strenght
+
+####################################################
+  - type: entities
+    title: Potenza & Energia Tasmota
+    show_header_toggle: false 
+    entities:
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Sensori Plug Lavatrice
+      items:
+      - sensor.lavatrice_power
+      - sensor.lavatrice_current
+      - sensor.lavatrice_voltage
+      - type: divider
+      - sensor.lavatrice_power_factor
+      - sensor.lavatrice_apparent_power
+      - sensor.lavatrice_reactive_power
+      - type: divider
+      - sensor.lavatrice_energy_today
+      - sensor.lavatrice_energy_yesterday
+      - sensor.lavatrice_energy_total
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Sensori Plug Cucina
+      items:
+      - sensor.cucina_power
+      - sensor.cucina_current
+      - sensor.cucina_voltage
+      - type: divider
+      - sensor.cucina_power_factor
+      - sensor.cucina_apparent_power
+      - sensor.cucina_reactive_power
+      - type: divider
+      - sensor.cucina_energy_today
+      - sensor.cucina_energy_yesterday
+      - sensor.cucina_energy_total
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Sensori Plug Forno
+      items:
+      - sensor.forno_power
+      - sensor.forno_current
+      - sensor.forno_voltage
+      - type: divider
+      - sensor.forno_power_factor
+      - sensor.forno_apparent_power
+      - sensor.forno_reactive_power
+      - type: divider
+      - sensor.forno_energy_today
+      - sensor.forno_energy_yesterday
+      - sensor.forno_energy_total
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Sensori Plug Lavastoviglie
+      items:
+      - sensor.lavastoviglie_power
+      - sensor.lavastoviglie_energy_today
+
+####################################################
+- type: vertical-stack
+  cards:
+  - type: horizontal-stack
+    cards:
+    - type: gauge
+      title: Lavatrice Power
+      unit_of_measurement: 'W'
+      entity: sensor.lavatrice_power
+      max: 2000
+      severity:
+        green: 0
+        yellow: 750
+        red: 1500
+    - type: gauge
+      title: Forno Power
+      unit_of_measurement: 'W'
+      entity: sensor.forno_power
+      max: 2500
+      severity:
+        green: 0
+        yellow: 1000
+        red: 1900
+    - type: gauge
+      title: Lavastoviglie Power
+      unit_of_measurement: 'W'
+      entity: sensor.lavastoviglie_power
+      max: 2000
+      severity:
+        green: 0
+        yellow: 750
+        red: 1500
+
+####################################################
+  - type: horizontal-stack
+    cards:
+    - type: gauge
+      title: condizionatori Power
+      unit_of_measurement: 'W'
+      entity: sensor.condizionatori_power
+      max: 2000
+      severity:
+        green: 0
+        yellow: 750
+        red: 1500
+    - type: gauge
+      title: Cucina Power
+      unit_of_measurement: 'W'
+      entity: sensor.cucina_power
+      max: 1500
+      severity:
+        green: 0
+        yellow: 500
+        red: 1200
+    - type: gauge
+      title: Luce Bagno Power
+      unit_of_measurement: 'W'
+      entity: sensor.luce_secondo_bagno_power
+      max: 100
+      severity:
+        green: 0
+        yellow: 50
+        red: 80
+
+####################################################
+  - type: entities
+    title: Sonoff
+    show_header_toggle: false 
+    entities:
+    - script.check_sonoffs_version
+    - script.update_sonoffs
+    - sensor.ultima_release_sonoff
+    - type: divider
+    - sensor.versione_sonoff_basic_ripostiglio
+    - sensor.versione_sonoff_powr2_forno
+    - sensor.versione_blitzwolf_lavatrice
+    - sensor.versione_blitzwolf_cucina
+
+####################################################
+- type: vertical-stack
+  cards:
+  - type: entities
+    title: Shelly
+    show_header_toggle: false 
+    entities:
+    - sensor.shelly_firmware_version
+    - sensor.shelly_new_firmware
+    - script.update_shelly
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Shelly Studio
+      items:
+      - sensor.shelly_studio_rssi
+      - sensor.shelly_studio_uptime
+      - binary_sensor.shelly_studio_mqtt
+      - script.reboot_shelly_studio
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Shelly Sala
+      items:
+      - sensor.shelly_sala_rssi
+      - sensor.shelly_sala_uptime  
+      - binary_sensor.shelly_sala_mqtt
+      - script.reboot_shelly_sala
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Shelly Livia
+      items:
+      - sensor.shelly_livia_rssi
+      - sensor.shelly_livia_uptime
+      - binary_sensor.shelly_livia_mqtt
+      - script.reboot_shelly_livia
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Shelly Cucina
+      items:
+      - sensor.shelly_cucina_rssi
+      - sensor.shelly_cucina_uptime
+      - binary_sensor.shelly_cucina_mqtt
+      - script.reboot_shelly_cucina
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Shelly Condizionatori
+      items:
+      - sensor.shelly_1pm_temperature
+      - binary_sensor.shelly_1pm_overtemperature
+      - sensor.shelly_condizionatori_rssi
+      - sensor.shelly_condizionatori_uptime
+      - binary_sensor.shelly_condizionatori_mqtt
+      - script.reboot_shelly_condizionatori
+      - type: divider
+      - sensor.condizionatori_power
+      - sensor.condizionatori_energy
+
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Shelly Bagno-Ingresso
+      items:
+      - sensor.shelly_2_5_temperature
+      - binary_sensor.shelly_2_5_overtemperature
+      - sensor.shelly_ingresso_rssi
+      - sensor.shelly_ingresso_uptime
+      - binary_sensor.shelly_ingresso_mqtt
+      - script.reboot_shelly_ingresso
+      - type: divider
+      - sensor.luce_ingresso_power
+      - sensor.luce_secondo_bagno_power
+      - sensor.luce_ingresso_energy
+      - sensor.luce_secondo_bagno_energy
+

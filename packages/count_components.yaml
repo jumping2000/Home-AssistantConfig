@@ -1,0 +1,164 @@
+#################################################################
+#                                                               #
+#                   Packages / Count Component                  #
+#                                                               #
+#################################################################
+################################################
+## Customize
+################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'count_component'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+
+    sensor.count_lights_on:
+      <<: *customize
+      icon: mdi:lightbulb-on
+
+    sensor.count_automations_on:
+      <<: *customize
+      icon: mdi:counter
+
+    sensor.count_automations:
+      <<: *customize
+      icon: mdi:ballot
+
+    sensor.count_sensors:
+      <<: *customize
+      icon: mdi:gauge-low
+
+    sensor.count_lights:
+      <<: *customize
+      icon: mdi:ceiling-light
+
+    sensor.count_switchs:
+      <<: *customize
+      icon: mdi:power-socket-eu
+
+    sensor.count_scripts:
+      <<: *customize
+      icon: mdi:script-text-outline
+
+    sensor.count_binarysensors:
+      <<: *customize
+      icon: mdi:nintendo-switch
+
+#################################################################
+#                                                               #
+#                           sensori                             #
+#                                                               #
+#################################################################
+sensor:
+  - platform: template
+    sensors:
+      count_lights_on:
+        friendly_name: "Luci ON"
+        entity_id: sensor.time
+        value_template: >-
+          {{ states.light
+            | selectattr('state', 'eq', 'on')
+            | rejectattr('attributes.is_hue_group')
+            | list 
+            | count
+          }}
+
+  - platform: template
+    sensors:
+      count_automations_on:
+        friendly_name_template: "Automazioni ON"
+        entity_id: sensor.time
+        value_template: >-
+          {{ states.automation
+            | selectattr('state', 'eq', 'on')
+            | list
+            | count
+          }}
+
+  - platform: template
+    sensors:
+      count_automations:
+        friendly_name: "Numero di automazioni"
+        entity_id: sensor.date
+        value_template: >-
+          {{ states.automation
+            | list
+            | count
+          }}
+
+  - platform: template
+    sensors:
+      count_sensors:
+        friendly_name: "Numero di sensori"
+        entity_id: sensor.date
+        value_template: >-
+          {{ states.sensor
+            | list
+            | count
+          }}
+
+  - platform: template
+    sensors:
+      count_scripts:
+        friendly_name: "Numero di script"
+        entity_id: sensor.date
+        value_template: >-
+          {{ states.script
+            | list
+            | count
+          }}
+
+  - platform: template
+    sensors:
+      count_switchs:
+        friendly_name: "Numero di interruttori"
+        entity_id: sensor.date
+        value_template: >-
+          {{ states.switch
+            | list
+            | count
+          }}
+  
+  - platform: template
+    sensors:
+      count_lights:
+        friendly_name: "Numero di luci"
+        entity_id: sensor.date
+        value_template: >-
+          {{ states.light
+            | list
+            | count
+          }}
+
+  - platform: template
+    sensors:
+      count_binarysensors:
+        friendly_name: "Numero di binary sensor"
+        entity_id: sensor.date
+        value_template: >-
+          {{ states.binary_sensor
+            | list
+            | count
+          }}
+
+#################################################################
+#                                                               #
+#                    END OF CONFIGURATION                       #
+#                                                               #
+#################################################################

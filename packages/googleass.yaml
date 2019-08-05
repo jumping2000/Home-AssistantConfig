@@ -1,0 +1,229 @@
+# CONF GOOGLE
+#################################################################
+#                                                               #
+#                       Packages/Sensori                        #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'googleass'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+    ################################################
+    ## Script
+    ################################################
+
+#################################################################
+#                                                               #
+#                         INPUT TEXT                            #
+#                                                               #
+#################################################################
+input_text:
+  notify_temp:
+    name: Text1
+    initial: ''
+
+#################################################################
+#                                                               #
+#                           SCRIPT                              #
+#                                                               #
+#################################################################
+script:
+  sala_temp:
+    alias: Temperatura Sala
+    sequence:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.notify_temp
+        value: 'La temperatura in sala è di {{ states("sensor.temperature_158d0001d6be78") }} gradi'
+
+  livia_temp:
+    alias: Temperatura Camera Livia
+    sequence:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.notify_temp
+        value: 'La temperatura in camera di Livia è di {{ states("sensor.jmp_livia_21_21_1") }} gradi'
+
+  bedroom_temp:
+    alias: Temperatura Bedroom
+    sequence:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.notify_temp
+        value: 'La temperatura in camera è di {{ states("sensor.jmp_bedroom_13_13_2") }} gradi'
+
+  balcone_temp:
+    alias: Temperatura Balcone
+    sequence:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.notify_temp
+        value: 'La temperatura fuori al balcone è di {{ states("sensor.jmp_weather_16_16_2") }} gradi'
+
+#################################################################
+#                                                               #
+#                          Google Home                          #
+#                                                               #
+#################################################################
+google_assistant:
+  project_id: !secret progettoGH
+  api_key: !secret apikeyGH
+  expose_by_default: false
+  exposed_domains:
+  - light
+  - switch
+  - climate
+  - sensor
+#  entity_config:
+#    script.disattiva_allarme:
+#      expose: false
+  entity_config:
+  #################################################################
+    light.bedroom:
+      name: Luci stanza da letto
+      room: camera da letto
+      expose: true
+      aliases:
+        - Luci bedroom
+        - Luci camera da letto
+    light.hue_lightstrip_plus_1:
+      room: camera da letto
+      name: Luce camera striscia
+      expose: true
+      aliases:
+        - Luce camera strip
+        - Luce camera striscia led
+    light.yeelight_luce_bedside:
+      room: camera da letto
+      name: Luce Gianpi
+      expose: true
+      aliases:
+        - Luce Bedside
+        - Luce bedside comodino
+    light.xiaomi_philips_bedroom:
+      room: camera da letto
+      name: Luce Romina
+      expose: true
+      aliases:
+        - Paralume Romina
+    light.xiaomi_philips_ingresso:
+      room: ingresso
+      name: Paralume Ingresso
+      expose: true
+      aliases:
+        - Luce Ingresso
+        - Luce entrata
+    light.yeelight_paralume_sala:
+      room: salotto
+      name: Paralume Sala
+      expose: true
+      aliases:
+        - Luce sala
+        - Paralume salotto
+    light.luce_studio:
+      room: studio
+      name: Luce studio
+      expose: true
+      aliases:
+        - Luce nello Studio
+        - Luce camera ospiti
+    light.applique_sala:
+      room: salotto
+      name: Applique Sala
+      expose: true
+      aliases:
+        - Lampadario salotto
+        - Applique salotto
+        - Lampadario sala
+    light.applique_livia:
+      room: camera livia
+      name: Applique Livia
+      expose: true
+      aliases:
+        - Lampadario Livia
+        - Applique camera Livia
+    light.faretti_ingresso:
+      room: ingresso
+      name: Faretti Ingresso
+      expose: true
+      aliases:
+        - Faretti in ingresso
+        - Luce ingresso
+    light.luce_secondo_bagno:
+      room: bagno piccolo
+      name: Faretti Bagno piccolo
+      expose: true
+      aliases:
+        - Luce Bagno Piccolo
+        - Luce secondo bagno
+    light.luce_cucina:
+      room: cucina
+      name: Luce Cucina
+      expose: true
+      aliases:
+        - Luce in Cucina
+        - Lampadario Cucina
+    light.luce_ripostiglio:
+      room: ripostiglio
+      name: Luce ripostiglio
+      expose: true
+      aliases:
+        - Luce nel ripostiglio
+        - luce stanzino
+#################################################################
+    climate.daikin_fx_sala:
+      room: salotto
+      name: Clima Sala
+      expose: true
+      aliases:
+        - Climatizzatore Sala
+        - Climatizzatore Salotto
+    sensor.temperature_158d0001d6be78:
+      room: salotto
+      name: Temperatura Sala
+      expose: true
+      aliases:
+        - Temp Sala
+        - Temperatura Salotto
+
+#################################################################
+#                                                               #
+#                          Automation                           #
+#                                                               #
+#################################################################
+automation:
+  - alias: TTS to media player
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: input_text.notify_temp
+      from: ''
+    action:
+    - service: tts.google_translate_say
+      entity_id: media_player.salotto
+      data_template:
+        message: >
+          {{ states('input_text.notify_temp') }}
+    - service: input_text.set_value
+      entity_id: input_text.notify_temp
+      data:
+        value: ''

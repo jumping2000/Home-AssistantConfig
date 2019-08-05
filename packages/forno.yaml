@@ -1,0 +1,209 @@
+#################################################################
+#                                                               #
+#                    Packages/Forno e Cucina                    #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'forno'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+    sensor.oven_status:
+      <<: *customize
+      icon: mdi:toaster-oven
+
+    sensor.kitchen_status:
+      <<: *customize
+      icon: mdi:silverware
+#################################################################
+#                                                               #
+#                            SENSOR                             #
+#                                                               #
+#################################################################
+sensor:
+  - platform: template
+    sensors:
+      oven_status:
+        entity_id: input_select.oven_status
+        value_template: '{{ states.input_select.oven_status.state}}'
+        friendly_name: 'Status Forno'
+
+      kitchen_status:
+        entity_id: sensor.cucina_power
+        value_template: > 
+          {% if (states.sensor.cucina_power.state | int > 10) %}
+          Running
+          {% else %}
+          Idle
+          {% endif %}
+        friendly_name: 'Status cucina'
+
+#################################################################
+#                                                               #
+#                 INPUT BOOLEAN SELECT DATETIME                 #
+#                                                               #
+#################################################################  
+input_select:
+  oven_status:
+    name: Stato Forno
+    options:
+      - Idle
+      - Heating
+      - Running
+    initial: Idle
+
+#################################################################
+#                                                               #
+#                            GROUP                              #
+#                                                               #
+#################################################################  
+group:
+  oven:
+    name: 'Forno'
+    control: hidden
+    entities:
+      - sensor.oven_status
+      - switch.plug_forno
+      - sensor.forno_power
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+# When power is detected, and the oven is not in 
+# the Heating state, change the status of the oven
+# to Heating. 
+ 
+  - alias: Forno active quando rileva potenza
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.forno_power
+      above: 100
+      for:
+        minutes: 1
+    condition:
+      condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.oven_status
+        state: Idle
+      - condition: state
+        entity_id: sensor.oven_status
+        state: Running
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.oven_status
+        option: Heating
+
+#################################################################
+# When the power drops, move the state of the Oven to Running.
+  - alias: Forno running quando potenza scende
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.forno_power
+      below: 70
+      for:
+        minutes: 1
+    condition:
+    - condition: state
+      entity_id: input_select.oven_status
+      state: Heating
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.oven_status
+        option: Running
+
+#################################################################
+# Wait 1 minute  when the power in down and the state is
+# heating or running then we decide the oven has finished.
+ 
+  - alias: Forno idle dopo il timeout
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.forno_power
+      below: 5
+      for:
+        minutes: 1
+    condition:
+      condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.oven_status
+        state: Heating
+      - condition: state
+        entity_id: sensor.oven_status
+        state: Running
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.oven_status
+        option: Idle
+
+################################################################
+  - alias: Manda alert quando forno inizia
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.oven_status
+      from: 'Idle'
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        message: 'Il forno è in funzione'
+
+#################################################################
+  - alias: Manda alert quando forno spento
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.oven_status
+      from: 'Running'
+      to: 'Idle'
+    - platform: state
+      entity_id: sensor.oven_status
+      from: 'Heating'
+      to: 'Idle'
+    condition:
+    - condition: state
+      entity_id: input_select.oven_status
+      state: 'Idle'
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: "*-- Attenzione --*"
+        message: "Forno spento, buon appetito"
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

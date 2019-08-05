@@ -1,0 +1,209 @@
+############################################################################
+##  Base `configuration.yaml` most stuff is in packages/*.yaml
+############################################################################
+homeassistant:
+  auth_providers:
+  - type: homeassistant
+  # Uncomment next line if you want to enable legacy API password support
+  - type: legacy_api_password
+    api_password: !secret http_password
+  name: Home
+  latitude: !secret home_lat
+  longitude: !secret home_long
+  elevation: 330
+  unit_system: metric
+  time_zone: Europe/Rome
+  customize: !include customize.yaml
+  customize_glob: !include customize_glob.yaml
+  packages: !include_dir_named packages
+  whitelist_external_dirs:
+    - /config
+  
+############################################################################
+http:
+  base_url: 127.0.0.1
+# 
+#USE NGINX  
+#  ssl_certificate: !secret ssl_certificate
+#  ssl_key: !secret ssl_key
+  login_attempts_threshold: 5
+  ip_ban_enabled: false
+############################################################################
+# Show links to resources in log and frontend
+#introduction:
+# Enables the frontend
+frontend:
+# Enables configuration UI
+config:
+# Enables support for tracking state changes over time
+history:
+  include:
+    domains:
+    - sensor    
+    - climate
+    - binary_sensor
+    - device_tracker
+    - person
+  exclude:
+    entities:
+    - sensor.last_boot
+    - sensor.date
+    - sensor.time
+    - sensor.workday
+    - sun.sun
+    - sensor.moon
+    - sensor.fasi_lunari
+    - sensor.stagioni
+    - sensor.season
+# View all events in a logbook
+logbook:
+  include:
+    domains:
+    - sensor    
+    - climate
+    - binary_sensor
+    - device_tracker
+    - person
+  exclude:
+    entities:
+    - sensor.last_boot
+    - sensor.date
+    - sensor.time
+    - sensor.workday
+    - sun.sun
+    - sensor.moon
+    - sensor.fasi_lunari
+    - sensor.stagioni
+    - sensor.season
+#
+hassio:
+#
+lovelace:
+  mode: yaml
+# Enables a map showing the location of tracked devices
+map:
+ios:
+system_health:
+mobile_app:
+#discovery:
+#  ignore:
+#    - yeelight
+#zeroconf:
+#cloud:
+#updater:
+#conversation:
+############################################################################
+#https://home-assistant.io/components/recorder/
+recorder:
+  db_url: !secret mariadb_url
+  purge_interval: 1
+  purge_keep_days: 5
+  include:
+    domains:
+    - sensor    
+    - climate
+    - binary_sensor
+    - device_tracker
+    - person
+  exclude:
+    entities:
+    - sensor.last_boot
+    - sensor.date
+    - sensor.time
+    - sensor.workday
+    - sun.sun
+    - sensor.moon
+    - sensor.fasi_lunari
+    - sensor.stagioni
+    - sensor.season
+############################################################################
+#https://home-assistant.io/components/logger/
+logger:
+  default: error
+  logs:
+    homeassistant.components.mysensors: warning
+    custom_components.bwalarm.alarm_control_panel: error
+    #custom_components.climate.netatmo2: debug
+    #homeassistant.components.rflink: warning
+    #homeassistant.components.sensor.template: critical
+    #homeassistant.components.cover: critical
+    #homeassistant.components.telegram_bot: debug
+    #mysensors: debug
+    #homeassistant.components.light: error
+    #homeassistant.components.mysensors: error
+    #homeassistant.components.mqtt: error
+    #homeassistant.core: info
+    #homeassistant.components.tts: debug
+    #homeassistant.components.media_player: debug
+    #homeassistant.components.cloudflare: error
+    #homeassistant.components.switch: debug
+    #rflink: debug
+    #tts: debug
+
+####################################################
+#                                                  #
+#      LINKS TO INDIVUAL CONFIGURATION FILES       #
+#                                                  #
+####################################################
+
+#https://home-assistant.io/docs/configuration/splitting_configuration/
+
+group: !include groups.yaml
+alarm_control_panel: !include resources/bwalarm/bwalarm.yaml
+#panel_custom: !include panel_custom.yaml
+hacs:
+  token: !secret hacs_token
+breaking_changes:
+
+####################################################
+#                                                  #
+#                 GATEWAY - HUBS                   #
+#                                                  #
+####################################################
+mysensors:
+  gateways:
+    - device: '192.168.1.103'
+      persistence_file: '/config/mysensors.json'
+      tcp_port: 5003
+  optimistic: false
+  persistence: true
+  version: '2.2'
+#------------------------------------
+xiaomi_aqara:
+  discovery_retry: 10
+  gateways:
+    #- mac: !secret xiaomi_gateway1_mac
+    - key: !secret xiaomi_key
+#------------------------------------
+#hue:
+#  bridges:
+#    - host: 192.168.1.100
+#      allow_unreachable: true
+#      allow_hue_groups: true
+#------------------------------------
+#rflink:
+#  port: /dev/serial/by-id/usb-1a86_USB2.0-Serial-if00-port0
+#  wait_for_ack: False
+#  ignore_devices:
+#    - newkaku_*
+#    - digitech_*
+#    - oregontemp_*
+#    - auriol_*
+#    - firstline_*
+#    - bl999_*
+#    - mebus_*
+#    - alectov1_*
+#------------------------------------
+cloudflare:
+  email: !secret cloudflare_user
+  api_key: !secret cloudflare_api
+  zone: !secret cloudflare_zone
+  records:
+    - www
+    - grafana
+    - omv
+####################################################
+#                                                  #
+#           END OF CONFIGURATION FILE              #
+#                                                  #
+####################################################

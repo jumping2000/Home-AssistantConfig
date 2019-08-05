@@ -1,0 +1,559 @@
+#################################################################
+#                                                               #
+#                     Packages/Sensoristica                    #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'sensoristica'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+    sensor.shelly_new_firmware:
+      <<: *customize
+      icon: mdi:new-box
+
+    sensor.shelly_firmware_version:
+      <<: *customize
+      icon: mdi:check-decagram
+
+    sensor.shelly_studio_uptime:
+      <<: *customize
+      icon: mdi:av-timer
+
+    sensor.shelly_livia_uptime:
+      <<: *customize
+      icon: mdi:av-timer
+      
+    sensor.shelly_sala_uptime:
+      <<: *customize
+      icon: mdi:av-timer
+      
+    sensor.shelly_ingresso_uptime:
+      <<: *customize
+      icon: mdi:av-timer
+
+    sensor.shelly_cucina_uptime:
+      <<: *customize
+      icon: mdi:av-timer
+
+    sensor.shelly_condizionatori_uptime:
+      <<: *customize
+      icon: mdi:av-timer
+
+    sensor.luce_ingresso_energy:
+      <<: *customize
+      icon: mdi:flash-outline
+      friendly_name: Energia Luce Ingresso
+
+    sensor.luce_secondo_bagno_energy:
+      <<: *customize
+      icon: mdi:flash-outline
+      friendly_name: Energia Luce Bagno piccolo
+
+    sensor.luce_ingresso_power:
+      <<: *customize
+      friendly_name: Potenza Luce Ingresso
+      icon: mdi:flash
+
+    sensor.luce_secondo_bagno_power:
+      <<: *customize
+      friendly_name: Potenza Luce Bagno piccolo
+      icon: mdi:flash
+
+    sensor.condizionatori_energy:
+      <<: *customize
+      icon: mdi:flash-outline
+      friendly_name: Energia Condizionatori
+
+    sensor.condizionatori_power:
+      <<: *customize
+      friendly_name: Potenza Condizionatori
+      icon: mdi:flash
+
+####################################
+    sensor.ultima_release_sonoff:
+      <<: *customize
+      icon: mdi:new-box
+    sensor.versione_sonoff_powr2_forno:
+      <<: *customize
+      icon: mdi:check-decagram
+    sensor.versione_sonoff_basic_ripostiglio:
+      <<: *customize
+      icon: mdi:check-decagram
+    sensor.versione_blitzwolf_lavatrice:
+      <<: *customize
+      icon: mdi:check-decagram
+    sensor.versione_blitzwolf_cucina:
+      <<: *customize
+      icon: mdi:check-decagram
+    sensor.blitzwolf_01_power:
+      <<: *customize
+      icon: mdi:power
+    sensor.blitzwolf_01_signal_strenght:
+      <<: *customize
+      icon: mdi:router-wireless
+    sensor.blitzwolf_01_uptime:
+      <<: *customize
+      icon: mdi:white-balance-incandescent
+    sensor.blitzwolf_01_vcc:
+      <<: *customize
+      icon: mdi:flash
+    sensor.blitzwolf_02_power:
+      <<: *customize
+      icon: mdi:power
+    sensor.blitzwolf_02_signal_strenght:
+      <<: *customize
+      icon: mdi:router-wireless
+    sensor.blitzwolf_02_uptime:
+      <<: *customize
+      icon: mdi:white-balance-incandescent
+    sensor.blitzwolf_02_vcc:
+      <<: *customize
+      icon: mdi:flash
+    sensor.sonoff_01_power:
+      <<: *customize
+      icon: mdi:power
+    sensor.sonoff_01_signal_strenght:
+      <<: *customize
+      icon: mdi:router-wireless
+    sensor.sonoff_01_uptime:
+      <<: *customize
+      icon: mdi:white-balance-incandescent
+    sensor.sonoff_01_vcc:
+      <<: *customize
+      icon: mdi:flash
+    sensor.sonoff_02_power:
+      <<: *customize
+      icon: mdi:power
+    sensor.sonoff_02_signal_strenght:
+      <<: *customize
+      icon: mdi:router-wireless
+    sensor.sonoff_02_uptime:
+      <<: *customize
+      icon: mdi:white-balance-incandescent
+    sensor.sonoff_02_vcc:
+      <<: *customize
+      icon: mdi:flash
+
+#################################################################
+#                                                               #
+#                            REST                               #
+#                                                               #
+################################################################# 
+rest_command:
+  reboot_shelly_studio:
+    url: 'http://192.168.1.153/reboot'
+
+  reboot_shelly_cucina:
+    url: 'http://192.168.1.150/reboot'
+
+  reboot_shelly_livia:
+    url: 'http://192.168.1.154/reboot'
+
+  reboot_shelly_sala:
+    url: 'http://192.168.1.155/reboot'
+
+  reboot_shelly_ingresso:
+    url: 'http://192.168.1.151/reboot'
+
+  reboot_shelly_condizionatori:
+    url: 'http://192.168.1.160/reboot'
+
+#################################################################
+#                                                               #
+#                           Sensori                             #
+#                                                               #
+#################################################################
+sensor:
+  - platform: mqtt
+    name: "Shelly New Firmware"
+    state_topic: "shellies/announce"
+    value_template: "{{ value_json.new_fw }}"
+
+  - platform: mqtt
+    name: "Shelly Firmware Version"
+    state_topic: "shellies/announce"
+    value_template: "{{ value_json.fw_ver }}"
+
+###########################################################
+  - platform: rest
+    resource: http://192.168.1.153/status
+    name: Shelly Studio RSSI
+    value_template: "{{ value_json['wifi_sta'].rssi }}"
+    device_class: signal_strength
+    unit_of_measurement: "dBm"
+
+  - platform: rest
+    resource: http://192.168.1.154/status
+    name: Shelly Livia RSSI
+    value_template: "{{ value_json['wifi_sta'].rssi }}"
+    device_class: signal_strength
+    unit_of_measurement: "dBm"
+
+  - platform: rest
+    resource: http://192.168.1.155/status
+    name: Shelly Sala RSSI
+    value_template: "{{ value_json['wifi_sta'].rssi }}"
+    device_class: signal_strength
+    unit_of_measurement: "dBm"
+
+  - platform: rest
+    resource: http://192.168.1.151/status
+    name: Shelly Ingresso RSSI
+    value_template: "{{ value_json['wifi_sta'].rssi }}"
+    device_class: signal_strength
+    unit_of_measurement: "dBm"
+
+  - platform: rest
+    resource: http://192.168.1.150/status
+    name: Shelly Cucina RSSI
+    value_template: "{{ value_json['wifi_sta'].rssi }}"
+    device_class: signal_strength
+    unit_of_measurement: "dBm"
+
+  - platform: rest
+    resource: http://192.168.1.160/status
+    name: Shelly Condizionatori RSSI
+    value_template: "{{ value_json['wifi_sta'].rssi }}"
+    device_class: signal_strength
+    unit_of_measurement: "dBm"
+
+###########################################################
+  - platform: rest
+    resource: http://192.168.1.153/status
+    name: Shelly Studio Uptime
+    value_template: "{{ (value_json['uptime'] / 3600) | round (1) }}"
+    unit_of_measurement: "h"
+
+  - platform: rest
+    resource: http://192.168.1.154/status
+    name: Shelly Livia Uptime
+    value_template: "{{ ((value_json['uptime']) / 3600) | round (1) }}"
+    unit_of_measurement: "h"
+
+  - platform: rest
+    resource: http://192.168.1.155/status
+    name: Shelly Sala Uptime
+    value_template: "{{ ((value_json['uptime']) / 3600) | round (1) }}"
+    unit_of_measurement: "h"
+
+  - platform: rest
+    resource: http://192.168.1.151/status
+    name: Shelly Ingresso Uptime
+    value_template: "{{ ((value_json['uptime']) / 3600) | round (1) }}"
+    unit_of_measurement: "h"
+
+  - platform: rest
+    resource: http://192.168.1.150/status
+    name: Shelly Cucina Uptime
+    value_template: "{{ ((value_json['uptime']) / 3600) | round (1) }}"
+    unit_of_measurement: "h"
+
+  - platform: rest
+    resource: http://192.168.1.150/status
+    name: Shelly Condizionatori Uptime
+    value_template: "{{ ((value_json['uptime']) / 3600) | round (1) }}"
+    unit_of_measurement: "h"
+
+##########################################################
+### shelly 2.5 PM ###
+  - platform: mqtt
+    name: "Luce Ingresso Power"
+    state_topic: "shellies/shellyswitch25-72FA44/relay/0/power"
+    unit_of_measurement: "W"
+
+  - platform: mqtt
+    name: "Luce secondo Bagno Power"
+    state_topic: "shellies/shellyswitch25-72FA44/relay/1/power"
+    unit_of_measurement: "W"
+
+  - platform: mqtt
+    name: "Luce Ingresso E"
+    state_topic: "shellies/shellyswitch25-72FA44/relay/0/energy"
+
+  - platform: mqtt
+    name: "Luce secondo Bagno E"
+    state_topic: "shellies/shellyswitch25-72FA44/relay/1/energy"
+
+  - platform: mqtt
+    name: "Shelly 2.5 Temperature"
+    state_topic: "shellies/shellyswitch25-72FA44/temperature"
+    device_class: temperature
+    unit_of_measurement: "°C"
+    
+  - platform: template
+    sensors:
+      luce_ingresso_energy:
+        entity_id: sensor.time
+        friendly_name: "Luce Ingresso Energia"
+        unit_of_measurement: 'kWh'
+        value_template: "{{ (float(states.sensor.luce_ingresso_e.state)/(60*1000)) | round(2) }}"
+        
+      luce_secondo_bagno_energy:
+        entity_id: sensor.time
+        friendly_name: "Luce secondo Bagno Energia"
+        unit_of_measurement: 'kWh'
+        value_template: "{{ (float(states.sensor.luce_secondo_bagno_e.state)/(60*1000)) | round(2) }}"
+
+##########################################################
+### shelly 1 PM ###
+  - platform: mqtt
+    name: "Condizionatori Power"
+    state_topic: "shellies/shelly1pm-B1DABA/relay/0/power"
+    unit_of_measurement: "W"
+
+  - platform: mqtt
+    name: "Condizionatori E"
+    state_topic: "shellies/shelly1pm-B1DABA/relay/0/energy"
+
+  - platform: mqtt
+    name: "Shelly 1PM Temperature"
+    state_topic: "shellies/shelly1pm-B1DABA/temperature"
+    device_class: temperature
+    unit_of_measurement: "°C"
+
+  - platform: template
+    sensors:
+      condizionatori_energy:
+        entity_id: sensor.time
+        friendly_name: "Condizionatori Energia"
+        unit_of_measurement: 'kWh'
+        value_template: "{{ (float(states.sensor.condizionatori_e.state)/(60*1000)) | round(2) }}"
+  
+################################################################# 
+  - platform: rest
+    name: Ultima Release Sonoff
+    resource: https://api.github.com/repos/arendst/Sonoff-Tasmota/releases/latest
+    value_template: '{{ value_json.tag_name }}'
+    headers:
+      Accept: application/vnd.github.v3+json
+      Content-Type: application/json
+      User-Agent: Home Assistant REST sensor
+         
+  - platform: mqtt
+    name: Versione Sonoff Basic Ripostiglio
+    state_topic: "stat/sonoff-01/STATUS2"
+    value_template: "{{ value_json['StatusFWR'].Version }}"
+
+  - platform: mqtt
+    name: Versione Sonoff POWR2 Forno
+    state_topic: "stat/sonoff-02/STATUS2"
+    value_template: "{{ value_json['StatusFWR'].Version }}"
+
+  - platform: mqtt
+    name: Versione Blitzwolf Lavatrice
+    state_topic: "stat/blitzwolf-01/STATUS2"
+    value_template: "{{ value_json['StatusFWR'].Version }}"
+
+  - platform: mqtt
+    name: Versione Blitzwolf Cucina
+    state_topic: "stat/blitzwolf-02/STATUS2"
+    value_template: "{{ value_json['StatusFWR'].Version }}"
+
+################################################################# 
+  - platform: mqtt
+    name: "Blitzwolf 01 Signal Strenght"
+    state_topic: "tele/blitzwolf-01/STATE"
+    value_template: "{{ value_json['Wifi'].RSSI }}"
+    unit_of_measurement: "%"
+    device_class: signal_strength
+  - platform: mqtt
+    name: "Blitzwolf 01 Uptime"
+    state_topic: "tele/blitzwolf-01/STATE"
+    value_template: "{{ value_json['Uptime'] }}"
+  - platform: mqtt
+    name: "Blitzwolf 01 Power"
+    state_topic: "tele/blitzwolf-01/STATE"
+    value_template: "{{ value_json['POWER'] }}"
+
+################################################################# 
+  - platform: mqtt
+    name: "Blitzwolf 02 Signal Strenght"
+    state_topic: "tele/blitzwolf-02/STATE"
+    value_template: "{{ value_json['Wifi'].RSSI }}"
+    unit_of_measurement: "%"
+    device_class: signal_strength
+  - platform: mqtt
+    name: "Blitzwolf 02 Uptime"
+    state_topic: "tele/blitzwolf-02/STATE"
+    value_template: "{{ value_json['Uptime'] }}"
+  - platform: mqtt
+    name: "Blitzwolf 02 Power"
+    state_topic: "tele/blitzwolf-02/STATE"
+    value_template: "{{ value_json['POWER'] }}"
+
+################################################################# 
+  - platform: mqtt
+    name: "Sonoff 01 Signal Strenght"
+    state_topic: "tele/sonoff-01/STATE"
+    value_template: "{{ value_json['Wifi'].RSSI }}"
+    unit_of_measurement: "%"
+    device_class: signal_strength
+  - platform: mqtt
+    name: "Sonoff 01 Uptime"
+    state_topic: "tele/sonoff-01/STATE"
+    value_template: "{{ value_json['Uptime'] }}"
+  - platform: mqtt
+    name: "Sonoff 01 Vcc"
+    state_topic: "tele/sonoff-01/STATE"
+    value_template: "{{ value_json['Vcc'] }}"
+    unit_of_measurement: "V"
+  - platform: mqtt
+    name: "Sonoff 01 Power"
+    state_topic: "tele/sonoff-01/STATE"
+    value_template: "{{ value_json['POWER'] }}"
+
+################################################################# 
+  - platform: mqtt
+    name: "Sonoff 02 Signal Strenght"
+    state_topic: "tele/sonoff-02/STATE"
+    value_template: "{{ value_json['Wifi'].RSSI }}"
+    unit_of_measurement: "%"
+    device_class: signal_strength
+  - platform: mqtt
+    name: "Sonoff 02 Uptime"
+    state_topic: "tele/sonoff-02/STATE"
+    value_template: "{{ value_json['Uptime'] }}"
+  - platform: mqtt
+    name: "Sonoff 02 Power"
+    state_topic: "tele/sonoff-01/STATE"
+    value_template: "{{ value_json['POWER'] }}"
+
+#################################################################
+#                                                               #
+#                        BINARY Sensor                          #
+#                                                               #
+#################################################################
+binary_sensor:
+  - platform: mqtt
+    name: "Shelly 2.5 Overtemperature"
+    state_topic: "shellies/shellyswitch25-72FA44/overtemperature"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: safety
+
+  - platform: mqtt
+    name: "Shelly 1PM Overtemperature"
+    state_topic: "shellies/shelly1pm-B1DABA/overtemperature"
+    payload_on: "1"
+    payload_off: "0"
+    device_class: safety
+
+###########################################################
+  - platform: rest
+    resource: http://192.168.1.153/status
+    name: Shelly Studio MQTT
+    value_template: "{{ value_json['mqtt'].connected }}"
+
+  - platform: rest
+    resource: http://192.168.1.154/status
+    name: Shelly Livia MQTT
+    value_template: "{{ value_json['mqtt'].connected }}"
+
+  - platform: rest
+    resource: http://192.168.1.155/status
+    name: Shelly Sala MQTT
+    value_template: "{{ value_json['mqtt'].connected }}"
+
+  - platform: rest
+    resource: http://192.168.1.151/status
+    name: Shelly Ingresso MQTT
+    value_template: "{{ value_json['mqtt'].connected }}"
+
+  - platform: rest
+    resource: http://192.168.1.150/status
+    name: Shelly Cucina MQTT
+    value_template: "{{ value_json['mqtt'].connected }}"
+    
+  - platform: rest
+    resource: http://192.168.1.160/status
+    name: Shelly Condizionatori MQTT
+    value_template: "{{ value_json['mqtt'].connected }}"
+
+#################################################################
+#                                                               #
+#                            SCRIPT                             #
+#                                                               #
+#################################################################
+script:
+  update_shelly:
+    alias: 'Shelly Update Firmware'
+    sequence:
+    - service: mqtt.publish
+      data:
+        topic: shellies/command
+        payload: update_fw
+
+  reboot_shelly_studio:
+    alias: 'Reboot Shelly Studio'
+    sequence:
+    - service: rest_command.reboot_shelly_studio
+
+  reboot_shelly_cucina:
+    alias: 'Reboot Shelly Cucina'
+    sequence:
+    - service: rest_command.reboot_shelly_cucina
+
+  reboot_shelly_livia:
+    alias: 'Reboot Shelly Livia'
+    sequence:
+    - service: rest_command.reboot_shelly_livia
+
+  reboot_shelly_sala:
+    alias: 'Reboot Shelly Sala'
+    sequence:
+    - service: rest_command.reboot_shelly_sala
+
+  reboot_shelly_ingresso:
+    alias: 'Reboot Shelly Ingresso'
+    sequence:
+    - service: rest_command.reboot_shelly_ingresso
+
+  reboot_shelly_condizionatori:
+    alias: 'Reboot Shelly Condizionatori'
+    sequence:
+    - service: rest_command.reboot_shelly_condizionatori
+
+#################################################################
+  check_sonoffs_version:
+      alias: Check Versione Sonoffs
+      sequence:
+        - service: mqtt.publish
+          data_template:
+            topic: "cmnd/sonoffs/status"
+            payload: 2
+
+  update_sonoffs:
+      alias: Update Sonoffs
+      sequence:
+        - service: mqtt.publish
+          data_template:
+            topic: "cmnd/sonoffs/upgrade"
+            payload: 1
+            
+#################################################################
+#                                                               #
+#                    END OF CONFIGURATION                       #
+#                                                               #
+#################################################################

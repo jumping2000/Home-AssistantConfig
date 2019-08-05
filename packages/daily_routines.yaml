@@ -1,0 +1,536 @@
+#################################################################
+#                                                               #
+#                       Packages/Daily                          #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'daily_routines'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+    
+    ################################################
+    ## sensor
+    ################################################
+    
+    input_boolean.dropbox_backup:
+      <<: *customize
+      friendly_name: "Dropbox Backup"
+      icon: mdi:cloud-upload
+
+    input_boolean.dropbox_sync_completed:
+      <<: *customize
+      friendly_name: "Dropbox Upload Completato"
+      icon: mdi:dropbox
+
+    input_datetime.backup_time:
+      <<: *customize
+      icon: mdi:clock-outline
+
+    input_select.backup_day:
+      <<: *customize
+      icon: mdi:calendar
+    
+    input_number.ritardo_upload:
+      <<: *customize
+      icon: mdi:timer-sand   
+
+#########################################################
+#                                                       #
+#                    FOLDER WATCH                       #
+#                                                       #
+#########################################################
+#folder_watcher:
+#  - folder: /backup
+#      - '*.tar'
+#########################################################
+#                                                       #
+#                       GROUP                           #
+#                                                       #
+#########################################################
+group:
+  dropbox_pack:
+    name: Dropbox Pack
+    entities:
+      - input_boolean.dropbox_backup
+      - input_boolean.dropbox_sync_completed
+      - input_datetime.backup_time
+      - input_select.backup_day
+      - input_text.backup_status
+      - input_number.ritardo_upload
+
+#########################################################
+#                                                       #
+#                        INPUT                          #
+#                                                       #
+#########################################################
+input_boolean:
+  dropbox_backup:
+    name: Dropbox Backup
+    initial: 'on'
+    icon: mdi:cloud-upload
+
+  dropbox_sync_completed:
+    name: Dropbox Sync Completato
+    initial: 'off'
+    icon: mdi:dropbox
+
+  notifiche_accese:
+    name: Notifiche accese
+    initial: 'on'
+    icon: mdi:toggle-switch
+
+#########################################################
+input_select:
+  backup_day:
+    name: Giorno di Backup
+    options:
+      - "Tutti i giorni"
+      - "Lun - Mer - Ven"
+      - "Lun e Ven"
+      - "Sabato"
+      - "Domenica"
+      - "Mai"
+    initial: "Lun e Ven"
+    icon: mdi:calendar
+
+#########################################################
+input_datetime:
+  backup_time:
+    name: "Orario Backup"
+    has_date: false
+    has_time: true
+    initial: '02:00'
+    icon: mdi:clock-outline
+
+#########################################################
+input_text:
+  backup_status:
+    icon: mdi:database-check
+    name: Stato Backup
+    initial: ''
+
+#########################################################
+input_number:
+  ritardo_upload:
+    name: Ritardo Upload Dropbox
+    initial: 60
+    min: 15
+    max: 180
+    step: 15
+    mode: box
+    icon: mdi:timer-sand 
+
+#########################################################
+#                                                       #
+#                        SENSOR                         #
+#                                                       #
+#########################################################
+sensor:
+  - platform: template
+    sensors:
+      ultimo_backup_gdrive:
+        friendly_name: "Last Backup Gdrive"
+        entity_id: sensor.time
+        value_template: >-
+          {% set date = as_timestamp(state_attr('sensor.snapshot_backup', 'last_snapshot')) | timestamp_custom('%d') %}
+          {% set date = '{:01}'.format(date | int) %}
+          {% if date in ('1', '21', '31') %}
+              {% set date = date ~ 'st' %}
+          {% elif date in ('2', '22') %}
+              {% set date = date ~ 'nd' %}
+          {% elif date in ('3', '23') %}
+              {% set date = date ~ 'rd' %}
+          {% else %}
+              {% set date = date ~ 'th' %}
+          {% endif %}
+          {{ as_timestamp(state_attr('sensor.snapshot_backup', 'last_snapshot')) | timestamp_custom('%H:%M on %a') }} {{ date }} {{ as_timestamp(state_attr('sensor.snapshot_backup', 'last_snapshot')) | timestamp_custom('%b %Y') }}
+
+#########################################################
+#                                                       #
+#                        SCRIPT                         #
+#                                                       #
+#########################################################
+script:
+  check_dropbox_successful:
+    sequence:
+    - service: notify.telegram
+      data_template:
+        title: '*-- Backup Home Assistant --*'        
+        message: &check_sync >
+            {% if is_state("input_boolean.dropbox_sync_completed", "off")  -%}
+              ERRORE nel Dropbox backup!
+            {%- else -%}
+              Backup completato alle {{states('sensor.time')}}
+            {%- endif %}
+    - delay: '00:00:05'
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.backup_status
+        value: *check_sync
+    - delay: '00:00:05'
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.dropbox_sync_completed
+
+#########################################################
+#                                                       #
+#                     AUTOMAZIONI                       #
+#                                                       #
+#########################################################
+automation:
+#########################################################
+#                                                       #
+#                SNAPSHOT e DROPBOX SYNC                #
+#                                                       #
+#########################################################
+  - alias: automazione Hassio backup
+    initial_state: true
+    trigger:
+      platform: template
+      value_template: >-
+        {{ states('sensor.time') == (states.input_datetime.backup_time.attributes.timestamp | int | timestamp_custom('%H:%M', False)) }}
+    condition:
+    - condition: state
+      entity_id: input_boolean.dropbox_backup
+      state: 'on'
+    - condition: template
+      value_template: >-
+        {% set today = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][now().weekday()] %}
+        {% if is_state("input_select.backup_day", "Tutti i giorni") %} true
+        {% elif is_state("input_select.backup_day", "Lun e Ven") and today in ["Monday","Friday"] %} true
+        {% elif is_state("input_select.backup_day", "Sabato") and today in ["Saturday"] %} true
+        {% elif is_state("input_select.backup_day", "Domenica") and today in ["Sunday"] %} true
+        {% elif is_state("input_select.backup_day", "Lun - Mer - Ven") and today in ["Monday","Wednesday","Friday"] %} true
+        {% else %} false
+        {% endif %}
+    action:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.backup_status
+        value: Avviato Snapshot alle {{states('sensor.time')}}
+    - service: hassio.snapshot_full
+      data_template:
+        name: Backup automatico {{ now().strftime('%Y-%m-%d') }}
+
+#########################################################
+  - alias: controllo nuovi file share backup
+    trigger:
+      platform: event
+      event_type: folder_watcher
+      event_data:
+        event_type: created
+    action:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.backup_status
+        value: Creato Snapshot alle {{states('sensor.time')}}
+
+#########################################################
+  - alias: uploaded backup
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: input_boolean.dropbox_sync_completed
+      to: 'on'
+    action:
+    - service: script.turn_on
+      entity_id: script.check_dropbox_successful
+
+#########################################################
+  - alias: upload Dropbox backup
+    initial_state: true
+    trigger:
+      platform: template
+      value_template: >-
+        {{ states('sensor.time') == (((states.input_datetime.backup_time.attributes.timestamp | int) + (states('input_number.ritardo_upload') | int  * 60)) | timestamp_custom('%H:%M', False)) }}
+    condition:
+    - condition: state
+      entity_id: input_boolean.dropbox_backup
+      state: 'on'
+    - condition: template
+      value_template: >-
+        {% set today = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][now().weekday()] %}
+        {% if is_state("input_select.backup_day", "Tutti i giorni") %} true
+        {% elif is_state("input_select.backup_day", "Lun e Ven") and today in ["Monday","Friday"] %} true
+        {% elif is_state("input_select.backup_day", "Sabato") and today in ["Saturday"] %} true
+        {% elif is_state("input_select.backup_day", "Domenica") and today in ["Sunday"] %} true
+        {% elif is_state("input_select.backup_day", "Lun - Mer - Ven") and today in ["Monday","Wednesday","Friday"] %} true
+        {% else %} false
+        {% endif %}
+    action:
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.backup_status
+        value: 'Avviato backup su Dropbox'
+    - service: hassio.addon_stdin
+      data_template:
+        addon: 7be23ff5_dropbox_sync
+        input: {"command":"upload"}
+
+#########################################################
+#                                                       #
+#                       NOTIFICHE                       #
+#                                                       #
+#########################################################
+  - alias: 'Apertura Balcone Studio'
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d000112aec3
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d000112aec3
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.notifiche_accese
+      state: 'on'
+#    condition:
+#      condition: or
+#      conditions:
+#      - condition: template
+#        value_template: "{{ states.sensor.gianpi.state != 'Casa' }}"
+#      - condition: state
+#        entity_id: sensor.day_night
+#        state: 'Night'
+    action:
+      service: notify.telegram
+      data_template:
+        title: "*-- Attenzione --*"
+        message: >-
+          {% if is_state("binary_sensor.door_window_sensor_158d000112aec3","on") -%}
+          La porta finestra dello studio è aperta 
+          {%- else -%} 
+          La porta finestra dello studio è chiusa 
+          {%- endif %}
+
+#--------------------------------------------------------
+  - alias: 'Apertura Balcone Sala 1'
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00011c3087
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00011c3087
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.notifiche_accese
+      state: 'on'
+#    condition:
+#      condition: or
+#      conditions:
+#      - condition: template
+#        value_template: "{{ states.sensor.gianpi.state != 'Casa' }}"
+#      - condition: state
+#        entity_id: sensor.day_night
+#        state: 'Night'
+    action:
+      service: notify.telegram
+      data_template:
+        title: "*-- Attenzione --*"
+        message: >-
+          {% if is_state("binary_sensor.door_window_sensor_158d00011c3087","on") -%}
+          La porta finestra 1 dello sala è aperta 
+          {%- else -%} 
+          La porta finestra 1 della sala è chiusa 
+          {%- endif %}
+
+#--------------------------------------------------------
+  - alias: 'Apertura Balcone Sala 2'
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00013e425d
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00013e425d7
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.notifiche_accese
+      state: 'on'
+#    condition:
+#      condition: or
+#      conditions:
+#      - condition: template
+#        value_template: "{{ states.sensor.gianpi.state != 'Casa' }}"
+#      - condition: state
+#        entity_id: sensor.day_night
+#        state: 'Night'
+    action:
+      service: notify.telegram
+      data_template:
+        title: "*-- Attenzione --*"
+        message: >-
+          {% if is_state("binary_sensor.door_window_sensor_158d00013e425d","on") -%}
+          La porta finestra 2 dello sala è aperta 
+          {%- else -%} 
+          La porta finestra 2 della sala è chiusa 
+          {%- endif %}
+
+#--------------------------------------------------------
+  - alias: 'Apertura Finestra Bagno'
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d0002425ae8
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d0002425ae8
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.notifiche_accese
+      state: 'on'
+#    condition:
+#      condition: or
+#      conditions:
+#      - condition: template
+#        value_template: "{{ states.sensor.gianpi.state != 'Casa' }}"
+#      - condition: state
+#        entity_id: sensor.day_night
+#        state: 'Night'
+    action:
+      service: notify.telegram
+      data_template:
+        title: "*-- Attenzione --*"
+        message: >-
+          {% if is_state("binary_sensor.door_window_sensor_158d0002425ae8","on") -%}
+          La finestra del bagno è aperta 
+          {%- else -%} 
+          La finestra del bagno  è chiusa 
+          {%- endif %}
+
+#--------------------------------------------------------
+  - alias: 'Apertura Camera matrimoniale'
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d000232ac82
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d000232ac82
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.notifiche_accese
+      state: 'on'
+#    condition:
+#      condition: or
+#      conditions:
+#      - condition: template
+#        value_template: "{{ states.sensor.gianpi.state != 'Casa' }}"
+#      - condition: state
+#        entity_id: sensor.day_night
+#        state: 'Night'
+    action:
+      service: notify.telegram
+      data_template:
+        title: "*-- Attenzione --*"
+        message: >-
+          {% if is_state("binary_sensor.door_window_sensor_158d000232ac82","on") -%}
+          La finestra della camera padronale è aperta 
+          {%- else -%} 
+          La finestra della camera padronale è chiusa 
+          {%- endif %} 
+  
+#--------------------------------------------------------
+  - alias: 'Apertura Camera Livia'
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d0002329f47
+      to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_window_sensor_158d0002329f47
+      to: 'off'
+    condition:
+    - condition: state
+      entity_id: input_boolean.notifiche_accese
+      state: 'on'
+#    condition:
+#      condition: or
+#      conditions:
+#      - condition: template
+#        value_template: "{{ states.sensor.gianpi.state != 'Casa' }}"
+#      - condition: state
+#        entity_id: sensor.day_night
+#        state: 'Night'
+    action:
+      service: notify.telegram
+      data_template:
+        title: "*-- Attenzione --*"
+        message: >-
+          {% if is_state("binary_sensor.door_window_sensor_158d0002329f47","on") -%}
+          La finestra della camera di Livia è aperta 
+          {%- else -%} 
+          La finestra della camera di Livia è chiusa 
+          {%- endif %} 
+
+#-------------------------------------------------------
+  - alias: 'Tentativi Login'
+    initial_state: true
+    trigger:
+    - platform: template
+      value_template: "{{ states('persistent_notification.httplogin') != 'unknown' }}"
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- Attenzione --*"
+        message: >-
+          {% set message = states('persistent_notification.httplogin') %}
+          {% if 'invalid authentication' in message or 'login attempts' in message %}
+            {{ message }}: http://www.ip-tracker.org/locator/ip-lookup.php?ip={{ message.split('from ')[1] }}
+          {% else %}
+            {{ message }}
+          {% endif %}
+
+#-------------------------------------------------------
+  - alias: 'Update GH'
+    initial_state: false
+    trigger:
+    - platform: time_pattern
+      hours: 7
+      minutes: 3
+    action:
+    - service: google_assistant.request_sync
+
+#-------------------------------------------------------
+  - alias: 'Update OpenUV'
+    trigger:
+    - platform: time_pattern
+      minutes: '/30'
+    condition:
+      condition: and
+      conditions:
+        - condition: sun
+          after: sunrise
+        - condition: sun
+          before: sunset
+    action:
+      service: openuv.update_data
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

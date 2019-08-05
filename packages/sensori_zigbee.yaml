@@ -1,0 +1,290 @@
+#################################################################
+#                                                               #
+#                       Packages/Sensori                        #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'sensori_zigbee'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+    sensor.0x00158d000269e844_action:
+      <<: *customize
+      friendly_name: CUBO Studio
+    sensor.0x00158d000269e844_battery:
+      <<: *customize
+      friendly_name: Cubo Studio
+    sensor.0x00158d000269e844_linkquality:
+      <<: *customize
+      friendly_name: Cubo Studio
+      icon: mdi:radio-tower
+    
+    binary_sensor.0x00158d00023372ec_water_leak:
+      <<: *customize
+      friendly_name: WATER Studio
+    sensor.0x00158d00023372ec_battery:
+      <<: *customize
+      friendly_name: Water Studio
+    sensor.0x00158d00023372ec_linkquality:
+      <<: *customize
+      friendly_name: Water Studio
+      icon: mdi:radio-tower
+
+    binary_sensor.0x00158d0002bf5143_contact:
+      <<: *customize
+      friendly_name: DOOR Lavatrice
+    sensor.0x00158d0002bf5143_battery:
+      <<: *customize
+      friendly_name: Door Lavatrice
+    sensor.0x00158d0002bf5143_linkquality:
+      <<: *customize
+      friendly_name: Door Lavatrice
+      icon: mdi:radio-tower
+
+    sensor.0x00158d0002016342_click:
+      <<: *customize
+      friendly_name: SWITCH Sala
+    sensor.0x00158d0002016342_battery:
+      <<: *customize
+      friendly_name: Switch Sala
+    sensor.0x00158d0002016342_linkquality:
+      <<: *customize
+      friendly_name: Switch Sala
+      icon: mdi:radio-tower
+
+    sensor.0x00158d00013ecf04_click:
+      <<: *customize
+      friendly_name: SWITCH Ingresso
+    sensor.0x00158d00013ecf04_battery:
+      <<: *customize
+      friendly_name: Switch Ingresso
+    sensor.0x00158d00013ecf04_linkquality:
+      <<: *customize
+      friendly_name: Switch Ingresso
+      icon: mdi:radio-tower
+
+    sensor.0x00158d000202fd3f_click:
+      <<: *customize
+      friendly_name: SWITCH Camera
+    sensor.0x00158d000202fd3f_battery:
+      <<: *customize
+      friendly_name: Switch Camera
+    sensor.0x00158d000202fd3f_linkquality:
+      <<: *customize
+      friendly_name: Switch Camera
+      icon: mdi:radio-tower
+
+    binary_sensor.0xd0cf5efffe2d2e54_occupancy:
+      <<: *customize
+      friendly_name: PIR Studio
+    sensor.0xd0cf5efffe2d2e54_battery:
+      <<: *customize
+      friendly_name: PIR Studio
+    sensor.0xd0cf5efffe2d2e54_linkquality:
+      <<: *customize
+      friendly_name: PIR Studio
+      icon: mdi:radio-tower
+
+    sensor.0x00124b0014b92e8b_linkquality:
+      <<: *customize
+      friendly_name: Router CC2531 Sala
+      icon: mdi:radio-tower
+    binary_sensor.0x00124b0014b92e8b_router:
+      <<: *customize
+      friendly_name: Router CC2531 Sala
+      icon: mdi:radio-tower
+      
+    sensor.0x00124b001bb86234_linkquality:
+      <<: *customize
+      friendly_name: Router CC2530 Camera
+      icon: mdi:radio-tower
+    binary_sensor.0x00124b001bb86234_router:
+      <<: *customize
+      friendly_name: Router CC2530 Camera
+      icon: mdi:radio-tower
+
+    sensor.0x00178801104a8efc_linkquality:
+      <<: *customize
+      friendly_name: Hue Light 1
+      icon: mdi:radio-tower
+    sensor.0x0017880110267875_linkquality:
+      <<: *customize
+      friendly_name: Hue Light 2
+      icon: mdi:radio-tower
+    sensor.0x00178801102668da_linkquality:
+      <<: *customize
+      friendly_name: Hue Light 3
+      icon: mdi:radio-tower
+    sensor.0x00178801011e7ab6_linkquality: #strip
+      <<: *customize
+      friendly_name: Hue StripLed 1
+      icon: mdi:radio-tower
+    sensor.0x00178801020d34b3_linkquality:
+      <<: *customize
+      friendly_name: Hue Dimmer
+      icon: mdi:radio-tower    
+#################################################################
+#                                                               #
+#                            Sensor                             #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Automation                           #
+#                                                               #
+#################################################################
+automation:
+####################################################
+#                                                  #
+#               XIAOMI WATER LEAK                  #
+#                                                  #
+####################################################
+  - alias: segnalazione allagamento
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d00023372ec'
+    condition:
+    - condition: template
+      value_template: "{{ 'true' == trigger.payload_json.water_leak }}"
+    action:
+    - service: notify.telegram
+      data_template:
+        title: '* ATTENZIONE ALLAGAMENTO *'
+        message: 'Controlla subito nello Studio'
+
+####################################################
+#                                                  #
+#                  XIAOMI CUBE                     #
+#                                                  #
+####################################################
+  - alias: aumenta luminosita paralume sala con cubo
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000269e844'
+    condition:
+    - condition: template
+      value_template: "{{ 'rotate_right' == trigger.payload_json.action }}"
+    - condition: state
+      entity_id: light.yeelight_paralume_sala
+      state: 'on'
+    action:
+    - service: light.turn_on
+      entity_id: light.yeelight_paralume_sala
+      data_template:
+        brightness: >-
+          {{ states.light.yeelight_paralume_sala.attributes.brightness | round(0) + 50 }}
+
+####################################################
+  - alias: diminuisce luminosita luce ingresso con cubo
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000269e844'
+    condition:
+    - condition: template
+      value_template: "{{ 'rotate_left' == trigger.payload_json.action }}"
+    - condition: state
+      entity_id: light.yeelight_paralume_sala
+      state: 'on'
+    action:
+      service: light.turn_on
+      entity_id: light.yeelight_paralume_sala
+      data_template:
+        brightness: >-
+          {{ states.light.yeelight_paralume_sala.attributes.brightness | round(0) - 50 }}
+
+#################################################### 
+  - alias: accende spegne TV LG con cubo
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000269e844'
+    condition:
+      condition: template
+      value_template: "{{ 'shake' == trigger.payload_json.action }}"
+    action:
+      service: switch.toggle
+      entity_id: switch.tv_lg
+
+####################################################
+  - alias: accende spegne luce sala con cubo
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000269e844'
+    condition:
+      condition: template
+      value_template: "{{ 'tap' == trigger.payload_json.action }}"
+    action:
+      service: light.toggle
+      entity_id: group.sala_lights
+
+####################################################
+  - alias: accende spegne luce studio con cubo
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000269e844'
+    condition:
+      condition: template
+      value_template: "{{ 'flip90' == trigger.payload_json.action }}"
+    action:
+      service: light.toggle
+      entity_id: group.studio_lights
+
+####################################################
+  - alias: accende spegne luci bedroom con cubo
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000269e844'
+    condition:
+      condition: template
+      value_template: "{{ 'flip180' == trigger.payload_json.action }}"
+    action:
+      service: light.toggle
+      entity_id: group.bedroom_lights
+
+####################################################
+  - alias: accende spegne luce ingresso con cubo
+    initial_state: true
+    trigger:
+      platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d000269e844'
+    condition:
+      condition: template
+      value_template: "{{ 'slide' == trigger.payload_json.action }}"
+    action:
+      service: light.toggle
+      entity_id: light.xiaomi_philips_ingresso
+
+#################################################################
+#                                                               #
+#                             END                               #
+#                                                               #
+#################################################################

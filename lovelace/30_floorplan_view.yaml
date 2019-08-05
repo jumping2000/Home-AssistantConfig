@@ -1,0 +1,345 @@
+
+####################################################
+#                                                  #
+#                   FLOORPLAN                      #
+#                                                  #
+####################################################
+icon: mdi:floor-plan
+title: Floorplan
+path: floorplan
+theme: default
+panel: true
+cards:
+  - type: picture-elements
+    image: /local/images/casa-floorplan.png
+#        aspect_ratio: 80%
+    elements:
+### BAGNO PICCOLO
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.luce_secondo_bagno
+      style:
+        top: 26%
+        left: 50%
+### BEDROOM
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.yeelight_luce_bedside
+      style:
+        top: 18%
+        left: 25%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.0x0017880110267875_light
+      style:
+        top: 28%
+        left: 23%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.0x00178801104a8efc_light
+      style:
+        top: 29%
+        left: 24%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.0x00178801102668da_light
+      style:
+        top: 30%
+        left: 25%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.0x00178801011e7ab6_light #STRIPLED
+      style:
+        top: 15%
+        left: 30%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.xiaomi_philips_bedroom
+      style:
+        top: 18%
+        left: 35%
+### VALV NETATMO
+    - type: state-label
+      entity: sensor.valv_bedroom
+      style:
+        top: 26%
+        left: 20%
+### MEDIA PLAYER
+    - type: state-icon
+      entity: media_player.bedroom
+      style:
+        top: 30%
+        left: 20%
+    - type: state-label
+      entity: media_player.bedroom
+      style:
+        top: 33%
+        left: 20%
+### THB BEDROOM
+    - type: state-label
+      entity: sensor.jmp_bedroom_13_13_2
+      style:
+        top: 10%
+        left: 23%
+    - type: state-label
+      entity: sensor.jmp_bedroom_13_13_3
+      style:
+        top: 12%
+        left: 23%
+    - type: state-label
+      entity: sensor.jmp_bedroom_13_13_1 
+      style:
+        top: 14%
+        left: 23%  
+### SALA
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.applique_sala
+      style:
+        top: 15%
+        left: 65%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.yeelight_paralume_sala
+      style:
+        top: 29%
+        left: 58%
+    - type: state-label
+      entity: sensor.orchidea_temperature
+      style:
+        top: 23%
+        left: 58%
+    - type: state-label
+      entity: sensor.sansevieria_temperature 
+      style:
+        top: 25%
+        left: 58% 
+    - type: state-label
+      entity: sensor.temperature_158d0001d6be78
+      style:
+        top: 34%
+        left: 66%
+    - type: state-label
+      entity: sensor.humidity_158d0001d6be78
+      style:
+        top: 36%
+        left: 66%
+    - type: state-label
+      entity: sensor.xiaomipressure_sala
+      style:
+        top: 38%
+        left: 66%  
+### STUDIO            
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.luce_studio
+      style:
+        top: 78%
+        left: 68%
+    - type: state-label
+      entity: sensor.jmp_studio_22_22_1
+      style:
+        top: 53%
+        left: 70%
+    - type: state-label
+      entity: sensor.jmp_studio_22_22_2
+      style:
+        top: 55%
+        left: 70%
+
+### INGRESSO
+    - type: state-label
+      entity: sensor.term_ingresso
+      style:
+        top: 56%
+        left: 48%
+    - type: state-label
+      entity: sensor.jmp_energy_12_12_1
+      style:
+        top: 64%
+        left: 53%
+####
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.xiaomi_philips_ingresso
+      style:
+        top: 62%
+        left: 48%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.faretti_ingresso
+      style:
+        top: 58%
+        left: 52%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.luce_ripostiglio
+      style:
+        top: 60%
+        left: 40%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.gateway_light_f0b429b45c97
+      style:
+        top: 45%
+        left: 38%
+### SALA ESTERNO
+    - type: state-label
+      entity: sensor.jmp_weather_16_16_2
+      style:
+        top: 7%
+        left: 62%
+    - type: state-label
+      entity: sensor.jmp_weather_16_16_3
+      style:
+        top: 9%
+        left: 62%
+    - type: state-label
+      entity: sensor.jmp_weather_16_16_1 
+      style:
+        top: 11%
+        left: 62%
+### LUCE CUCINA
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.luce_cucina
+      style:
+        top: 31%
+        left: 82%
+### MEDIA PLAYER CUCINA
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: media_player.salotto
+      style:
+        top: 16%
+        left: 82%
+    - type: state-label
+      entity: media_player.salotto
+      style:
+        top: 19%
+        left: 82%
+## SWITCH LAVASTOVIGLIE
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: switch.plug_lavastoviglie
+      style:
+        top: 40%
+        left: 84%
+    - type: state-label
+      entity: sensor.lavastoviglie_power
+      style:
+        top: 42%
+        left: 84%
+## SWITCH CUCINA
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: switch.plug_cucina
+      style:
+        top: 44%
+        left: 84%
+    - type: state-label
+      entity: sensor.cucina_power
+      style:
+        top: 46%
+        left: 84%
+## SWITCH FORNO
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: switch.plug_forno
+      style:
+        top: 44%
+        left: 80%
+    - type: state-label
+      entity: sensor.forno_power
+      style:
+        top: 46%
+        left: 80%
+### STUDIO ESTERNO
+## TEMP e HUM
+    - type: state-label
+      entity: sensor.jmp_weather_14_14_1
+      style:
+        top: 53%
+        left: 90%
+    - type: state-label
+      entity: sensor.jmp_weather_14_14_2
+      style:
+        top: 55%
+        left: 90%
+## SWITCH LAVATRICE
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: switch.plug_lavatrice
+      style:
+        top: 58%
+        left: 87%
+    - type: state-label
+      entity: sensor.lavatrice_power
+      style:
+        top: 60%
+        left: 88%
+
+### CUCINA
+#        - type: state-label
+#          entity: sensor.thcucina_temp
+#          style:
+#            top: 30%
+#            left: 82%
+#        - type: state-label
+#          entity: sensor.thcucina_hum
+#          style:
+#            top: 32%
+#            left: 82%
+### CAMERA Livia
+    - type: state-label
+      entity: sensor.valv_livia
+      style:
+        top: 56%
+        left: 18%
+    - type: state-icon
+      tap_action: 
+        action: toggle
+      entity: light.applique_livia
+      style:
+        top: 63%
+        left: 30%
+    - type: state-label
+      entity: sensor.jmp_livia_21_21_1
+      style:
+        top: 57%
+        left: 30%
+    - type: state-label
+      entity: sensor.jmp_livia_21_21_2
+      style:
+        top: 59%
+        left: 30%
+### ALL LIGHTS
+    - type: service-button
+      title: Turn lights off
+      style:
+        top: 5%
+        left: 10%
+      service: light.turn_off
+      service_data:
+        entity_id: group.all_lights
+ 

@@ -1,0 +1,463 @@
+#################################################################
+#                                                               #
+#                       Packages/Presence                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'presence'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+        
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+    
+    sensor.commute_to_work:
+      <<: *customize
+      icon: 'mdi:car'
+      friendly_name: Andare a lavoro
+
+    sensor.commute_from_work:
+      <<: *customize
+      icon: 'mdi:home-variant'
+      friendly_name: Tornare da lavoro
+
+    sensor.gianpi_to_home:
+      <<: *customize
+      icon: 'mdi:home-variant'
+
+    sensor.tragitto_casa_lavoro:
+      <<: *customize
+      friendly_name: Tempo Casa-Lavoro
+
+    sensor.tragitto_lavoro_casa:
+      <<: *customize
+      friendly_name: Tempo Lavoro-Casa
+ 
+#################################################################
+#                                                               #
+#                           Group                               #
+#                                                               #
+################################################################# 
+      
+group:
+  people:
+    name: People
+    view: no
+    entities:
+      - sensor.gianpi
+      - sensor.romi
+      - sensor.huawei_p9_battery
+      - sensor.tragitto_casa_lavoro
+      - sensor.tragitto_lavoro_casa
+      - sensor.gianpi_to_home
+      
+  family:
+    name: Family
+    view: no
+    entities:
+      - sensor.gianpi
+      - sensor.romi
+  
+#################################################################
+#                                                               #
+#                      Device Trackers                          #
+#                                                               #
+################################################################# 
+#gpslogger:
+
+device_tracker:
+  - platform: ping
+    count: 3
+    hosts:
+      gianpi_phone: 192.168.1.179
+      romi_phone: 192.168.1.178
+    interval_seconds: 60
+    consider_home: 120
+    new_device_defaults:
+      track_new_devices: false
+
+  - platform: mqtt
+    devices:
+      nut2: blescan/presence/nut2
+      nut3: blescan/presence/nut3
+    new_device_defaults:
+      track_new_devices: false
+
+#  - platform: googlehome
+#    host: 192.168.1.104
+#    rssi_threshold: -100    
+#    interval_seconds: 20
+#    consider_home: 60
+#    new_device_defaults:
+#      track_new_devices: false
+
+#  - platform: googlehome
+#    host: 192.168.1.110
+#    rssi_threshold: -100   
+#    interval_seconds: 20
+#    consider_home: 60
+#    new_device_defaults:
+#      track_new_devices: false
+
+#################################################################
+#                                                               #
+#                      Person & Proximity                       #
+#                                                               #
+################################################################# 
+person:
+  - name: Gianpi
+    id: gianpi2004
+    device_trackers:
+#      - device_tracker.192_168_1_104_b0_e2_35_ac_60_85
+#      - device_tracker.192_168_1_110_b0_e2_35_ac_60_85
+      - device_tracker.gianpi_phone
+      - device_tracker.xiaomimi5
+      - device_tracker.nut2
+      - device_tracker.nut3
+
+  - name: Romi
+    id: romi2311
+    device_trackers:
+#      - device_tracker.192_168_1_104_84_be_52_38_a5_08
+#      - device_tracker.192_168_1_110_84_be_52_38_a5_08
+      - device_tracker.romi_phone
+      - device_tracker.romi_huaweip9
+
+################################################################# 
+proximity:
+  home_gianpi: 
+    zone: home
+    devices:
+      - device_tracker.xiaomimi5
+      - device_tracker.nut2
+      - device_tracker.nut3
+#      - device_tracker.192_168_1_104_b0_e2_35_ac_60_85
+#      - device_tracker.192_168_1_110_b0_e2_35_ac_60_85
+    tolerance: 50
+    unit_of_measurement: km
+  home_romi: 
+    zone: home
+    devices:
+      - device_tracker.romi_huaweip9
+    tolerance: 50
+    unit_of_measurement: km
+
+#################################################################
+#                                                               #
+#                           Input                               #
+#                                                               #
+################################################################# 
+#input_select:
+#  gianpi_room_location:
+#    name: Gianpi's Room Location
+#    options:
+#      - Bedroom
+#      - Kitchen
+
+#################################################################
+#                                                               #
+#                          Sensors                              #
+#                                                               #
+################################################################# 
+## RSSI
+sensor:
+  - platform: template   
+    sensors:
+      gianpi_room_location:
+        friendly_name: "Gianpi Room"
+        entity_id: sensor.time
+        icon_template: mdi:bluetooth
+        value_template: >
+          {% set ns = namespace() %}
+          {% set ns.maxsignal = -100 %}
+          {% set ns.trackername = "" %}
+          {% for item in states.device_tracker %}
+            {% if item.state == 'home'
+               and item.attributes.btle_mac_address == 'b0:e2:35:ac:60:85' %}
+                {% if (item.attributes.rssi | int) > ns.maxsignal %}
+                  {% set ns.maxsignal = (item.attributes.rssi | int) %}
+                  {% set ns.trackername = item.attributes.ghname %}
+                {% endif %}
+              {% endif %}
+          {% endfor %}
+          {% if ns.trackername == "" %} 
+            {% set ns.trackername = 'Fuori' %}
+          {% endif %}
+          {{ ns.trackername }}
+
+  - platform: template   
+    sensors:
+      romi_room_location:
+        friendly_name: "Romi Room"
+        entity_id: sensor.time
+        icon_template: mdi:bluetooth
+        value_template: >
+          {% set ns = namespace() %}
+          {% set ns.maxsignal = -100 %}
+          {% set ns.trackername = "" %}
+          {% for item in states.device_tracker %}
+            {% if item.state == 'home'
+               and item.attributes.btle_mac_address == '84:be:52:38:a5:08' %}
+                {% if (item.attributes.rssi | int) > ns.maxsignal %}
+                  {% set ns.maxsignal = (item.attributes.rssi | int) %}
+                  {% set ns.trackername = item.attributes.ghname %}
+                {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.trackername == "" %} 
+            {% set ns.trackername = 'Fuori' %}
+          {% endif %}
+          {{ ns.trackername }}
+## Batteries
+  - platform: template
+    sensors:
+      huawei_p9_battery:
+        friendly_name: Huawei P9 di Romi
+        unit_of_measurement: "%"
+        value_template: >-
+          {% if states.device_tracker.romi_huaweip9.attributes.battery %}
+          {{ states.device_tracker.romi_huaweip9.attributes.battery | int}}
+          {% endif %}
+        device_class: battery        
+
+########################################################
+## Family sensor    
+  - platform: template
+    sensors:
+      gianpi:
+        friendly_name: "Gianpi"
+        entity_id: sensor.time
+        value_template: >-
+          {{ states("person.gianpi") }}
+        entity_picture_template: >-
+          {% if is_state('sensor.gianpi', 'home') %}
+            /local/images/gianpi.jpg
+          {% endif %}
+        icon_template: >-
+          {% if is_state('person.gianpi', 'Gianpi Work') %}
+            mdi:briefcase
+          {% else %}
+            mdi:walk
+          {% endif %}
+#{% if is_state('device_tracker.xiaomimi5', 'home') and (((as_timestamp(now()) - as_timestamp(states.device_tracker.xiaomimi5.last_updated))|round(0) < 1200))%} 
+
+########################################################
+## Family sensor
+      romi:
+        friendly_name: "Romi"
+        entity_id: sensor.time
+        value_template: >-
+          {{ states("person.romi") }}
+        entity_picture_template: >-
+          {% if is_state('sensor.romi', 'home') %}
+            /local/images/romina.jpg
+          {% endif %}
+        icon_template: >-
+          {% if is_state('person.romi', 'Romi Work') %}
+            mdi:school
+          {% else %}
+            mdi:walk
+          {% endif %}
+
+########################################################
+## Family sensor
+  - platform: template
+    sensors:
+      family:
+        friendly_name: "Family"
+        entity_id: sensor.time
+        value_template: >-
+          {% if is_state('sensor.gianpi', 'home') or is_state('sensor.romi', 'home') %}
+            A casa
+          {% else %}
+            Fuori
+          {% endif %}
+
+########################################################
+## Waze Travel Time
+#  - platform: waze_travel_time
+  - platform: google_travel_time
+    api_key: !secret google_maps
+    name: tragitto casa lavoro
+    origin: zone.home
+    destination: zone.gianpi_work
+    scan_interval: 900
+#    region: 'EU'
+    
+#  - platform: waze_travel_time 
+  - platform: google_travel_time
+    api_key: !secret google_maps
+    name: tragitto lavoro casa
+    origin: zone.gianpi_work
+    destination: zone.home
+    scan_interval: 900
+#    region: 'EU'
+
+#  - platform: waze_travel_time 
+  - platform: google_travel_time
+    api_key: !secret google_maps
+    name: Gianpi to Home
+    origin: device_tracker.xiaomimi5
+    destination: zone.home
+    scan_interval: 900
+#    region: 'EU'
+    
+#################################################################
+#                                                               #
+#                         Automations                           #
+#                                                               #
+#################################################################
+automation: 
+## Romi Home Announcement 
+  - alias: Welcome Home Romina
+    initial_state: false
+    trigger:
+      platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00011854f0
+      to: 'on'
+    condition:
+    - condition: template
+# Don't send this alert if it was last triggered less than 30 minutes ago (1,800 seconds)
+      value_template: >
+        {% if states.automation.welcome_home_romina.last_triggered is not none %}
+          {% if as_timestamp(now()) | int - as_timestamp(states.automation.welcome_home_romina.attributes.last_triggered) | int > 1800 %} true {% else %} false
+          {% endif %}
+        {% else %}
+        false
+        {% endif %}
+    action:
+    - delay: 00:00:30
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data_template:
+        call_bentornato: 1
+        person: "Romi"
+        
+## Gianpi Home Announcement
+  - alias: Welcome Home Gianpi
+    initial_state: false
+    trigger:
+      platform: state
+      entity_id: binary_sensor.door_window_sensor_158d00011854f0
+      to: 'on'
+    condition:
+    - condition: template
+# Don't send this alert if it was last triggered less than 30 minutes ago (1,800 seconds)
+      value_template: >
+        {% if states.automation.welcome_home_gianpi.last_triggered is not none %}
+          {% if as_timestamp(now()) | int - as_timestamp(states.automation.welcome_home_gianpi.attributes.last_triggered) | int > 1800 %} true {% else %} false
+          {% endif %}
+        {% else %}
+        false
+        {% endif %}
+    action:
+    - delay: 00:0:30
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data_template:
+        call_bentornato: 1
+        person: "Gianpi"
+        
+## Gianpi at work announcement
+  - alias: Dad at Work
+    initial_state: true
+    trigger:
+    - platform: zone
+      entity_id: person.gianpi
+      event: enter
+      zone: zone.gianpi_work
+    condition:
+    - condition: template
+# Don't send this alert if it was last triggered less than 30 minutes ago (1,800 seconds)
+      value_template: >
+        {% if states.automation.dad_at_work.last_triggered is not none %}
+          {% if as_timestamp(now()) | int - as_timestamp(states.automation.dad_at_work.attributes.last_triggered) | int > 1800 %} true {% else %} false
+          {% endif %}
+        {% else %}
+        false
+        {% endif %}    
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: "*-- Attenzione --*"
+        message: "Papà è arrivato a lavoro."
+        
+## Gianpi left work announcement
+  - alias: Daddy Leaving Work Siena
+    initial_state: true
+    trigger:
+    - platform: zone
+      entity_id: person.gianpi
+      event: leave
+      zone: zone.gianpi_work
+    condition:
+    - condition: time
+      after: '15:00'
+    - condition: template
+# Don't send this alert if it was last triggered less than 30 minutes ago (1,800 seconds)
+      value_template: >
+        {% if states.automation.daddy_leaving_work_siena.last_triggered is not none %}
+          {% if as_timestamp(now()) | int - as_timestamp(states.automation.daddy_leaving_work_siena.last_triggered) | int > 1800 %} true {% else %} false
+          {% endif %}
+        {% else %}
+        false
+        {% endif %}  
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: "*-- Attenzione --*"
+        message: "Gianpi ha lasciato il Consorzio di Siena, con traffico normale arriverà tra circa 8 minuti."
+        
+## Gianpi left work announcement
+  - alias: Daddy Leaving Work Firenze
+    initial_state: true
+    trigger:
+    - platform: zone
+      entity_id: device_tracker.xiaomimi5
+      event: leave
+      zone: zone.gianpi_work_firenze
+    condition:
+    - condition: time
+      after: '15:00'
+    - condition: template
+# Don't send this alert if it was last triggered less than 30 minutes ago (1,800 seconds)
+      value_template: >
+        {% if states.automation.daddy_leaving_work_firenze.last_triggered is not none %}
+          {% if as_timestamp(now()) | int - as_timestamp(states.automation.daddy_leaving_work_firenze.last_triggered) | int > 1800 %} true {% else %} false
+          {% endif %}
+        {% else %}
+        false
+        {% endif %}  
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: "*-- Attenzione --*"
+        message: "Gianpi ha lasciato il Consorzio di Firenze, con traffico normale arriverà tra circa 1 ora."
+
+#################################################################
+#                                                               #
+#                             END                               #
+#                                                               #
+#################################################################

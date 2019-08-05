@@ -1,0 +1,121 @@
+#################################################################
+#                                                               #
+#                    Packages/Core Network                      #
+#                                                               #
+#################################################################
+homeassistant: 
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'xiaomi_gateway_audio'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+#################################################################
+#                                                               #
+#                          GROUP                                #
+#                                                               #
+#################################################################
+group:
+  Xiaomi Gateway:
+    - input_number.xg_loop_delay
+    - script.xg_play_sel_sound
+    - input_boolean.xg_mute_gateway_sounds
+    - script.xg_play_sel_sound_loop
+    - script.xg_play_sel_sound_single
+    - input_number.xg_gateway_volume
+    - input_select.xg_gateway_sound
+  
+#################################################################
+#                                                               #
+#                           INPUT                               #
+#                                                               #
+#################################################################
+
+### Input boolean to mute gateway sound ###
+input_boolean:
+  xg_mute_gateway_sounds:
+    name: Mute
+    icon: mdi:volume-off
+    
+### Input slider to control gateway volume ###
+input_number:
+  xg_gateway_volume:
+    name: Volume
+    initial: 10
+    min: 0
+    max: 100
+    step: 2
+    icon: mdi:volume-high
+
+### Input slider to control loop delay ###
+  xg_loop_delay:
+    name: "Loop Delay"
+    initial: 1
+    min: 0
+    max: 15
+    step: 1
+    icon: mdi:loop
+
+### Input select to select sound to play ###
+input_select:
+  xg_gateway_sound:
+    name: Ringtone
+    #le varie suonerie sono definite nel secrets.yaml. vedi nota alla fine del file
+    options: !secret options_elenco_suonerie
+    icon: mdi:music-note
+
+#################################################################
+#                                                               #
+#                           SCRIPT                              #
+#                                                               #
+#################################################################
+    
+### Scripts to play gateway sounds ###
+script:
+  xg_play_sel_sound:
+    alias: "Loop Play Sound"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.xg_mute_gateway_sounds
+        state: 'off'
+      - service: xiaomi_aqara.play_ringtone
+        data_template:
+          gw_mac: !secret xiaomi_gateway1_mac
+          ringtone_id: "{{ states.input_select.xg_gateway_sound.state.split('-')[0] }}"
+          ringtone_vol: "{{ states.input_number.xg_gateway_volume.state|int }}"
+      - delay: '00:00:{{ states.input_number.xg_loop_delay.state | int }}'
+      - service: script.xg_play_sel_sound_loop
+
+  xg_play_sel_sound_loop:
+    alias: "Play selected sound in Loop"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.xg_mute_gateway_sounds
+        state: 'off'
+      - delay: '00:00:{{ states.input_number.xg_loop_delay.state | int }}'
+      - service: script.xg_play_sel_sound
+
+  xg_play_sel_sound_single:
+    alias: "Single Play Sound"
+    sequence:
+      - condition: state
+        entity_id: input_boolean.xg_mute_gateway_sounds
+        state: 'off'
+      - service: xiaomi_aqara.play_ringtone
+        data_template:
+          gw_mac: !secret xiaomi_gateway1_mac
+          ringtone_id: "{{ states.input_select.xg_gateway_sound.state.split('-')[0] }}"
+          ringtone_vol: "{{ states.input_number.xg_gateway_volume.state|int }}"

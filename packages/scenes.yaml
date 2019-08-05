@@ -1,0 +1,109 @@
+#################################################################
+#                                                               #
+#                       Packages/Scenes                         #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'scenes'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+#################################################################
+#                                                               #
+#                            SCENES                             #
+#                                                               #
+#################################################################
+scene:
+- name: Bedroom Tropical Twilight
+  entities:
+    light.0x0017880110267875_light:
+      state: on
+      brightness: 123
+      rgb_color: [238, 164, 108]
+    light.0x00178801104a8efc_light:
+      state: on
+      brightness: 11
+      rgb_color: [58, 58, 58]
+    light.0x00178801102668da_light:
+      state: on
+      brightness: 123
+      rgb_color: [238, 164, 108]
+    light.0x00178801011e7ab6_light:
+      state: on
+      brightness: 123
+      rgb_color: [238, 164, 108]
+
+- name: Bedroom Artic Aurora
+  entities:
+    light.0x0017880110267875_light:
+      state: on
+      brightness: 137
+      rgb_color: [153, 153, 255]
+    light.0x00178801104a8efc_light:
+      state: on
+      brightness: 11
+      rgb_color: [58, 58, 58]
+    light.0x00178801102668da_light:
+      state: on
+      brightness: 137
+      rgb_color: [153, 153, 255]
+    light.0x00178801011e7ab6_light:
+      state: on
+      brightness: 137
+      rgb_color: [153, 153, 255]
+
+- name: Living Room Bright
+  entities:
+    light.0x0017880110267875_light:
+      state: on
+      brightness: 77
+      rgb_color: [179, 139, 80]
+    light.0x00178801104a8efc_light:
+      state: on
+      brightness: 77
+      rgb_color: [179, 139, 80]
+    light.0x00178801102668da_light:
+      state: on
+      brightness: 77
+      rgb_color: [179, 139, 80]
+    light.0x00178801011e7ab6_light:
+      state: on
+      brightness: 77
+      rgb_color: [179, 139, 80]
+
+- name: Media Room Red Pantsuit
+  entities:
+    light.0x0017880110267875_light:
+      state: on
+      brightness: 142
+      rgb_color: [255, 95, 73]
+    light.0x00178801104a8efc_light:
+      state: on
+      brightness: 142
+      rgb_color: [175, 201, 242]
+    light.0x00178801102668da_light:
+      state: on
+      brightness: 77
+      rgb_color: [179, 139, 80]
+    light.0x00178801011e7ab6_light:
+      state: on
+      brightness: 142
+      rgb_color: [217, 190, 150]

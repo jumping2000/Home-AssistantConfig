@@ -1,0 +1,119 @@
+
+####################################################
+#                                                  #
+#                     ROOMS                        #
+#                                                  #
+####################################################    
+icon: mdi:home-heart
+title: Camere
+path: rooms
+cards:
+
+### BEDROOM
+  - type: vertical-stack
+    cards:
+    - type: picture-entity
+      title: Camera Padronale
+      entity: group.bedroom_lights
+      tap_action: 
+        action: toggle
+      image: /local/images/bedroom.jpeg
+    - type: entities
+      entities:
+      - binary_sensor.door_window_sensor_158d000232ac82
+      - binary_sensor.motion_sensor_158d00013f7817
+      - sensor.jmp_bedroom_13_13_1
+      - sensor.jmp_bedroom_13_13_2
+      - sensor.jmp_bedroom_13_13_3
+  
+### STUDIO
+  - type: vertical-stack
+    cards:
+    - type: picture-entity
+      title: Studio
+      entity: light.luce_studio
+      tap_action: 
+        action: toggle
+      image: /local/images/workroom.jpeg
+    - type: entities
+      entities:
+      - binary_sensor.door_window_sensor_158d000112aec3
+      - binary_sensor.0xd0cf5efffe2d2e54_occupancy
+      - sensor.jmp_studio_22_22_1
+      - sensor.jmp_studio_22_22_2
+      - binary_sensor.0x00158d00023372ec_water_leak
+      
+### INGRESSO
+  - type: vertical-stack
+    cards:
+    - type: picture-entity
+      title: Ingresso
+      entity: group.ingresso_lights
+      tap_action: 
+        action: toggle
+      image: /local/images/entrance.jpeg
+    - type: entities
+      entities:
+      - binary_sensor.door_window_sensor_158d00011854f0
+      - binary_sensor.motion_sensor_158d000223684f
+      - sensor.illumination_158d000223684f
+      - sensor.term_ingresso
+
+### SALA
+  - type: vertical-stack
+    cards:
+    - type: picture-entity
+      title: Sala
+      entity: group.sala_lights
+      tap_action: 
+        action: toggle
+      image: /local/images/livingroom.jpeg
+    - type: entities
+      entities:
+      - binary_sensor.door_window_sensor_158d00011c3087
+      - binary_sensor.door_window_sensor_158d00013e425d
+      - sensor.temperature_158d0001d6be78
+      - sensor.humidity_158d0001d6be78
+      - sensor.xiaomipressure_sala
+      - sensor.xiaomi_temp_percepita_sala
+      - sensor.orchidea_temperature
+      - sensor.sansevieria_temperature
+
+### CAMERA LIVIA
+  - type: vertical-stack
+    cards:
+    - type: picture-entity
+      title: Camera Livia
+      entity: light.applique_livia
+      tap_action: 
+        action: toggle
+      image: /local/images/bedroom-child.jpeg
+    - type: entities
+      entities:
+      - binary_sensor.door_window_sensor_158d0002329f47
+      - binary_sensor.motion_sensor_158d00010e4ea5
+      - sensor.jmp_livia_21_21_1
+      - sensor.jmp_livia_21_21_2 
+
+### CUCINA
+  - type: vertical-stack
+    cards:
+    - type: picture-entity
+      title: Cucina
+      entity: light.luce_cucina
+      tap_action: 
+        action: toggle
+      image: /local/images/kitchen.jpeg
+    - type: entities
+      entities:
+      - binary_sensor.smoke_sensor_158d0001bb7dda
+
+### BATHROOM
+  - type: vertical-stack
+    cards:
+    - type: picture
+      title: Bagno Grande
+      image: /local/images/bathroom.jpeg
+    - type: entities
+      entities:
+      -  binary_sensor.door_window_sensor_158d0002425ae8

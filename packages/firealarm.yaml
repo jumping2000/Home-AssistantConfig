@@ -1,0 +1,60 @@
+#################################################################
+#                                                               #
+#                      Packages/firealarm                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'firealarm'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+
+#########################################################
+#                                                       #
+#              AUTOMATION: NOTIFY FIRE ALARM            #
+#                                                       #
+#########################################################
+automation:
+  - alias: 'Send notification on fire alarm'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: binary_sensor.smoke_sensor_158d0001574899
+      from: 'off'
+      to: 'on'
+    action:
+    - service: notify.telegram
+      data:
+        message: 'ATTENZIONE - Allarme incendio!!'
+    - service: xiaomi_aqara.play_ringtone
+      data:
+        gw_mac: !secret xiaomi_gateway1_mac
+        ringtone_id: 5
+        ringtone_vol: 100
+
+#########################################################
+#                                                       #
+#              END OF CONFIGURATION FILE                #
+#                                                       #
+#########################################################

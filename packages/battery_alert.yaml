@@ -1,0 +1,314 @@
+#################################################################
+##                      Battery
+#################################################################
+homeassistant:
+  customize:
+    # Node Anchors
+    package.node_anchors:
+      customize: &customize
+        package: 'battery_alert'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    # Group
+    group.battery_alert:
+      <<: *customize
+      friendly_name: "Battery Alert"
+      icon: mdi:steam
+
+    # Automation
+    automation.battery_alert:
+      <<: *customize
+      friendly_name: "Battery Alert"
+        
+#################################################################
+##                      Input number
+#################################################################
+input_number:
+  battery_alert_threshold:
+    name: "Max Alert Threshold"
+    icon: mdi:arrow-collapse-up
+    mode: box
+    min: -1
+    max: 100
+    initial: 15
+
+#  battery_alert_threshold_min:
+#    name: "Min Alert Threshold"
+#    icon: mdi:arrow-collapse-down
+#    mode: slider
+#    min: -1
+#    max: 100
+#    initial: 4
+
+#################################################################
+## Input Boolean
+#################################################################
+input_boolean:
+  low_batteries:
+    name: Low Batteries
+    icon: mdi:battery-alert
+#################################################################
+##                      Sensors
+#################################################################
+sensor:
+## Batterie termometri
+  - platform: template
+    sensors:
+      thb_sala_battery:
+        entity_id: sensor.temperature_158d0001d6be78
+        friendly_name: "Termometro Sala"
+        unit_of_measurement: '%'
+        value_template: '{{ states.sensor.temperature_158d0001d6be78.attributes.battery_level }}'
+        device_class: battery
+
+## Batterie sensori porta
+  - platform: template
+    sensors:
+      porta_ingresso_battery:
+        entity_id: binary_sensor.door_window_sensor_158d000112aec3
+        friendly_name: "Sensore porta Ingresso"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.door_window_sensor_158d000112aec3.attributes.battery_level }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      porta_studio_battery:
+        entity_id: binary_sensor.door_window_sensor_158d000112aec3
+        friendly_name: "Sensore porta Studio"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.door_window_sensor_158d000112aec3.attributes.battery_level }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      porta_sala1_battery:
+        entity_id: binary_sensor.door_window_sensor_158d00011c3087
+        friendly_name: "Sensore porta Sala1"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.door_window_sensor_158d00011c3087.attributes.battery_level }}'
+        device_class: battery
+        
+  - platform: template
+    sensors:
+      porta_sala2_battery:
+        entity_id: binary_sensor.door_window_sensor_158d00013e425d
+        friendly_name: "Sensore porta Sala2"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.door_window_sensor_158d00013e425d.attributes.battery_level }}'
+        device_class: battery
+
+## Batterie sensori finestra
+  - platform: template
+    sensors:
+      finestra_bagno_battery:
+        entity_id: binary_sensor.door_window_sensor_158d0002425ae8
+        friendly_name: "Sensore finestra Bagno"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.door_window_sensor_158d0002425ae8.attributes.battery_level }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      finestra_livia_battery:
+        entity_id: binary_sensor.door_window_sensor_158d0002329f47
+        friendly_name: "Sensore finestra Camera Livia"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.door_window_sensor_158d0002329f47.attributes.battery_level }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      finestra_camera_battery:
+        entity_id: binary_sensor.door_window_sensor_158d000232ac82
+        friendly_name: "Sensore finestra Camera Matrimoniale"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.door_window_sensor_158d000232ac82.attributes.battery_level }}'
+        device_class: battery
+
+## Batterie sensori movimento
+  - platform: template
+    sensors:
+      passaggio_sala_battery:
+        entity_id: binary_sensor.motion_sensor_158d00010e4ea5
+        friendly_name: "Sensore movimento Sala"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.motion_sensor_158d00010e4ea5.attributes.battery_level }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      passaggio_camera_battery:
+        entity_id: binary_sensor.motion_sensor_158d00013f7817
+        friendly_name: "Sensore movimento Camera"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.motion_sensor_158d00013f7817.attributes.battery_level }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      passaggio_ingresso_battery:
+        entity_id: binary_sensor.motion_sensor_158d000223684f
+        friendly_name: "Sensore movimento Ingresso"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.motion_sensor_158d000223684f.attributes.battery_level }}'
+        device_class: battery
+        
+## Batterie tasti
+        
+  - platform: template
+    sensors:
+      tasto_camera_battery:
+        entity_id: binary_sensor.switch_158d000202fd3f
+        friendly_name: "Tasto camera"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.switch_158d000202fd3f.attributes.battery_level }}'
+        device_class: battery
+  
+    # Batterie smoke sensor
+  - platform: template
+    sensors:
+      smoke_sensor_battery:
+        entity_id: binary_sensor.smoke_sensor_158d0001bb7dda
+        friendly_name: "Smoke Sensor"
+        unit_of_measurement: '%'
+        value_template: '{{ states.binary_sensor.smoke_sensor_158d0001bb7dda.attributes.battery_level }}'
+        device_class: battery
+#########################################
+
+  - platform: template
+    sensors:
+      studio_22_battery:
+        entity_id: sensor.jmp_studio_22_22_7
+        friendly_name: "TH Studio"
+        unit_of_measurement: '%'
+        value_template: '{{ ((states("sensor.jmp_studio_22_22_7")|float - 2.8) * 100 / (3.44-2.8)) | round(0) }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      livia_21_battery:
+        entity_id: sensor.jmp_livia_21_21_7
+        friendly_name: "TH Camera Livia"
+        unit_of_measurement: '%'
+        value_template: '{{ ((states("sensor.jmp_livia_21_21_7")|float - 2.8) * 100 / (3.44-2.8)) | round(0) }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      camera_13_battery:
+        entity_id: sensor.jmp_bedroom_13_13_7
+        friendly_name: "THB Camera Matrimoniale"
+        unit_of_measurement: '%'
+        value_template: '{{ ((states("sensor.jmp_bedroom_13_13_7")|float - 3.2) * 100 / (4.4-3.2)) | round(0) }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      weather_14_battery:
+        entity_id: sensor.jmp_weather_14_14_7
+        friendly_name: "THB Studio Fuori"
+        unit_of_measurement: '%'
+        value_template: '{{ ((states("sensor.jmp_weather_14_14_7")|float - 3.2) * 100 / (4.4-3.2)) | round(0) }}'
+        device_class: battery
+
+  - platform: template
+    sensors:
+      weather_16_battery:
+        entity_id: sensor.jmp_weather_16_16_7
+        friendly_name: "THB Sala Fuori"
+        unit_of_measurement: '%'
+        value_template: '{{ ((states("sensor.jmp_weather_16_16_7")|float - 3.2) * 100 / (4.4-3.2)) | round(0) }}'
+        device_class: battery
+
+#################################################################
+##                      Groups                                 ##
+#################################################################
+group:
+  # Scheda batterie sensori xiaomi
+  battery:
+    name: Batterie Sensori Xiaomi
+    view: no
+    control: hidden
+    entities:
+    - sensor.thb_sala_battery
+    - sensor.porta_ingresso_battery
+    - sensor.porta_studio_battery
+    - sensor.porta_sala1_battery
+    - sensor.porta_sala2_battery
+    - sensor.passaggio_sala_battery
+    - sensor.passaggio_camera_battery
+    - sensor.passaggio_ingresso_battery
+    - sensor.tasto_camera_battery
+    - sensor.smoke_sensor_battery
+    - sensor.orchidea_battery
+    - sensor.sansevieria_battery
+#    - sensor.xiaomimi5_battery
+    - sensor.studio_22_battery
+    - sensor.livia_21_battery
+    - sensor.camera_13_battery
+    - sensor.weather_14_battery
+    - sensor.weather_16_battery
+    - sensor.0x00158d000269e844_battery
+    - sensor.0x00158d00023372ec_battery
+    - sensor.0x00158d0002bf5143_battery
+    - sensor.0x00158d0002016342_battery
+    - sensor.0x00158d00013ecf04_battery
+#################################################################
+##                      Automazioni
+#################################################################
+# Notifica in caso di batteria troppo bassa
+automation:
+- alias: Allarme batteria
+  initial_state: true
+  trigger:
+  - platform: time
+    at: '20:30:00'
+  - platform: time
+    at: '8:30:00'
+  condition:
+  - condition: template
+    value_template: >
+      {% macro battery_level() %}
+      {%- set threshold = states.input_number.battery_alert_threshold.state | int %}
+      {% for item in states.group.battery.attributes.entity_id %}
+      {% if "_battery" in item %}
+      {% set domain, device = item.split('.') %}
+      {% if states[domain][device].state | float <= threshold  %}
+        {{ states[domain][device].name }}({{ states[domain][device].state }})
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+      {% endmacro %}
+      {{ battery_level() | trim != "" }}
+          
+  action:
+  - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+  - service: script.my_notify
+    data_template:
+      mute: 1
+      title: Attenzione! Batterie sotto la soglia impostata
+      message: >
+        {% macro battery_level() %}
+        {%- set threshold = states.input_number.battery_alert_threshold.state | int %}
+        {% for item in states.group.battery.attributes.entity_id %}
+        {% if "_battery" in item %}
+        {% set domain, device = item.split('.') %}
+        {% if states[domain][device].state | float <= threshold  %}
+          {{ states[domain][device].name }}({{ states[domain][device].state }})
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% endmacro %}
+        {{ battery_level() }}
+
+           
+#################################################################
+##                      FINE
+#################################################################

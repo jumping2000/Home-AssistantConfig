@@ -1,0 +1,177 @@
+####################################################
+#                                                  #
+#                     PLUG                         #
+#                                                  #
+####################################################
+icon: mdi:engine
+title: Energia
+path: energy
+panel: true
+cards:
+- type: custom:layout-card
+#      column_num: 3
+  layout: vertical
+  cards:
+## prima colonna ###################################
+  - type: history-graph
+    hours_to_show: 4
+    entities:
+      - sensor.lavastoviglie_power
+      - sensor.lavatrice_power
+      - sensor.forno_power
+      - sensor.condizionatori_power
+
+  - type: entities
+#    title: Lavatrice
+    show_header_toggle: false
+    entities:
+    - switch.plug_lavatrice
+    - sensor.lavatrice_power
+    - sensor.lavatrice_energy_today
+    - sensor.washing_machine_status
+    - binary_sensor.0x00158d0002bf5143_contact
+
+  - type: entities
+#    title: Lavastoviglie
+    show_header_toggle: false
+    entities:
+    - switch.plug_lavastoviglie
+    - sensor.lavastoviglie_power
+    - sensor.lavastoviglie_energy_today
+    - sensor.dishwasher_status
+
+  - type: entities
+#    title: forno
+    show_header_toggle: false
+    entities:
+    - switch.plug_forno
+    - sensor.forno_power
+    - sensor.forno_energy_today
+    - sensor.oven_status
+
+  - type: entities
+#    title: Cucina
+    show_header_toggle: false
+    entities:
+    - switch.plug_cucina
+    - sensor.cucina_power
+    - sensor.cucina_energy_today
+    - sensor.kitchen_status
+
+  - break
+## seconda colonna ################################
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.jmp_energy_12_12_1
+    name: Casa - Consumo -24h
+    hours_to_show: 12 
+    points_per_hour: 24
+    line_width: 2
+    hour24: true
+    line_color: 'blue'
+    show:
+      legend: true
+      labels: true
+
+  - type: horizontal-stack
+    cards:
+    - type: "custom:button-card"
+      entity: switch.plug_cucina
+      icon: mdi:power-socket
+      color: auto
+      action: toggle
+      name: Cucina
+    - type: "custom:button-card"
+      entity: switch.plug_forno
+      color: auto
+      icon: mdi:stove
+      action: toggle
+      name: Forno
+    - type: "custom:button-card"
+      entity: switch.plug_lavastoviglie
+      color: auto
+      icon: mdi:dishwasher
+      action: toggle
+      name: Lavastoviglie
+    - type: "custom:button-card"
+      entity: switch.plug_lavatrice
+      icon: mdi:washing-machine
+      color: auto
+      action: toggle
+      name: Lavatrice
+    - type: "custom:button-card"
+      entity: switch.plug_condizionatori
+      color: auto
+      icon: mdi:air-conditioner
+      action: toggle
+      name: Condizionatori
+
+  - type: entities
+    title: Configurazione Controllo Consumi
+    show_header_toggle: false
+    entities:
+    - input_number.tempo_intervento
+    - input_select.soglia_carico
+    - sensor.tempo_mensile_in_extrasoglia
+    - automation.innesco_controllo_potenza
+
+  - type: entities
+    title: Parametri
+    show_header_toggle: false
+    entities:
+    - entity: input_datetime.f1_ora_inizio
+      name: Orario Fascia 1
+    - entity: input_number.costo_f1
+      name: Costo KWh Fascia 1
+    - entity: input_datetime.f2_ora_inizio
+      name: Orario Fascia 2
+    - entity: input_number.costo_f2
+      name: Costo KWh Fascia 1
+    - entity: input_boolean.tariffa_weekend
+      name: Attiva F2 e Tariffa Week end
+
+  - break
+## terza colonna #####################################
+
+  - type: history-graph
+    hours_to_show: 4
+    entities:
+      - sensor.cucina_power
+      - sensor.luce_secondo_bagno_power
+      - sensor.luce_ingresso_power
+
+  - type: entities
+    title: Consumi e costi odierni
+    show_header_toggle: false
+    entities:
+    - entity: sensor.consumo_giornaliero_f1
+      name: Consumo Fascia 1
+    - entity: sensor.costo_consumo_oggi_f1
+      name: Costo Fascia 1
+    - entity: sensor.consumo_giornaliero_f2
+      name: Consumo Fascia 2
+    - entity: sensor.costo_consumo_oggi_f2
+      name: Costo Fascia 2
+    - entity: sensor.consumo_totale_oggi
+      name: Consumo Totale
+    - entity: sensor.costo_consumo_oggi_totale
+      name: Costo Totale
+      
+  - type: entities
+    title: Consumi e costi mensile
+    show_header_toggle: false
+    entities:
+    - entity: sensor.consumo_mensile_f1
+      name: Consumo Fascia 1
+    - entity: sensor.costo_consumo_mensile_f1
+      name: Costo Fascia 1
+    - entity: sensor.consumo_mensile_f2
+      name: Consumo Fascia 2
+    - entity: sensor.costo_consumo_mensile_f2
+      name: Costo Fascia 2
+    - entity: sensor.consumo_totale_mensile
+      name: Consumo Totale
+    - entity: sensor.costo_consumo_mensile_totale
+      name: Costo Totale
+
+##

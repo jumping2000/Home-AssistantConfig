@@ -1,0 +1,158 @@
+#################################################################
+#                                                               #
+#                      Packages/Plant                           #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'plant'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+    ################################################
+    ## sensor
+    ################################################
+    sensor.orchidea_battery:
+      <<: *customize
+      icon: mdi:battery
+    sensor.sansevieria_battery:
+      <<: *customize
+      icon: mdi:battery
+#################################################################
+#                                                               #
+#                           Group                               #
+#                                                               #
+#################################################################
+
+
+#################################################################
+#                                                               #
+#                            Plant                              #
+#                                                               #
+#################################################################
+#https://home-assistant.io/components/plant/
+
+####################################################
+#                                                  #
+#                    ORCHIDEA                      #
+#                                                  #
+####################################################
+plant:
+  Orchidea:
+    sensors:
+      moisture: sensor.orchidea_moisture
+      battery: sensor.orchidea_battery
+      temperature: sensor.orchidea_temperature
+      conductivity: sensor.orchidea_conductivity
+      brightness: sensor.orchidea_light
+    min_moisture: 20
+    min_conductivity: 100
+    min_brightness: 50
+    min_battery: 20
+
+####################################################
+#                                                  #
+#                  SANSEVIEIRA                     #
+#                                                  #
+####################################################
+  Sansevieria:
+    sensors:
+      moisture: sensor.sansevieria_moisture
+      battery: sensor.sansevieria_battery
+      temperature: sensor.sansevieria_temperature
+      conductivity: sensor.sansevieria_conductivity
+      brightness: sensor.sansevieria_light
+    min_moisture: 20
+    min_conductivity: 600
+    min_brightness: 50
+    min_battery: 20
+
+#################################################################
+#                                                               #
+#                            Sensor                             #
+#                                                               #
+#################################################################
+sensor:
+####################################################
+#                                                  #
+#                 XIAOMI MI FLORA                  #
+#                                                  #
+####################################################
+#https://www.home-assistant.io/components/sensor.miflora/
+#https://home-assistant.io/components/sensor.mqtt/
+# sansevieria C4:7C:8D:62:72:ED
+# orchidea    C4:7C:8D:64:3F:41
+
+  - platform: mqtt
+    state_topic: miflora/sansevieria/temperature
+    name: "Sansevieria Temperature"
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer
+  - platform: mqtt
+    state_topic: miflora/sansevieria/moisture
+    name: "Sansevieria Moisture"
+    unit_of_measurement: "%"
+    icon: mdi:water
+  - platform: mqtt
+    state_topic: miflora/sansevieria/light
+    name: "Sansevieria Light"
+    unit_of_measurement: "lux"
+    icon: mdi:lightbulb
+  - platform: mqtt
+    state_topic: miflora/sansevieria/conductivity
+    name: "Sansevieria Conductivity"
+    unit_of_measurement: "us/cm"
+    icon: mdi:flash
+  - platform: mqtt
+    state_topic: miflora/sansevieria/battery
+    name: "Sansevieria Battery"
+    unit_of_measurement: "%"
+    icon: mdi:battery
+####################################################
+  - platform: mqtt
+    state_topic: miflora/orchidea/temperature
+    name: "Orchidea Temperature"
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer
+  - platform: mqtt
+    state_topic: miflora/orchidea/moisture
+    name: "Orchidea Moisture"
+    unit_of_measurement: "%"
+    icon: mdi:water
+  - platform: mqtt
+    state_topic: miflora/orchidea/light
+    name: "Orchidea Light"
+    unit_of_measurement: "lux"
+    icon: mdi:lightbulb
+  - platform: mqtt
+    state_topic: miflora/orchidea/conductivity
+    name: "Orchidea Conductivity"
+    unit_of_measurement: "us/cm"
+    icon: mdi:flash
+  - platform: mqtt
+    state_topic: miflora/orchidea/battery
+    name: "Orchidea Battery"
+    unit_of_measurement: "%"
+    icon: mdi:battery
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION                      #
+#                                                               #
+#################################################################

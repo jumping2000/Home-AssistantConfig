@@ -1,0 +1,135 @@
+title: Centro Notifiche
+path: centro_notifiche
+icon: mdi:account-tie
+cards:
+- type: vertical-stack
+  cards:
+# CARD 01 Centro Notifiche
+  - type: entities
+    title: Centro Notifiche
+    show_header_toggle: false
+    entities:
+      - type: section
+        label: Monitor
+      - type: custom:fold-entity-row
+        head: sensor.period_of_day
+        items:
+          - input_datetime.start_morning
+          - input_datetime.start_afternoon
+          - input_datetime.start_evening
+          - input_datetime.start_night
+      - type: custom:fold-entity-row
+        head: sensor.period_of_day_volume
+        items:
+          - input_number.morning_volume
+          - input_number.afternoon_volume
+          - input_number.evening_volume
+          - input_number.night_volume
+          - input_number.default_restore_volume
+    # - entity: sensor.period_of_day_volume
+      - entity: binary_sensor.dnd
+      - type: call-service
+        icon: mdi:power
+        name: Ultimo Messaggio
+        action_name: Ascolta
+        service: input_boolean.turn_on
+        service_data:
+              entity_id: input_boolean.last_message
+      # - type: section
+      #   label: Modalità
+      - type: custom:fold-entity-row
+        head:
+          type: section
+          label: Modalità
+        items:
+          - entity: input_boolean.last_message
+          - entity: input_boolean.guest_mode
+          - entity: input_boolean.priority_message
+          - entity: input_boolean.speech_notifications
+          - entity: input_boolean.text_notifications
+          - entity: input_boolean.screen_notifications
+          - entity: input_boolean.random_fact
+      # - type: section
+      #   label: Interfono
+      - type: custom:fold-entity-row
+        head:
+          type: section
+          label: Interfono
+        items:
+          - entity: automation.invia_messaggio_intercom
+            name: Off/On
+          - entity: input_number.intercom_message_volume
+          - entity: input_text.intercom_message_hub
+## 2 colonna
+- type: vertical-stack
+  cards:
+  # CARD 02 Impostazioni Assistente
+  - type: entities
+    title: Impostazioni Assistente
+    show_header_toggle: false
+    entities:
+      # - type: section
+      #   label: ''
+      - entity: input_text.personal_assistant_name
+      - entity: input_select.default_notify
+      # - type: section
+      #   label: Impostazione orario modo silenzioso
+      - type: custom:fold-entity-row
+        head:
+          type: section
+          label: Impostazione orario modo silenzioso
+        items:
+          - entity: input_datetime.dnd_start
+          - entity: input_datetime.dnd_end
+      # - type: section
+      #   label: 'Impostazione Volume di default durante il griorno'
+      - type: custom:fold-entity-row
+        head:
+          type: section
+          label: Impostazione Volume di default durante il griorno
+        items:
+          - input_datetime.start_morning
+          - input_datetime.start_afternoon
+          - input_datetime.start_evening
+          - input_datetime.start_night
+          - input_number.morning_volume
+          - input_number.afternoon_volume
+          - input_number.evening_volume
+          - input_number.night_volume
+          - input_number.default_restore_volume
+  # CARD 05 Gruppo Automazioni
+  - type: entities
+    title: Automazioni
+    show_header_toggle: false
+    entities:
+      - type: custom:fold-entity-row
+        head: group.automations_notification_hub
+        # group_config:
+        #   secondary_info: last-changed
+## 3 colonna          
+- type: vertical-stack
+  cards:
+  # CARD 03 Google
+  - type: entities
+    title: Google
+    show_header_toggle: false
+    entities:
+      - type: section
+        label: ''
+      - entity: input_boolean.google_switch
+      - entity: input_boolean.tts_google_mode
+  #    - entity: input_select.language
+      - entity: input_select.notification_media_player_google
+      - entity: sensor.media_player_google
+      - entity: automation.google_volume_restore
+      #- entity: input_number.google_volume_storage
+      
+  # CARD 06 Notifiche Casa
+  - type: 'custom:home-feed-card'
+    title: Notifiche Casa
+    show_empty: false
+    id_filter: ^info_messages.*
+    entities:
+      - entity: binary_sensor.motion_sensor_158d00010e4ea5
+      - entity: binary_sensor.motion_sensor_158d00013f7817
+      - entity: binary_sensor.motion_sensor_158d000223684f

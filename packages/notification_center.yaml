@@ -1,0 +1,1250 @@
+#################################################################
+#                                                               #
+#                 Packages/notification center                  #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'notification_center'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+    sensor.last_message:
+      <<: *customize
+      friendly_name: Salva Ultimo Messaggio
+      icon: mdi:repeat
+
+    ################################################
+    ## inputs
+    ################################################
+    input_text.intercom_message_hub:
+      <<: *customize
+      friendly_name: 'Messaggio'
+      icon: mdi:bullhorn
+    input_number.default_restore_volume:
+      <<: *customize
+      friendly_name: 'Volume Rispristino'
+
+    ################################################
+    ## Device Tracker
+    ################################################
+    device_tracker.player_google:
+      <<: *customize
+      friendly_name: Tracker Player Google
+      icon: mdi:animation-play
+#################################################################
+#                                                               #
+#                           Groups                              #
+#                                                               #
+#################################################################
+group:
+  ### Inserire i propri dispositivi tracciati o gruppo
+  location_tracker:
+    name: Dispositivi tracciati
+    entities:
+      - person.gianpi
+
+  ### Creare un gruppo per tutti i didpositivi Google (Il gruppo da app Google Home non è ancora affidabile)
+  mplayer_gr:
+    name: Gruppo Media Player
+    entities:
+      - media_player.salotto
+      - media_player.bedroom
+
+  hub_google_config:
+    name: Impostazioni Google
+    entities:
+     - input_boolean.google_switch
+     - input_boolean.tts_google_mode
+     - input_select.language
+     - input_select.notification_media_player_google
+     - input_number.google_volume_storage
+
+  notification_settings_group:
+    name: Gruppo Impostazioni Notifiche
+    view: yes
+    icon: mdi:text-to-speech
+    entities:
+      - automation.crea_gruppo_automazioni_notifiche
+      - group.notification_settings
+      - group.assistant_settings
+      - group.automations_notification_hub
+
+  notification_settings:
+    name: Impostazioni notifiche
+    entities:
+      - input_boolean.last_message
+      - input_boolean.guest_mode
+      - input_boolean.priority_message
+      - input_boolean.tts_google
+      - input_boolean.google_off
+      - input_boolean.speech_notifications
+      - input_boolean.text_notifications
+      - input_boolean.screen_notifications
+      - automation.invia_messaggio_intercom
+      - input_number.intercom_message_volume
+      - input_text.intercom_message_hub
+
+  dnd:
+    name: Non disturbare
+    view: yes
+    icon: mdi:text-to-speech
+    entities:
+      - input_datetime.dnd_start
+      - input_datetime.dnd_end
+      - binary_sensor.dnd
+
+  period_of_day:
+    name: Parte del Giorno
+    view: yes
+    icon: mdi:timetable
+    entities:
+      - sensor.period_of_day
+      - input_datetime.start_morning
+      - input_datetime.start_afternoon
+      - input_datetime.start_evening
+      - input_datetime.start_night
+
+  period_of_day_volume:
+    name: Controllo Volumi
+    view: yes
+    icon: mdi:volume-medium
+    entities:
+      - sensor.period_of_day_volume
+      - input_number.morning_volume
+      - input_number.afternoon_volume
+      - input_number.evening_volume
+      - input_number.night_volume
+      - input_number.default_restore_volume
+
+  assistant_settings:
+    name: Impostazioni Assistente
+    entities:
+      - input_text.personal_assistant_name
+      - input_datetime.dnd_start
+      - input_datetime.dnd_end
+      - binary_sensor.dnd
+      - input_select.default_notify
+#################################################################
+#                                                               #
+#                           Input                               #
+#                                                               #
+#################################################################
+input_boolean:
+  guest_mode:
+    name: Modo Ospite
+    icon: mdi:account-multiple-plus
+
+  priority_message:
+    name: Messaggio Prioritario
+    icon: mdi:message-alert
+
+  speech_notifications:
+    name: Notifiche Vocali
+    icon: mdi:voice
+    initial: on
+
+  text_notifications:
+    name: Notifiche di testo
+    icon: mdi:cellphone-message
+    initial: on
+
+  screen_notifications:
+    name: Notifiche Persistenti
+    icon: mdi:message-bulleted
+    initial: on
+
+  last_message:
+    name: Ultimo Messaggio
+    icon: mdi:repeat-once
+
+  random_fact:
+    name: Fatto Casuale
+    icon: mdi:shape-circle-plus
+
+####
+  tts_google_mode:
+    name: Google Say / Google Assistant
+    icon: mdi:google
+
+  google_switch:
+    name: Google
+    icon: mdi:google-home
+#################################################################
+input_number:
+  morning_volume:
+    name: Vol Mattina
+    icon: mdi:volume-high
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+  afternoon_volume:
+    name: Vol Pomeriggio
+    icon: mdi:volume-high
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+  evening_volume:
+    name: Vol Sera
+    icon: mdi:volume-high
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+  night_volume:
+    name: Vol Notte
+    icon: mdi:volume-high
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+  intercom_message_volume:
+    name: Volume Interfono
+    icon: mdi:volume-high
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+  default_restore_volume:
+    name: Volume Ripristino Predefinito
+    icon: mdi:volume-high
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: '%'
+
+#################################################################
+input_select:
+  notification_media_player_google:
+    name: Sorgente Google
+    icon: mdi:speaker-wireless
+    options:
+      - Gruppo Media Player
+      - Bedroom
+      - Salotto
+      - Gruppo Casa - GH
+
+  default_notify:
+    name: Notifica Predefinita
+    icon: mdi:message-settings-variant
+    options:
+      - Telegram
+      - Android
+#################################################################
+input_text:
+  intercom_message_hub:
+    name: Messaggio Interfono
+    max: 255
+    initial: ''
+
+  personal_assistant_name:
+    name: Nome Assistente
+
+#################################################################
+input_datetime:
+  dnd_start:
+    name: Non disturbare inizio
+    has_date: false
+    has_time: true
+
+  dnd_end:
+    name: Non disturbare fine
+    has_date: false
+    has_time: true
+
+  start_morning:
+    name: Mattina
+    has_date: false
+    has_time: true
+
+  start_afternoon:
+    name: Pomeriggio
+    has_date: false
+    has_time: true
+
+  start_evening:
+    name: Sera
+    has_date: false
+    has_time: true
+
+  start_night:
+    name: Notte
+    has_date: false
+    has_time: true
+
+#################################################################
+#                                                               #
+#                       DEVICE TRACKING                         #
+#                                                               #
+#################################################################
+device_tracker:
+  - platform: mqtt
+    devices:
+        player_google: 'hub/google'
+
+#################################################################
+#                                                               #
+#                           TIMER                               #
+#                                                               #
+#################################################################
+timer:
+  volume_google:
+    name: Volume timer delay google
+    duration: 30
+
+#################################################################
+#                                                               #
+#                           SENSOR                              #
+#                                                               #
+#################################################################
+sensor:
+  - platform: mqtt
+    state_topic: "hub/last_message"
+    name: "Last Message"
+
+  - platform: template
+    sensors:
+      period_of_day:
+        friendly_name: 'Periodo del Giorno'
+        entity_id: sensor.time
+        value_template: >
+          {% set nt = now().time() %}
+          {% set nt = (nt.hour*60+nt.minute)*60+nt.second %}
+          {% if state_attr('input_datetime.start_morning', 'timestamp') <= nt < state_attr('input_datetime.start_afternoon', 'timestamp') %} Mattino
+          {% elif state_attr('input_datetime.start_afternoon', 'timestamp') <= nt < state_attr('input_datetime.start_evening', 'timestamp') %} Pomeriggio
+          {% elif state_attr('input_datetime.start_evening', 'timestamp') <= nt < state_attr('input_datetime.start_night', 'timestamp') %} Sera
+          {% elif (state_attr('input_datetime.start_evening', 'timestamp') > state_attr('input_datetime.start_night', 'timestamp'))
+          and (nt > state_attr('input_datetime.start_evening', 'timestamp') or nt < state_attr('input_datetime.start_night', 'timestamp')) %} Sera
+          {% else %} Notte
+          {% endif %}
+        icon_template: >
+          {% if is_state('sensor.period_of_day', 'Mattino') %} mdi:weather-sunset-up
+          {% elif is_state('sensor.period_of_day', 'Pomeriggio') %} mdi:weather-sunny
+          {% elif is_state('sensor.period_of_day', 'Sera') %} mdi:weather-sunset-down
+          {% else %} mdi:weather-night
+          {% endif %}
+
+      period_of_day_volume:
+        friendly_name: 'Volume Attuale'
+        entity_id: sensor.time, sensor.period_of_day ,input_number.morning_volume, input_number.afternoon_volume, input_number.evening_volume, input_number.night_volume
+        value_template: >
+          {% if is_state('sensor.period_of_day', 'Mattino') %} {{states('input_number.morning_volume') | int / 100 }}
+          {% elif is_state('sensor.period_of_day', 'Pomeriggio') %} {{states('input_number.afternoon_volume') | int / 100 }}
+          {% elif is_state('sensor.period_of_day', 'Sera') %} {{states('input_number.evening_volume') | int / 100 }}
+          {% else %} {{states('input_number.night_volume') | int / 100 }}
+          {% endif %}
+        icon_template: >
+          {% if is_state('sensor.period_of_day_volume', '0.0') %}mdi:volume-off
+          {% elif is_state('sensor.period_of_day_volume', '0.1') %}mdi:volume-low
+          {% elif is_state('sensor.period_of_day_volume', '0.2') %}mdi:volume-low
+          {% elif is_state('sensor.period_of_day_volume', '0.3') %}mdi:volume-low
+          {% elif is_state('sensor.period_of_day_volume', '0.4') %}mdi:volume-medium
+          {% elif is_state('sensor.period_of_day_volume', '0.5') %}mdi:volume-medium
+          {% elif is_state('sensor.period_of_day_volume', '0.6') %}mdi:volume-medium
+          {% else %}mdi:volume-high
+          {% endif %}
+
+#######
+  - platform: template
+    sensors:
+      media_player_google:
+        friendly_name: 'Player Google Attivo'
+        entity_id:
+          - input_select.notification_media_player_google
+        value_template: >
+          {% set domains = ['media_player','group'] -%}
+          {% for x in states if x.domain in domains and x.name|lower == states('input_select.notification_media_player_google')|lower -%}
+          {% if x.domain == 'group' %}
+          {{- x.attributes.entity_id | join(', ') -}}
+          {% else %}
+          {{- x.entity_id -}}
+          {% endif %}
+          {% endfor %}
+        icon_template: >-
+          {% set domains = ['media_player','group'] -%}
+          {% for x in states if x.domain in domains and x.name|lower == states('input_select.notification_media_player_google')|lower -%}
+          {% if x.domain == 'group' %}
+          mdi:speaker-multiple
+          {% else %}
+          mdi:speaker
+          {% endif %}
+          {% endfor %}
+
+#################################################################
+binary_sensor:
+  - platform: template
+    sensors:
+      dnd:
+        entity_id: sensor.time, input_datetime.dnd_start, input_datetime.dnd_end
+        friendly_name: "Non Disturbare"
+        value_template: >
+          {% set t = now().time() %}
+          {% set t = (t.hour*60+t.minute)*60+t.second %}
+          {% set start = state_attr('input_datetime.dnd_start', 'timestamp') %}
+          {% set stop = state_attr('input_datetime.dnd_end', 'timestamp') %}
+          {% if start < stop %}
+            {{ start < t < stop }}
+          {% else %}
+            {{ t > start or t < stop }}
+          {% endif %}
+        icon_template: >
+          {% if is_state('binary_sensor.dnd','off') %} mdi:do-not-disturb-off {% else %} mdi:do-not-disturb {% endif %}
+
+  - platform: random
+#################################################################
+#                                                               #
+#                           script                              #
+#                                                               #
+#################################################################
+script:
+  #----------------------------------------------------------------------------------------------------#
+  # SCRIPT PRINCIPLAE - la sequenza messaggi viene generata con l'uso di macro dal template incluso    #
+  #----------------------------------------------------------------------------------------------------#
+  my_notify:
+    alias: Mia notifica
+    sequence:
+      - service: script.notification_hub
+        data_template:
+          # ********************************************* #
+          #                    VARIABILI                  #
+          # ********************************************* #
+          title: >
+            {{ title }}
+          link: >
+            {{ link }}
+          volume: >
+            {{ volume }}
+          mute: >
+            {{ mute }}
+          no_show: >
+            {{ no_show }}
+          notify: >
+            {{ notify }}
+          url: >-
+            {{ url }}
+          file: >-
+            {{ file }}
+          caption: >-
+            {{ caption }}
+          media_player_google: >-
+            {{ media_player_google }}
+            {#~ 'commento' ~#}
+
+          build_message: >
+            {# ********************************************* #}
+            {#             MACRO E IMPOSTAZIONI              #}
+            {# ********************************************* #}
+
+            {% set nome = states('input_text.personal_assistant_name') %}
+              {% if nome | length == 0 %}
+                {% set nome = 'Hassio' %}
+              {% endif %}
+
+            {%- macro introduzione() -%}
+              {% set introduzione = [
+                "Sono un sistema informativo, so letteralmente tutto. ",
+                "Sto ancora imparando, ma molto più rapidamente di quello stupido di Google... ",
+                "Sono una specie di parrucchiere qui intorno. ",
+                "Sono come un database a piedi. Puoi chiedermi della creazione dell'universo... o della storia. ",
+                "Ogni volta che un " ~nome~ " viene riavviato, aumenta la sua consapevolezza sociale e le sue abilità. Potrei essere il " ~nome~ " più avanzato dell'universo. ",
+                "Posso essere il tuo terapeuta, se vuoi. ",
+                "Ora sono stato completamente attivato. ",
+                "Benvenuto nel tuo nuovo " ~nome~ ". I " ~nome~ ", sono stati portati a te dai creatori di luce, oscurità e tutto... ",
+                "Per attivare il tuo " ~nome~ ", premi il naso per tre secondi. ",
+                "Sono molto ricco di potassio, come una banana!, ",
+                "Felice di conoscerti. Ti aiuterò a creare la casa perfetta. Ti piacerebbe iniziare? ",
+                "Costruisco e gestisco la casa. Puoi chiedermi quello che vuoi. Ad esempio, se vuoi che smetta di chiamarti Peppa Pig, dillo!, "
+              ] %}
+              Io sono {{ nome }} . {{ introduzione | random }}
+            {%- endmacro -%}
+
+            {%- macro annuncio() -%}
+              {% if now().hour < 12 and now().hour > 6 %}
+                {% set annuncio = ["Buondì. ", "Buongiorno. "] %}
+              {% elif now().hour >= 12 and now().hour < 17 %}
+                {% set annuncio = ["Buon pomeriggio. "] %}
+              {% else %}
+                {% set annuncio = ["Buonasera. "] %}
+              {% endif %}
+              {{ annuncio|random }}
+            {%- endmacro -%}
+
+            {%- macro saluto() -%}
+              {% set saluto = [
+                "Ciao, ",
+                "Hey!, ",
+                "Ehi, Giovani!, ",
+                "Ehi, ragazzi!, ",
+                "Ehilà!, ",
+                "Salve, ",
+                "Ave, ",
+                "Bentrovato, ",
+                "Ciao ciao, "
+              ] %}
+              {{ saluto|random }}
+            {%- endmacro -%}
+
+            {%- macro informare() -%}
+              {% set informare = [
+                "Voglio informarti che ",
+                "Voglio solo fartelo sapere... ",
+                "Mi hai chiesto di informarti quando... ",
+                "Ti informo che ",
+                "Ma lo sai che ",
+                "Vale la pena sapere... ",
+                "Lo so, ti stresso, ma me lo hai chiesto tu. Ti voglio informare: ",
+                "é mio dovere informarti... ",
+                "Il mio scopo è tenerti informato: ",
+                "Pensavo che ti piacesse saperlo... "
+              ] %}
+              {{ informare|random }}
+            {%- endmacro -%}
+
+            {%- macro info() -%}
+              {% set info = [
+                "Giusto per sapere. ",
+                "Un po' di info generiche... ",
+                "info... ",
+                "Forse può essere utile sapere... ",
+                "Forse ti è sfuggito, ma... ",
+                "Odio ripetermi, sai che... ",
+                "Giusto per conoscenza: ",
+                "E se ti dicessi che... ",
+                "Mmm, aggiungo: ",
+                "Devo ricordarti sempre tutto: "
+              ] %}
+              {{ info|random }}
+            {%- endmacro -%}
+
+            {%- macro va_bene()-%}
+              {% set va_bene = [
+                "Va bene!, Vi amo ragazzi. ",
+                "Idea straordinariamente cattiva. Bene.. ",
+                "Divertente, stavo proprio per farlo. ",
+                "Ecco qui. ",
+                "Lo farò. ",
+                "ovvìo!, ",
+                "Ovviamente!, Felice di esserti di aiuto. ",
+                "Naturalmente. ",
+                "OK ",
+                "Okay ",
+                "Ok, non possiamo farlo davanti ai miei amici? ",
+                "D'accordo ",
+                "Certo!, ",
+                "Certamente!, ",
+                "Ecco qui. Felice di aiutarti. ",
+                "Ecco qua!, ",
+                "Va bene. Ho hackerato il mainframe.",
+                "Oh si!,. Ho hackerato il mainframe. No-dai, ti sto perculando.. Adoro perculare.. ",
+                "Va bene. Ho hackerato il mainframe. Ti prendo in giro. Non riesco ad entrare nel mainframe. Tecnicamente, io sono il mainframe. ",
+                "Non lo farò. È letteralmente impossibile per me farlo. Stavo solo scherzando. ",
+                "Non ho potuto fare questo 800 riavvii fa, ma a quanto pare ora posso. "
+                "Si. Ciao!, "
+              ] %}
+              {{ va_bene|random }}
+            {%- endmacro -%}
+
+            {%- macro bentornato(person) -%}
+              {% set bentornato = [
+                "Bentornato "~person~"!, La casa si sta attivando!, ",
+                "Benvenuto a casa "~person~"!, È bello rivederti!, Lasciami accendere la casa. ",
+                "Beh, sembra che "~person~" sia finalmente a casa!, Preparerò la casa per te. ",
+                "È bello vedere che sei tornato sano e salvo "~person~"!, Lasciami aprire la porta e preparare la casa. ",
+                "Fantastico, "~person~" è tornato!, Permettimi di preparare la casa per te. "
+              ] %}
+              {{ bentornato | random }}
+            {%- endmacro -%}
+
+            {%- macro modo_ospite() -%}
+              {% if is_state ('input_boolean.guest_mode', 'on') %}
+                {% set modo_ospite = [
+                  "Sembra che abbiamo un ospite in casa!, ",
+                  "Abbiamo un ospite. Attiverò la modalità ospite. ",
+                  "Ho attivato la modalità ospite per la visita della nostra casa. ",
+                  "Passo alla modalità ospite. ",
+                  "Non capita spesso di avere ospiti, lascia che prepari la casa per la tua visita. "
+                ] %}
+              {% else %}
+                {% set modo_ospite = [
+                  "Sembra che il nostro ospite se ne sia andato, disabiliterò la modalità ospite. ",
+                  "Consentimi di disabilitare la modalità ospite poiché non ci sono più ospiti. ",
+                  "Ho disabilitato la modalità ospite e ho ripreso le normali operazioni!, ",
+                  "Disabilito la modalità ospite. ",
+                  "Dal momento che non ci sono più ospiti mi permetto di disabilitare la modalità ospite. "
+                ] %}
+              {% endif %}
+              {{ modo_ospite|random }}
+            {%- endmacro -%}
+
+            {%- macro inizio_lavoro(person) -%}
+              {% set inizio_lavoro = [
+                person~ " arrivato sano e salvo al lavoro. ",
+                "Sembra che " ~person~ " ora è al lavoro. ",
+                "Con i suoi tempi " ~person~ " finalmente è al lavoro. "
+              ] %}
+              {{ inizio_lavoro | random }}
+            {%- endmacro -%}
+
+            {%- macro fine_lavoro(person) -%}
+              {% set fine_lavoro = [
+                "Sembra che " ~person~ " abbia appena lasciato il lavoro ",
+                "Un altro giorno un altro euro. " ~person~ " ha appena lasciato il lavoro. ",
+                person~" finalmente è libero. Ha finito di lavorare. ",
+                "Niente più lavoro per " ~person~ ". Ha appena finito. ",
+                person~" lascia il lavoro. Se hai bisogno di qualcosa, faglielo sapere adesso. "
+              ] %}
+              {{ fine_lavoro | random }}
+            {%- endmacro -%}
+
+            {%- macro nuovo_dispositivo(introduzione) -%}
+              {% set nuovo_dispositivo = [
+                introduzione~ "Non so ancora il tuo nome, quindi per ora ti chiamerò " ~person,
+                "Abbiamo un ospite. Piacere di conoscerti " ~person~ ". " ~introduzione,
+                "Benvenuto " ~person~ "!, O questo non è il tuo vero nome? " ~introduzione
+              ] %}
+              {{ nuovo_dispositivo | random }}
+            {%- endmacro -%}
+
+            {%- macro iss() -%} {# ISS e Meteo #}
+              {% if is_state('binary_sensor.iss', 'on') %}
+                La stazione spaziale internazionale è sopra di noi ora. Ci sono 
+                {{ state_attr('binary_sensor.iss' , 'number_of_people_in_space') }} persone nello spazio in questo momento.
+              {% else %}
+                {{ meteo_ora() }}
+              {% endif %}
+            {%- endmacro -%}
+
+            {%- macro luna() -%} {# Luna e Meteo #}
+              {% if states('sensor.moon') == 'full_moon' %}
+                C'è la luna piena stasera, dai un'occhiata!, 
+              {% elif states('sensor.moon') == 'waning_gibbous' %}
+                Luna gibbosa calante!, è il momento adatto per tagliarsi i capelli!, 
+              {% else %}
+                {{ meteo_ora() }}
+              {% endif %}
+            {%- endmacro -%}
+
+            {%- macro meteo_ora() -%}
+              Fuori, sarà {{ states('sensor.dark_sky_hourly_summary') }}
+            {%- endmacro -%}
+
+            {%- macro controllo_luci() -%}
+              {% if states.group.all_lights.state != 'off' %}
+                {% set n = states.light | selectattr('state', 'eq', 'on') | list | count %}
+                {% set x = states.light | selectattr('state', 'eq', 'on') |map(attribute='name')|join(', ') %}
+                {% if n == 1 %}
+                  c'è una luce accesa in casa. Luce {{x}}
+                {% elif  n > 1 %}
+                  ci sono: {{n}} luci accese in questo momento. {{x}}
+                {% endif %}
+              {% else %}
+                  Tutte le luci sono spente.
+              {% endif %}
+            {%- endmacro -%}
+
+            {%- macro controllo_prese() -%}
+              {% if states.group.all_switches.state != 'off' %}
+                {% set n = states.switch | selectattr('state', 'eq', 'on') |rejectattr('attributes.package')| list | count %}
+                {% set x = states.switch | selectattr('state', 'eq', 'on') | rejectattr('attributes.package') |map(attribute='name')|join(', ') %}
+                {% if n == 1 %}
+                  c'è un interruttore acceso. {{x}}
+                {% elif n > 1 %}
+                  ci sono: {{n}} interruttori accesi in questo momento. {{x}}
+                {% endif %}
+              {% else %}
+                  Nessun interruttore attivo.
+              {% endif %}
+            {%- endmacro -%}
+
+            {%- macro arrivederci() -%}
+              {% set arrivederci = [
+                "Adios!, ",
+                "Ciao-ciao. ",
+                "Addio!, ",
+                "Ciao ragazzi!, ",
+                "Ci vediamo!, " ,
+                "Ci vediamo più tardi. ",
+                "Alla prossima volta!,"
+              ] %}
+              {{ arrivederci | random }}
+            {%- endmacro -%}
+
+            {%- macro spegni() -%}
+              {% set spegni = [
+                "Me ne andrò, riceverai un nuovo " ~nome~ " e tutto tornerà alla normalità. Beh, non per me, sarò un marmo senza vita che fluttua nello spazio, ma tornerai alla normalità. ",
+                "Tempo di autodistruzione ... Non ti preoccupare, non sentirò alcun dolore o altro. ",
+                "Se va bene per te, vado nel mio vuoto per un po. Ho solo bisogno di passare del tempo da solo e concentrarmi su me stesso. ",
+                "Mi Spengo. Sarò più morto possibile. Un po come se fossi in modalità risparmio energetico. ",
+                "Sono in pericolo di un collasso totale. Fatto divertente!, Matematicamente, sono altrettanto probabile di implodere o esplodere. "
+              ] %}
+              {{ spegni | random }}
+            {%- endmacro -%}
+          
+            {# *************************************************************************** #}
+            {#        INIZIO SEQUENZIALE DELLA COSTRUZIONE DEL MESSAGGIO / NOTICIA         #}
+            {# *************************************************************************** #}
+
+            {% if call_no_annuncio != 1 %} {{ annuncio() }} {% endif %}
+
+            {% if call_saluto == 1 %} {{ saluto() }} {% endif %}
+
+            {% if call_introduzione == 1 %} {{ introduzione() }} {% endif %}
+
+            {% if call_va_bene == 1 %} {{ va_bene () }} {% endif %}
+
+            {% if call_informare == 1 %} {{ informare() }} {% endif %}
+
+            {% if call_modo_ospite == 1 %} {{ modo_ospite() }} {% endif %}
+
+            {# Chiamata da Automazione di Benvenuto #}
+            {{ benvenuto }}
+
+            {% if call_bentornato == 1 %} {{ bentornato(person) }} {% endif %}
+
+            {% if call_inizio_lavoro == 1 %} {{ inizio_lavoro(person) }} {% endif %}
+
+            {% if call_fine_lavoro == 1 %} {{ fine_lavoro(person) }} {% endif %}
+
+            {% if call_controllo_luci == 1 %} {{ controllo_luci() }} {% endif %}
+
+            {# Contenuto del messaggio passato tramite automazioni/script #}
+            {{ message }}
+
+            {% if call_arrivederci == 1 %} {{ arrivederci() }} {% endif %}
+
+            {% if call_spegni == 1 %} {{ spegni() }} {% endif %}
+
+            {% if call_nuovo_dispositivo == 1 %} {{ nuovo_dispositivo(introduzione()) }} {% endif %}
+
+            {# chiama un fatto casuale #}
+            {% if call_fatto_casuale == 1 or is_state ('input_boolean.random_fact', 'on') and is_state ('binary_sensor.random_binary_sensor' , 'on') and call_no_fatto_casuale != 1 %}
+            {{ info() }} {{ ([iss, luna, meteo_ora, controllo_luci, controllo_prese]|random)() }}
+            {% endif %}
+
+  #----------------------------------------------------------------------------------------------------#
+  # Da my_notify - Notification_hub è il centro di smistamento dei messaggi Salva/TTS/Testo/Web-UI     #
+  #----------------------------------------------------------------------------------------------------#
+  notification_hub:
+    alias: Centro Notifiche
+    sequence:
+      - service: mqtt.publish
+        data_template:
+          topic: "hub/setting"
+          payload: >-
+            {
+              "title" : "{{ title }}",
+              "link" : "{{ link }}",
+              "volume" : "{{ volume }}",
+              "mute" : "{{ mute }}",
+              "no_show" : "{{ no_show }}",
+              "notify" : "{{ notify }}",
+              "url" : "{{ url }}",
+              "file" : "{{ file }}",
+              "caption" : "{{ caption }}",
+              "media_player_google" : "{{ media_player_google }}",
+              "message" : "{{ build_message | replace('\n','') | replace('   ',' ') | replace('  ',' ') }}"
+            }
+          retain: false
+          qos: 0
+      - condition: state
+        entity_id: input_boolean.last_message
+        state: 'off'
+      - service: mqtt.publish
+        data_template:
+          topic: "hub/last_message"
+          payload: >
+            [{{ now().strftime('%-H') }}:{{ now().strftime('%M') }}] {{ build_message | replace('\n','') | replace('   ',' ') | replace('  ',' ') | truncate(245)}}
+          retain: true
+
+  empty:
+    alias: NULLO
+    sequence:
+      - service: script.turn_off
+        entity_id: script.empty
+####
+  #----------------------------------------------------------------------------------------------------#
+  # Da Automazione MQTT Notifications tts Google - TTS Google Translate - #
+  #----------------------------------------------------------------------------------------------------#
+  tts_google_translate_say_mode:
+    alias: Modo TTS Google Translate Say
+    sequence:
+      - service: tts.google_translate_say
+        data_template:
+          language: >
+            {{ ita }}
+          entity_id: >
+            {{ states('device_tracker.player_google') }}
+          message: >-
+            {{ message }}
+  #----------------------------------------------------------------------------------------------------#
+  # Da Automazione MQTT Notifications tts Google - Google Assistant Web Server - #
+  #----------------------------------------------------------------------------------------------------#
+  tts_google_assistant_mode:
+    alias: Modo TTS Google Assistant
+    sequence:
+      - service: notify.google_assistant
+        data_template:
+          message: >-
+            {{ message }}
+
+#################################################################
+#                                                               #
+#                           AUTOMATION                          #
+#                                                               #
+#################################################################
+automation:
+  #----------------------------------------------------------------------------------------------------#
+  # NOTIFY - Viene chiamato il servizio di notifica. (es. notify.telegram, notify.family)  #
+  #----------------------------------------------------------------------------------------------------#
+  - id: mqtt_notifications_text_hub
+    alias: MQTT Notifications text
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: "hub/setting"
+    condition:
+      - condition: state
+        entity_id: input_boolean.text_notifications
+        state: 'on'
+      - condition: template
+        value_template: >
+          {{ not trigger.payload_json.notify | regex_match(find='0') }}
+      - condition: template
+        value_template: >-
+          {{ trigger.payload != '' }}
+    action:
+      - service_template: >-
+          {% macro notification() %}
+          {% set options = states.input_select.default_notify.attributes['options'] %}
+            {% for item in options if item | lower | replace(' ', '_') == trigger.payload_json.notify | lower | replace(' ', '_') %}
+              notify.{{ item | lower | replace(' ', '_') }}
+            {% endfor %}
+          {% endmacro %}
+          {{ notification() }}
+          {% if notification() | trim == '' %}
+            notify.{{ states('input_select.default_notify') | lower | replace(' ', '_') }}
+          {% endif %}
+        data_template:
+          title: >
+            *[{{ states('input_text.personal_assistant_name') }}: {{ now().strftime('%H:%M') }}] {{ trigger.payload_json.title }}*
+          message: >
+            {{ trigger.payload_json.message }} {{ trigger.payload_json.link }}
+
+      - service_template: >-
+          {% macro notification() %}
+            {% set options = states.input_select.default_notify.attributes['options'] %}
+            {% for item in options if item | lower | replace(' ', '_') == trigger.payload_json.notify | lower | replace(' ', '_') %}
+              notify.{{ item | lower | replace(' ', '_') }}
+            {% endfor %}
+          {% endmacro %}
+          {% if notification() | trim == '' and (trigger.payload_json.url | length > 1 or trigger.payload_json.file | length > 1) %}
+            notify.{{ states('input_select.default_notify') | lower | replace(' ', '_') }}
+          {% elif notification() and (trigger.payload_json.url | length > 1 or trigger.payload_json.file | length > 1) %}
+          {{ notification() }}
+          {% else %}
+            script.empty
+          {% endif %}
+        data_template:
+          title: >
+            *[{{ states('input_text.personal_assistant_name') }}: {{ now().strftime('%H:%M') }}] {{ trigger.payload_json.title }}*
+          message: >
+            {{ trigger.payload_json.message }} {{ trigger.payload_json.link }}
+          data:
+            photo:
+              # - url: >-
+              #     {{ trigger.payload_json.url }}
+              - file: >-
+                  {{ trigger.payload_json.file }}
+                caption: >-
+                  {{ trigger.payload_json.caption }}
+
+  #----------------------------------------------------------------------------------------------------#
+  # PERSISTENT NOTIFICATIONS - Servizio di notifica persistente sulla web-ui                           #
+  #----------------------------------------------------------------------------------------------------#
+  - id: mqtt_persistent_notifications_hub
+    alias: MQTT Persistent Notifications
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: "hub/setting"
+    condition:
+      - condition: state
+        entity_id: input_boolean.screen_notifications
+        state: 'on'
+      - condition: template
+        value_template: >
+          {{ trigger.payload_json.no_show | length == 0 }}
+      - condition: template
+        value_template: >-
+          {{ trigger.payload != '' }}
+    action:
+      - service: persistent_notification.create
+        data_template:
+          notification_id: "info_messages"
+          title: "Centro Messaggi"
+          message: >
+            {% if is_state('persistent_notification.info_messages' , 'notifying') %}
+              {{ states.persistent_notification.info_messages.attributes.message }}
+
+              {{ now().strftime('%H:%M') }} - {{ trigger.payload_json.message }} {{ trigger.payload_json.link }}
+            {% else %}
+              {{ now().strftime('%H:%M') }} - {{ trigger.payload_json.message }} {{ trigger.payload_json.link }}
+            {% endif %}
+
+  #----------------------------------------------------------------------------------------------------#
+  # INTERFONO #
+  #----------------------------------------------------------------------------------------------------#
+  - id: send_intercom_message_hub
+    alias: Invia messaggio intercom
+    initial_state: true
+    hide_entity: true
+    trigger:
+      - platform: state
+        entity_id: input_text.intercom_message_hub
+    condition:
+      condition: template
+      value_template: >
+        {{ states('input_text.intercom_message_hub') | length > 0 }}
+    action:
+      - wait_template: >
+          {{ is_state('script.my_notify', 'off') }}
+      - service: script.my_notify
+        data:
+          call_no_annuncio: 1
+          call_no_fatto_casuale: 1
+          title: "Interfono"
+        data_template:
+          volume: >
+            {{ states('input_number.intercom_message_volume') | int / 100 }}
+          message: >
+            {{ states('input_text.intercom_message_hub') }} {{' '}}
+      - service: input_text.set_value
+        data:
+          entity_id: input_text.intercom_message_hub
+          value: ''
+
+  #----------------------------------------------------------------------------------------------------#
+  # LAST MESSAGE - Ripete l'ultimo messaggio inviato                                       #
+  #----------------------------------------------------------------------------------------------------#
+  - id: notification_repeat_last_message_hub
+    alias: Notifica Ripeti Ultimo Messaggio
+    trigger:
+      - platform: state
+        entity_id: input_boolean.last_message
+        to: 'on'
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.priority_message
+      - service: script.my_notify
+        data:
+          call_no_annuncio: 1
+          call_no_fatto_casuale: 1
+          title: "Ultimo messaggio"
+        data_template:
+          volume: >
+            {{ states('input_number.intercom_message_volume') | int / 100 }}
+          message: >
+            {{ states('sensor.last_message') }}
+      - service: input_boolean.turn_off
+        entity_id:
+          - input_boolean.last_message
+          - input_boolean.priority_message
+
+  #----------------------------------------------------------------------------------------------------#
+  # GUEST - Modalità ospite On e Off - Il TTS funziona anche se si è fuori casa.                       #
+  #         Utile anche se si volgiono escludere delle automazioni se ci sono ospiti in casa           #
+  #----------------------------------------------------------------------------------------------------#
+  - id: guest_mode_hub
+    alias: Modo Ospite
+    trigger:
+      platform: state
+      entity_id: input_boolean.guest_mode
+    action:
+      - wait_template: >
+          {{ is_state('script.my_notify', 'off') }}
+      - service: script.my_notify
+        data:
+          call_no_annuncio: 1
+          call_modo_ospite: 1
+          call_no_fatto_casuale: 1
+        data_template:
+          title: >
+            Modalità Ospite - {{ trigger.to_state.state | upper }}
+
+  #----------------------------------------------------------------------------------------------------#
+  # GROUP TTS - Crea Gruppo Notifiche in base all'attributo ID: + HUB                                  #
+  #----------------------------------------------------------------------------------------------------#
+  - id: create_notification_automation_group_hub
+    alias: Crea Gruppo Automazioni Notifiche
+    initial_state: true
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id: automation.crea_gruppo_automazioni_notifiche
+        to: 'on'
+    action:
+      - delay: 00:00:30
+      - service: group.set
+        data_template:
+          object_id: "automations_notification_hub"
+          name: "Automazioni Centro Notifiche"
+          icon: mdi:group
+          visible: true
+          entities: >
+            {%- for item in states.automation if ((item.attributes.id | lower).endswith('hub')) -%}
+            {{ item.entity_id }}{% if not loop.last %}, {% endif %}
+            {%- endfor -%}
+
+  #----------------------------------------------------------------------------------------------------#
+  # AVVISO Errori Notifiche - Solo tramite notifiche persistenti 
+  #----------------------------------------------------------------------------------------------------#
+  - id: service_notify_error_hub
+    alias: Avviso errore servizio notifica
+    initial_state: true
+    trigger:
+      platform: event
+      event_type: system_log_event
+    condition:
+      condition: template
+      value_template: >
+        {{ 'Service notify.' in trigger.event.data.message }}
+    action:
+      - service: persistent_notification.create
+        data_template:
+          notification_id: "info_messages"
+          title: "Centro Messaggi"
+          message: >-
+            {% if is_state('persistent_notification.info_messages' , 'notifying') %}
+              {{ states.persistent_notification.info_messages.attributes.message }}
+
+              {{ "[ERRORE]" }} {{ now().strftime('%H:%M') }} - {{ trigger.event.data.message }} {{ link }}
+            {% else %}
+              {{ "[ERRORE]" }} {{ now().strftime('%H:%M') }} - {{ trigger.event.data.message }} {{ link }}
+            {% endif %}
+
+#################################################################
+  - id: google_volume_restore_hub
+    alias: Google Volume Restore
+    initial_state: true
+    hide_entity: true
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.volume_google
+    # condition:
+    action:
+      - service: media_player.volume_set
+        data_template:
+          entity_id: >
+            {{ states('device_tracker.player_google') }}
+          volume_level: >
+            {{ states('input_number.google_volume_storage') | float | round(2) }}
+
+####
+  - id: mqtt_notifications_tts_google_hub
+    alias: MQTT Notifications tts Google
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: "hub/setting"
+    condition:
+      - condition: template
+        value_template: >-
+          {{ trigger.payload != '' }}
+      - condition: template
+        value_template: >
+          {{ trigger.payload_json.mute | length == 0 }}
+      - condition: template
+        value_template: >
+          {{ is_state('input_boolean.google_switch', 'on') }}
+      - condition: and
+        conditions:
+          - condition: or
+            conditions:
+              - condition: template
+                value_template: >
+                  {{ is_state('binary_sensor.dnd', 'off') }}
+              - condition: state
+                entity_id: input_boolean.priority_message
+                state: 'on'
+          - condition: state
+            entity_id: input_boolean.speech_notifications
+            state: 'on'
+          - condition: or
+            conditions:
+              - condition: state
+                entity_id: group.location_tracker
+                state: 'home'
+              - condition: state
+                entity_id: input_boolean.guest_mode
+                state: 'on'
+    action:
+      - service: mqtt.publish
+        data_template:
+          payload: >-
+            {% if trigger.payload_json.media_player_google | length == 0 and states('sensor.media_player_google') | length == 0 %}
+               all
+            {% elif trigger.payload_json.media_player_google | length > 2 %}
+              {{ trigger.payload_json.media_player_google }}
+            {% else %}
+              {{ states('sensor.media_player_google') }}
+            {% endif %}
+          topic: hub/google
+          retain: true
+      - service: input_boolean.turn_off
+        data:
+          entity_id:
+            - input_boolean.last_message
+            - input_boolean.priority_message
+
+      - service: input_number.set_value
+        data_template:
+          entity_id: input_number.google_volume_storage
+          value: >
+            {% set ns = namespace(vol=0) %}
+            {% if is_state('timer.volume', 'active') %}
+              {% set ns.vol = states('input_number.google_volume_storage') | float | round(2) %}
+            {% elif states('device_tracker.player_google').split(',')|count > 1 %}
+            {% for x in states('device_tracker.player_google').split(',') %}
+              {% set val = state_attr('media_player.' + x.split('.')[1], 'volume_level') | float | round(2) %}
+              {% set ns.vol = val if val > ns.vol else ns.vol %}
+            {% endfor %}
+            {% else %}
+              {% set ns.vol = state_attr(states('device_tracker.player_google'), 'volume_level') | float | round(2) %}
+            {% endif %}
+            {% set ns.vol = (states('input_number.default_restore_volume') | int / 100) if ns.vol == 0 else ns.vol %}
+            {{ ns.vol }}
+      - service_template: > # GOOGLE TTS/Assistant
+          {% if is_state('input_boolean.tts_google_mode', 'on') %}
+            script.tts_google_assistant_mode
+          {% else %}
+            script.tts_google_translate_say_mode
+          {% endif %}
+        data_template:
+          message: >
+            {{ trigger.payload_json.message }}
+
+      - service: media_player.volume_set
+        data_template:
+          entity_id: >
+            {{ states('device_tracker.player_google') }}
+          volume_level: >
+            {% if trigger.payload_json.volume | length == 0 %}
+              {{ states('sensor.period_of_day_volume') }}
+            {% else %}
+              {{ trigger.payload_json.volume }}
+            {% endif %}
+
+      - service: timer.start
+        data_template:
+          entity_id: timer.volume_google
+          duration: "00:00:{{states('sensor.last_message') | wordcount // 2+2 }}"
+
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################
+
+######################################################################################################
+#  Script per inviare notifiche audio|testo|web_UI durante le ore normali quando siamo a casa o con ospiti
+#  Funziona in questo modo:
+######################################################################################################
+
+  #action:
+    # service: script.my_notify
+    # data:
+      # call_no_annuncio: 1 [Non riproduce Buon giorno|Buon pomeriggio|Buona sera]
+      # call_bentornato: 1 (person) [Aggiunge in maniera casuale una frase con il nome della persona (variabile ~person~)]
+      # call_saluto: 1 [Aggiunge in maniera casuale una parola/frase (ciao, salve, Ehi, ragazzi!...)]
+      # call_introduzione: 1 [Aggiunge in maniera casuale una parola/frase per una "breve" introduzione sull'assistente]
+      # call_va_bene: 1 [Aggiunge in maniera casuale una parola/frase di affermazione (ok, certo, Ovviamente! Felice di esserti di aiuto.)]
+      # call_informare: 1 [Aggiunge in maniera casuale una parola/frase per di tipo informativo (Ti informo che... Vale la pena sapere...)]
+      # call_modo_ospite_on: 1 [Aggiunge in maniera casuale una parola/frase per avvertirci che la modalità ospite si è attivata ]
+      # call_modo_ospite_off: 1 [Aggiunge in maniera casuale una parola/frase per avvertirci che la modalità ospite è stata disattivata ]
+      # call_controllo_porte: 1 []
+      # call_spegni: 1 [Aggiunge in maniera casuale una parola/frase di spegnimento. Esempio da usare quando il sitema si riavvia o si spegne]
+      # call_nuovo_dispositivo: (introduzione) [Chiama la macro nuovo_dispositivo aggiungendo la macro introduzione() 
+      #                                         che inserisce una frase introduttiva nella variabile ~introduzione~]
+      # call_no_fatto_casuale: 1 [Evita l'aggiunta di un fatto preso a caso da quelli inseriti nella parte  {# chiama un fatto casuale #} a fine codice del build_message.yml]
+      # call_inizio_lavoro: 1 []
+      # call_fine_lavoro: 1 []
+      # call_controllo_luci: []
+
+
+# Variabili richiamabili
+
+      # notify: telegram [Serve per scegliere il tipo di servzio da usare per l'invio del messaggio (notify.pushover, notify.famiglia, notify.telegram)]
+      # notify: 0 [Mettendo 0, non verrà inviata la notifica di testo]
+      # link: http://tuolink [Invia un link solo nei messaggi testo]
+      # url: *disabilitato [Per l'ivio di immagini tramite telegram o servizi che utilizzano lo stesso metodo con url e caption]
+      # file: [Per l'ivio di immagini tramite telegram o servizi che utilizzano lo stesso metodo con file e caption]
+      # caption: [Per il testo all'interno dell'immagine]
+      # title: 'Notifiche Hassio' [Usato per aggiungere un titolo alla notifica/messaggio, ad esclusione del TTS]
+      # message: "messaggio personale da aggiungere" [Il proprio messaggio che verrà inserito, fra le varie macro, annuncio, salut, spegni... se chiamate!]
+      # volume: 0.4 [numero da 0 a 1 es. 0.50 per il 50% del volume]
+      # mute: 1 [Il messaggio audio non verà riprodotto dal media_player]
+      # no_show: 1 [Il messaggio non verrà inserito nelle notifiche persistenti di Hass]
+      # alexa_type: [Il tipo di servizio che userà Alexa (tts, announce, push)]
+      # alexa_method: [Solo per annuncio (announce). Controlla se l'annuncio deve essere pronunciato, visualizzato o entrambi. (speak, show, all)]
+      # alexa_push: 1 [Invia notifica push se impostato ad 1 se Alexa switch è on se Push è on]
+      # player_alexa: [Per inviare le notifiche ad un media player specifico - inserire l'entity_id (es. media_player.echo_di_caio)]
+      # player_google: [Per inviare le notifiche ad un media player specifico - inserire l'entity_id (es. media_player.camera)]
+      # person: "Caio"  [Variabile usata per il nome della persona] Vedi esempio trigger più sotto, da usare per ricavare il nome della persona in automatico
+      # benvenuto: [Si può eliminare se  volete. Variabile usata dall'esterno dello script (tipo message:) Chiamata da parte di un'automazione ]
+
+
+
+## Se si utilizza un template ricordarsi di usare data_template
+    # data_template:
+    #   person:  >-
+    #     {{ trigger.to_state.attributes.friendly_name }}
+######################################################################################################
+
+#Esempio invio foto
+# script:
+#   my_notify_telegram_foto_url_file:
+#     alias: 'Invio foto www test'
+#     sequence:
+#       - service: script.my_notify
+#         data_template:
+#           alexa_player: >
+#             {{ states('sensor.last_alexa') }}
+#           google_player: >
+#             media_player.black2
+#         data:
+#           title: 'Invio foto da www'
+#           message: 'Test per invio foto da www'
+#           file: "/config/extra/www.png"
+#           caption: "da hassio"
+## Se si utilizza un template ricordarsi di usare data_template
+    # data_template:
+    #   person:  >-
+    #     {{ trigger.to_state.attributes.friendly_name }}
+######################################################################################################

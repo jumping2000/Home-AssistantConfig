@@ -1,0 +1,350 @@
+#################################################################
+#                                                               #
+#                      Packages/Weather                         #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'weather'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Sensor
+    ################################################
+
+    sensor.sunset_time:
+      <<: *customize
+      icon: mdi:weather-sunset-down
+
+    sensor.sunrise_time:
+      <<: *customize
+      icon: mdi:weather-sunset-up
+
+    sensor.day_night:
+      <<: *customize
+      friendly_name: "Day/Night"
+
+#################################################################
+#                                                               #
+#                           Group                               #
+#                                                               #
+#################################################################
+
+group:
+  sun:
+    name: Sun
+    view: no
+    entities:
+      - sun.sun
+      - sensor.moon
+      - sensor.fasi_lunari
+      - sensor.stagioni
+      - sensor.season
+     
+  temp-sensors:
+    name: Sensori di temperatura
+    control: hidden
+    view: no
+    entities:
+      - sensor.jmp_bedroom_13_13_2
+      - sensor.jmp_livia_21_21_1
+      - sensor.jmp_studio_22_22_1
+      - sensor.jmp_weather_14_14_1
+      - sensor.jmp_weather_16_16_2
+      - sensor.temperature_158d0001d6be78
+#      - sensor.thcucina_temp
+
+  hum-sensors:
+    name: Sensori di umidità
+    control: hidden
+    view: no
+    entities:
+      - sensor.jmp_bedroom_13_13_3
+      - sensor.jmp_livia_21_21_2
+      - sensor.jmp_studio_22_22_2
+      - sensor.jmp_weather_14_14_2
+      - sensor.jmp_weather_16_16_3
+      - sensor.humidity_158d0001d6be78
+#      - sensor.thcucina_hum
+
+  press-sensors:
+    name: Sensori di pressione
+    control: hidden
+    view: no
+    entities:
+      - sensor.jmp_bedroom_13_13_1
+      - sensor.jmp_weather_16_16_1
+      - sensor.xiaomipressure
+
+#################################################################
+#                                                               #
+#                             OPENUV                            #
+#                                                               #
+################################################################# 
+openuv:
+  api_key: !secret openuv_key
+  binary_sensors:
+    monitored_conditions:
+      - uv_protection_window
+  sensors:
+    monitored_conditions:
+      - current_ozone_level
+      - current_uv_index
+      - current_uv_level
+      - max_uv_index
+      - safe_exposure_time_type_1
+      - safe_exposure_time_type_2
+      - safe_exposure_time_type_3
+      - safe_exposure_time_type_4
+      - safe_exposure_time_type_5
+      - safe_exposure_time_type_6
+
+#################################################################
+#                                                               #
+#                            Sensors                            #
+#                                                               #
+#################################################################
+input_number:
+  soglia_max_temp:
+    name: Soglia max temperatura
+    min: 0
+    max: 40
+    step: 1
+    icon: mdi:chevron-double-up
+    mode: box
+    
+  soglia_min_temp:
+    name: Soglia min temperatura
+    min: -20
+    max: 20
+    step: 1
+    icon: mdi:chevron-double-down
+    mode: box
+
+binary_sensor:
+  - platform: workday
+    country: IT
+
+#################################################################
+#                                                               #
+#                           Sun                                 #
+#                                                               #
+#################################################################
+sun:
+#################################################################
+#                                                               #
+#                         Weather                               #
+#                                                               #
+#################################################################
+weather:
+#  - platform: yweather
+#    woeid: 724196
+#    name: Meteo Siena
+
+  - platform: darksky
+    api_key: !secret darksky_api_key
+    name: Siena
+    latitude: !secret home_lat
+    longitude: !secret home_long
+    mode: daily
+    units: si
+
+#################################################################
+#                                                               #
+#                         Automations                           #
+#                                                               #
+#################################################################
+automation:
+  - alias: 'Notify Rain 1mm'
+    initial_state: true
+    trigger:
+      - platform: numeric_state
+        above: 1
+        entity_id:
+          - sensor.rain_day
+        value_template: '{{ states.sensor.rain_day.state }}'
+    action:
+    - service: script.my_notify
+      data_template:
+        title: "*-- PIOGGIA --*"
+        message: "Pioggia: {{ states.sensor.rain_day.state }} mm"
+
+#-------------------------------
+  - alias: 'Notify Rain 10mm'
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      above: 10
+      entity_id:
+      - sensor.rain_day
+      value_template: '{{ states.sensor.rain_day.state }}'
+    action:
+    - service: script.my_notify
+      data_template:
+        title: "*-- PIOGGIA --*"
+        message: "Pioggia: {{ states.sensor.rain_day.state }} mm"
+          
+#-------------------------------          
+  - alias: Allerta temperature
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '8:00:00'
+    - platform: time
+      at: '12:00:00'
+    - platform: time
+      at: '18:00:00'
+    - platform: time
+      at: '23:59:00'
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- Notifica Temperatura --*"
+        message: >
+          {% macro temp_level() %}
+          {% set upthreshold = states.input_number.soglia_max_temp.state | int %}
+          {% set downthreshold = states.input_number.soglia_min_temp.state | int %}
+          {% for state in states.sensor %}
+          {% if state.name.endswith('emp') and (state.state | int >= upthreshold or state.state | int <= downthreshold)%}
+          {{state.name}} = {{state.state_with_unit}}{% endif %}{% endfor %}
+          {% endmacro %}
+          {{ temp_level() }}
+
+#################################################################
+#                                                               #
+#                            Sensors                            #
+#                                                               #
+#################################################################
+sensor:
+  - platform: time_date
+    display_options:
+      - 'time'
+      - 'date'
+      - 'date_time'
+      - 'time_date'
+      - 'time_utc'
+      - 'beat'
+#-------------------------------
+#https://home-assistant.io/components/sensor.template/
+  - platform: template
+    sensors:
+      day_night:
+        entity_id: sensor.date, sun.sun
+        value_template: >-
+          {% if is_state('sun.sun', 'above_horizon') %}
+            Day
+          {% else %}
+            Night
+          {% endif %}
+        icon_template: >-
+          {% if is_state('sun.sun', 'above_horizon') %}
+            mdi:weather-sunny
+          {% else %}
+            mdi:weather-night
+          {% endif %}
+
+#--------------------------------
+  - platform: template
+    sensors:
+      sunset_time:
+        value_template: '{% set timestamp = as_timestamp(states.sun.sun.attributes.next_setting) | timestamp_custom("%H:%M") %} {{ timestamp.lstrip("0") }}'
+        friendly_name: "Tramonto"
+        entity_id: sensor.date
+ 
+ #-------------------------------
+  - platform: template
+    sensors:
+      sunrise_time:
+        value_template: '{% set timestamp = as_timestamp(states.sun.sun.attributes.next_rising) | timestamp_custom("%H:%M") %} {{ timestamp.lstrip("0") }}'
+        friendly_name: "Alba"
+        entity_id: sensor.date
+ 
+ #------------------------------- 
+  - platform: template
+    sensors:
+      day_of_week:
+        friendly_name: 'Giorno della settimana'
+        entity_id: sensor.date, sensor.day_of_week
+        value_template: >
+          {{ ['Lunedì' ,'Martedì','Mercoledì','Giovedì ','Venerdì','Sabato ','Domenica'][now().weekday()] }}
+        icon_template: >-
+          mdi:{{['emoticon-dead-outline', 'emoticon-angry-outline', 'emoticon-sad-outline','emoticon-neutral-outline','emoticon-cool-outline','emoticon-excited-outline','emoticon-happy-outline'][now().weekday()] }}
+
+ #-------------------------------
+  - platform: season
+    type: astronomical
+  
+ #------------------------------- 
+  - platform: template
+    sensors:
+      stagioni:
+        friendly_name_template: "Stagione"
+        entity_id: sensor.season, sensor.stagioni
+        value_template: "{{ {
+            'spring' : 'Primavera',
+            'summer' : 'Estate',
+            'autumn' : 'Autunno',
+            'winter' : 'Inverno',
+            } [states('sensor.season')] }}"
+        entity_picture_template: >
+          {% set stagione = states('sensor.stagioni').title() | lower %}
+          {{ '/local/icons/stagioni/{}.png'.format(stagione) }}
+
+#-------------------------------
+  - platform: moon
+
+#------------------------------- 
+  - platform: template
+    sensors:
+      fasi_lunari:
+        friendly_name_template: "Luna"
+        entity_id: sensor.moon, sensor.fasi_lunari
+        value_template: "{{ {
+            'new_moon' : 'Luna Nuova [novilunio]',
+            'waxing_crescent' : 'Luna Crescente',
+            'first_quarter' : 'Primo Quarto',
+            'waxing_gibbous' : 'Gibbosa Crescente',
+            'full_moon' : 'Luna Piena [plenilunio]',
+            'waning_gibbous' : 'Gibbosa Calante',
+            'last_quarter' : 'Ultimo Quarto',
+            'waning_crescent' : 'Luna Calante'
+            } [states('sensor.moon')] }}"
+        entity_picture_template: >
+          {% set luna = states('sensor.fasi_lunari').title().split(" [")[0].replace(' ','-') | lower %}
+          {{ '/local/icons/fasi_lunari/{}.png'.format(luna) }}
+
+# 1 Luna nuova (o congiunzione o fase di novilunio)
+# 2 Luna crescente
+# 3 Primo quarto
+# 4 Gibbosa crescente
+# 5 Luna piena (o opposizione o fase di plenilunio)
+# 6 Gibbosa calante
+# 7 Ultimo quarto
+# 8 Luna calante
+# https://www.home-assistant.io/components/sensor.moon/
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

@@ -1,0 +1,204 @@
+
+####################################################
+#                                                  #
+#                     HOME                         #
+#                                                  #
+####################################################
+icon: mdi:home
+title: Home
+path: home
+cards:
+#  - type: custom:compact-custom-header
+#    main_config: true
+  - type: vertical-stack
+    cards:
+    - type: picture-elements
+      image: /local/images/house.jpeg
+      elements:
+        - type: state-icon
+          entity: alarm_control_panel.house
+          style:
+            top: 87%
+            left: 5%
+            color: white
+## temp
+        - type: icon
+          icon: mdi:sofa
+          entity: sensor.jmp_studio_22_22_1
+          tap_action: 
+            action: more-info
+          style:
+            top: 82%
+            left: 22%              
+            color: white
+        - type: state-label
+          entity: sensor.jmp_studio_22_22_1
+          style:
+            top: 95%
+            left: 22%
+            color: white
+        - type: icon
+          icon: mdi:fridge
+          entity: sensor.temperature_158d0001d6be78
+          tap_action: 
+            action: more-info
+          style:
+            top: 82%
+            left: 36%              
+            color: white
+        - type: state-label
+          entity: sensor.temperature_158d0001d6be78
+          style:
+            top: 95%
+            left: 36%
+            color: white
+        - type: icon
+          icon: mdi:hotel
+          entity: sensor.jmp_bedroom_13_13_2
+          tap_action: 
+            action: more-info
+          style:
+            top: 82%
+            left: 50%              
+            color: white
+        - type: state-label
+          entity: sensor.jmp_bedroom_13_13_2
+          style:
+            top: 95%
+            left: 50%
+            color: white
+        - type: icon
+          icon: mdi:human-child
+          entity: sensor.jmp_livia_21_21_1
+          tap_action: 
+            action: more-info
+          style:
+            top: 82%
+            left: 64% 
+            color: white
+        - type: state-label
+          entity: sensor.jmp_livia_21_21_1
+          style:
+            top: 95%
+            left: 64%
+            color: white
+        - type: icon
+          icon: mdi:stairs
+          entity: sensor.jmp_weather_16_16_2
+          tap_action: 
+            action: more-info
+          style:
+            top: 82%
+            left: 78% 
+            color: white
+        - type: state-label
+          entity: sensor.jmp_weather_16_16_2
+          style:
+            top: 95%
+            left: 78%
+            color: white
+        - type: icon
+          icon: mdi:washing-machine
+          entity: sensor.jmp_weather_14_14_1
+          tap_action: 
+            action: more-info
+          style:
+            top: 82%
+            left: 92% 
+            color: white
+        - type: state-label
+          entity: sensor.jmp_weather_14_14_1
+          style:
+            top: 95%
+            left: 92%
+            color: white
+# PERSONE
+    - type: entities
+      title: Persone
+      show_header_toggle: false 
+      entities: 
+      - sensor.gianpi
+      - sensor.xiaomimi5_battery_sensor
+      - sensor.romi
+      - sensor.huawei_p9_battery
+      - entity: sensor.tragitto_casa_lavoro
+        icon: mdi:car-estate
+      - entity: sensor.tragitto_lavoro_casa
+        icon: mdi:car-estate
+      - sensor.gianpi_to_home      
+# Utility
+    - type: entities
+      title: Utility
+      show_header_toggle: false
+      entities: 
+      - input_boolean.dropbox_backup
+      - sensor.imac_studio_templated
+
+# seconda colonna          
+  - type: vertical-stack
+    cards:
+
+    - type: history-graph
+      title: Presenza
+      entities:
+      - person.gianpi
+      - person.romi
+      - sensor.family
+
+    - type: entities
+      title: Info
+      show_header_toggle: false
+      entities:
+      - sensor.day_of_week
+      - sensor.time_date
+      - binary_sensor.workday_sensor
+
+    - type: entities
+      title: Almanacco
+      show_header_toggle: false
+      entities:
+      - sensor.day_night
+      - sun.sun
+      - sensor.fasi_lunari
+      - sensor.sunrise_time
+      - sensor.sunset_time
+      - sensor.stagioni
+# terza colonna
+  - type: vertical-stack
+    cards:          
+#    - type: weather-forecast
+#      entity: weather.siena
+    - type: custom:weather-card
+      entity: weather.siena
+      icons: "/local/icons/amcharts/"
+      name: Siena
+
+    - type: custom:mini-graph-card
+      entities:
+      - sensor.temperature_158d0001d6be78
+      - sensor.jmp_weather_16_16_2
+      name: Temperatura
+      line_width: 2
+      hours_to_show: 24
+      points_per_hour: 12
+      show:
+        legend: true
+        labels: true
+
+    - type: entities
+      entities:
+      - type: custom:mini-media-player
+        entity: media_player.salotto
+        name: GH Salotto
+        info: short
+
+      - type: custom:mini-media-player
+        entity: media_player.bedroom
+        name: GH Bedroom
+        info: short
+
+      - type: custom:mini-media-player
+        entity: media_player.salottotv
+        name: Chromecast TV
+        info: short
+

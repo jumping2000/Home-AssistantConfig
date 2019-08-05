@@ -1,0 +1,683 @@
+#################################################################
+#                                                               #
+#                    Packages/Core Network                      #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'system_status'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+
+    sensor.disk_use_percent_home:
+      <<: *customize
+      friendly_name: Disk Use
+
+    sensor.speedtest_ping:
+      <<: *customize
+      friendly_name: Ping
+      icon: mdi:pulse
+
+    sensor.speedtest_download:
+      <<: *customize
+      friendly_name: Download
+      icon: mdi:arrow-down-bold
+
+    sensor.speedtest_upload:
+      <<: *customize
+      friendly_name: Upload
+      icon: mdi:arrow-up-bold
+
+    sensor.last_boot_date_time:
+      <<: *customize
+      friendly_name: Last Boot
+      icon: mdi:weather-sunset
+    sensor.ha_uptime:
+      <<: *customize
+      icon: mdi:clock
+    sensor.nuc_uptime:
+      <<: *customize
+      icon: mdi:clock
+  #  sensor.home_assistant_v2_db:
+  #    <<: *customize
+  #    friendly_name: Home Assistant DB
+  #    icon: mdi:database
+    
+    sensor.db_size:
+      <<: *customize
+      friendly_name: HA MariaDB
+      icon: mdi:database
+
+    sensor.home_assistant_log:
+      <<: *customize
+      friendly_name: HA Log
+      icon: mdi:script-text
+
+    sensor.imac_studio_templated:
+      <<: *customize
+      friendly_name: iMac Studio
+      
+    sensor.stat_cpu:
+      <<: *customize
+      friendly_name: Statistic CPU
+      icon: mdi:gauge
+
+    sensor.tecnoware_ups_status:
+      <<: *customize
+      friendly_name: UPS Status
+    sensor.tecnoware_ups_battery_runtime:
+      <<: *customize
+      friendly_name: UPS Runtime
+    sensor.tecnoware_ups_input_voltage:
+      <<: *customize
+      friendly_name: UPS In Voltage
+    sensor.tecnoware_ups_output_voltage:
+      <<: *customize
+      friendly_name: UPS Out Voltage
+#################################################################
+#                                                               #
+#                           Group                               #
+#                                                               #
+#################################################################
+
+group:
+  core network:
+    name: Core Network
+    view: no
+    entities:
+    - binary_sensor.ping_zyxel_router
+ 
+  core devices:
+    name: Core Domotic Devices
+    view: no
+    entities:
+    - binary_sensor.ping_mysensors_gateway
+#    - binary_sensor.ping_philips_hue_bridge
+    - binary_sensor.ping_xiaomi_aquara_gateway
+    - binary_sensor.ping_netatmo_relay
+    - binary_sensor.ping_pi_zero
+
+  switch devices:
+    name: Switch Devices
+    view: no
+    entities:
+    - binary_sensor.ping_shelly_sala
+    - binary_sensor.ping_shelly_livia
+    - binary_sensor.ping_shelly_faretti
+    - binary_sensor.ping_shelly_studio
+    - binary_sensor.ping_sonoff_ripostiglio
+    - binary_sensor.ping_plug_cucina
+    - binary_sensor.ping_plug_lavatrice
+    - binary_sensor.ping_plug_forno
+    - binary_sensor.ping_plug_lavastoviglie  
+ 
+  media devices:
+    name: Media Devices
+    view: no
+    entities:
+    - binary_sensor.ping_gh_cucina
+    - binary_sensor.ping_gh_camera
+    - binary_sensor.ping_dafang1_cam
+    - binary_sensor.ping_dafang2_cam
+    - binary_sensor.ping_mijia360_cam
+  
+  rpi resources:
+    name: PC Resources
+    view: no
+    entities:
+    - sensor.processor_use
+    - sensor.disk_use_percent_home
+    - sensor.memory_use_percent
+    - sensor.cpu_temperature
+    - sensor.time_online
+    - sensor.last_boot_templated
+    - sensor.load_1m
+    - sensor.load_5m
+    - sensor.load_15m
+
+  internet:
+    name: Internet Performance
+    view: no
+    entities:
+    - sensor.speedtest_ping
+    - sensor.speedtest_download
+    - sensor.speedtest_upload
+    - sensor.external_ip
+    
+  HA DB LOG Dimension:
+    name: HA Log e DB
+    view: no
+    entities:
+#    - sensor.home_assistant_v2_db
+    - sensor.home_assistant_log
+    - sensor.db_size
+
+#################################################################
+#                                                               #
+#                        Wake on lan                            #
+#                                                               #
+#################################################################
+switch:
+  - platform: wake_on_lan
+    name: "iMac Studio"
+    mac_address: "38-C9-86-0A-7B-01"
+    host: 192.168.1.171
+
+#################################################################
+#                                                               #
+#                INTERNET PERFORMANCE METRICS                   #
+#                                                               #
+#################################################################
+#https://www.home-assistant.io/components/speedtestdotnet/
+speedtestdotnet:
+  server_id: 10919
+  scan_interval:
+    hours: 8
+  monitored_conditions:
+    - ping
+    - download
+    - upload
+#################################################################
+#                                                               #
+#                         Input Select                          #
+#                                                               #
+#################################################################
+input_select:
+  log_level:
+    name: Log Level
+    options:
+      - critical
+      - fatal
+      - error
+      - warning
+      - warn
+      - info
+      - debug
+      - notset
+    initial: error
+
+#################################################################
+#                                                               #
+#                           Sensors                             #
+#                                                               #
+#################################################################
+sensor:
+#https://home-assistant.io/components/sensor.template/
+  - platform: template
+    sensors:
+      imac_studio_templated:
+        value_template: >-
+          {% if is_state('switch.imac_studio', 'on') %} 
+            Acceso
+          {% else%} 
+            Spento 
+          {% endif %}
+        icon_template: >-
+          {% if is_state('switch.imac_studio', 'on') %} 
+            mdi:desktop-mac
+          {% else%} 
+            mdi:desktop-mac-dashboard
+          {% endif %}
+
+#https://www.home-assistant.io/components/sensor.statistics/
+  - platform: statistics
+    entity_id: sensor.processor_use
+    name: Stat CPU
+
+#https://home-assistant.io/components/sensor.systemmonitor/
+  - platform: systemmonitor
+    resources:
+      - type: disk_use_percent
+        arg: /home
+      - type: disk_use
+        arg: /
+      - type: disk_free
+        arg: /
+      - type: memory_free
+      - type: memory_use_percent
+      - type: swap_use_percent
+      - type: processor_use
+      - type: ipv4_address
+      - type: load_1m
+      - type: load_5m
+      - type: load_15m
+      - type: last_boot
+
+#https://www.home-assistant.io/components/sensor.command_line/
+  - platform: command_line
+    name: CPU Temperature
+    command: "cat /sys/class/thermal/thermal_zone0/temp"
+    unit_of_measurement: "°C"
+    value_template: '{{ value | multiply(0.001) | round(1) }}'
+ 
+#https://home-assistant.io/components/sensor.template/
+  - platform: template
+    sensors:
+      last_boot_templated:
+        value_template: "{{ states('sensor.last_boot').split('T')[0] }}"
+
+#https://www.home-assistant.io/components/sensor.filesize/
+  - platform: filesize
+    file_paths:
+#      - /config/home-assistant_v2.db
+      - /config/home-assistant.log
+
+#https://www.home-assistant.io/components/sensor.sql/
+  - platform: sql
+    db_url: !secret mariadb_url
+    scan_interval: 300
+    queries:
+    - name: DB size
+      query: 'SELECT table_schema "database", Round(Sum(data_length + index_length) / 1048576, 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
+      column: 'value'
+      unit_of_measurement: MB
+
+#https://www.home-assistant.io/components/sensor.uptime/
+  - platform: uptime
+    name: Time Online
+#    unit_of_measurement: hours
+
+#WAN IP
+  - platform: rest
+    scan_interval: 86400
+    resource: https://icanhazip.com
+    name: External IP
+    value_template: '{{ value }}'
+
+# HA uptime date and time
+  - platform: template
+    sensors:
+      ha_uptime:
+        friendly_name: HA Uptime
+        entity_id: sensor.time
+        value_template: >-
+          {% macro phrase(value, name) %}
+          {%- set value = value | int %}
+          {%- set end = '' %}
+          {{- '{} {}{}'.format(value, name, end) if value | int > 0 else '' }}
+          {%- endmacro %}
+          {% set weeks = (states('sensor.time_online') | int / 7) | int %}
+          {% set days = (states('sensor.time_online') | int) - (weeks * 7) %}
+          {% set hours = (states('sensor.time_online') | float - states('sensor.time_online') | int) * 24 %}
+          {% set minutes = (hours - hours | int) * 60 %}
+          {{ [ phrase(weeks, 'sett'), phrase(days, 'gg'), phrase(hours, 'ore'), phrase(minutes, 'min') ] | select('!=','') | list | join(', ') }}
+
+# NUC last boot date and time
+      last_boot_date_time:
+        friendly_name: Last Boot
+        entity_id: sensor.time
+        value_template: >-
+          {% set date = as_timestamp(states('sensor.last_boot')) | timestamp_custom('%d') %}
+          {% set date = '{:01}'.format(date | int) %}
+          {% if date in ('1', '21', '31') %}
+              {% set date = date ~ 'st' %}
+          {% elif date in ('2', '22') %}
+              {% set date = date ~ 'nd' %}
+          {% elif date in ('3', '23') %}
+              {% set date = date ~ 'rd' %}
+          {% else %}
+              {% set date = date ~ 'th' %}
+          {% endif %}
+          {{ as_timestamp(states('sensor.last_boot')) | timestamp_custom('%H:%M on %a') }} {{ date }} {{ as_timestamp(states('sensor.last_boot')) | timestamp_custom('%b %Y') }}
+
+      nuc_uptime:
+        friendly_name: J4105 Uptime
+        entity_id: sensor.time
+##          {%- set end = 's' if value > 1 else '' %}
+        value_template: >-
+          {% set up_time = as_timestamp(now()) - as_timestamp(states('sensor.last_boot')) %}
+          {% set minutes = (up_time // 60) | int %}
+          {% set hours = (minutes // 60) %}
+          {% set days = (hours // 24) %}
+          {% set weeks = (days // 7) %}
+          {% set minutes = (minutes % 60) %}
+          {% set hours =  (hours % 24) %}
+          {% set days = (days % 7) %}
+          {% macro phrase(value, name) %}
+          {%- set value = value %}
+          {%- set end = '' %}
+          {{- '{} {}{}'.format(value, name, end) if value | int > 0 else '' }}
+          {%- endmacro %}
+          {% set text = [ phrase(weeks, 'sett'), phrase(days, 'gg'), phrase(hours, 'ore'), phrase(minutes, 'minuti') ] | select('!=','') | list | join(', ') %}
+          {% set last_comma = text.rfind(',') %}
+          {% if last_comma != -1 %}
+              {% set text = text[:last_comma] + ' e' + text[last_comma + 1:] %}
+          {% endif %}
+          {{ text }}
+
+#################################################################
+  - platform: nut
+    name: "Tecnoware UPS"
+    host: 192.168.1.101
+    port: 3493
+    username: nut
+    password: nut
+    resources:
+      - battery.charge
+      - battery.runtime
+      - battery.voltage
+      - ups.load
+      - ups.status
+      - ups.status.display
+      - input.voltage
+      - input.frequency
+      - output.voltage
+
+#################################################################
+#                                                               #
+#                       Binary Sensors                          #
+#                                                               #
+#################################################################
+binary_sensor:
+#https://home-assistant.io/components/binary_sensor.ping/
+
+  - platform: ping
+    host: 192.168.1.1
+    name: PING Zyxel Router
+    count: 3
+#  - platform: ping
+#    host: 192.168.1.100
+#    name: PING Philips Hue Bridge
+#    count: 3
+  - platform: ping
+    host: 192.168.1.103
+    name: PING MySensors Gateway
+    count: 3
+  - platform: ping
+    host: 192.168.1.105
+    name: PING Xiaomi Aquara Gateway
+    count: 3
+  - platform: ping
+    host: 192.168.1.141
+    name: PING Broadlink RM Mini 3
+    count: 3
+  - platform: ping
+    host: 192.168.1.104
+    name: PING GH Cucina
+    count: 3
+  - platform: ping
+    host: 192.168.1.110
+    name: PING GH Camera
+    count: 3
+  - platform: ping
+    host: 192.168.1.106
+    name: PING Netatmo Relay
+    count: 3
+  - platform: ping
+    host: 192.168.1.161
+    name: PING Dafang1 Cam
+    count: 3
+  - platform: ping
+    host: 192.168.1.162
+    name: PING Dafang2 Cam
+    count: 3
+  - platform: ping
+    host: 192.168.1.163
+    name: PING Mijia360 Cam
+    count: 3
+  - platform: ping
+    host: 192.168.1.111
+    name: PING Pi Zero
+    count: 3
+  - platform: ping
+    host: 192.168.1.154
+    name: PING Shelly Sala
+    count: 3
+  - platform: ping
+    host: 192.168.1.155
+    name: PING Shelly Livia
+    count: 3
+  - platform: ping
+    host: 192.168.1.151
+    name: PING Shelly Faretti
+    count: 3
+  - platform: ping
+    host: 192.168.1.153
+    name: PING Shelly Studio
+    count: 3
+  - platform: ping
+    host: 192.168.1.160
+    name: PING Shelly Condizionatori
+    count: 3
+  - platform: ping
+    host: 192.168.1.150
+    name: PING Shelly Cucina
+    count: 3    
+  - platform: ping
+    host: 192.168.1.156
+    name: PING Sonoff Ripostiglio
+    count: 3
+  - platform: ping
+    host: 192.168.1.152
+    name: PING Plug Lavatrice
+    count: 3
+  - platform: ping
+    host: 192.168.1.159
+    name: PING Plug Lavastoviglie
+    count: 3
+  - platform: ping
+    host: 192.168.1.157
+    name: PING Plug Cucina
+    count: 3
+  - platform: ping
+    host: 192.168.1.157
+    name: PING Plug Forno
+    count: 3
+
+#################################################################
+#                                                               #
+#                          Automations                          #
+#                                                               #
+################################################################# 
+automation:
+## Set lo level #################################################
+  - alias: Set Log Level
+    trigger:
+      platform: state
+      entity_id: input_select.log_level
+    action:
+      service: logger.set_level
+      data_template:
+        homeassistant.components: "{{ trigger.to_state.state }}"
+
+## Notify of High Disk Use ######################################
+  - alias: Disk Use Alarm
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.disk_use_percent_home
+      above: 50
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- HA Server Disk --*"
+        message: 'Disk Use is {{ states.sensor.disk_use_percent_home.state }}%'
+          
+## Notify of High CPU Usage #####################################
+  - alias: CPU Use Alarm
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.processor_use
+      above: 45
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- HA Server CPU --*"
+        message: 'CPU use is {{ states.sensor.processor_use.state }}%'
+          
+## Notify if CPU Temperature is High ############################
+  - alias: CPU Temp Alarm
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.cpu_temperature
+      above: 50
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- HA CPU Temp --*"
+        message: 'HA CPU Temp {{ states.sensor.cpu_temperature.state }} °C'
+
+## Notify if ISP Download Speed has dropped #####################
+  - alias: Internet Download Speed Drop
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.speedtest_download
+      below: 30
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- HA ISP Speed --*"
+        message: 'ISP Download Speed is {{ states.sensor.speedtest_download.state }} Mbps'
+
+## Notify if ISP Upload Speed has dropped #######################
+  - alias: Internet Upload Speed Drop
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: numeric_state
+      entity_id: sensor.speedtest_upload
+      below: 10
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- HA ISP Speed --*"
+        message: 'ISP Upload Speed is {{ states.sensor.speedtest_upload.state }} Mbps'
+
+## Notify if core device are offline ############################
+  - alias: Core Domotic Devices Offline
+    initial_state: true
+    hide_entity: true
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.ping_broadlink_rm_mini_3
+          - binary_sensor.ping_mysensors_gateway 
+          - binary_sensor.ping_philips_hue_bridge
+          - binary_sensor.ping_zyxel_router
+          - binary_sensor.ping_xiaomi_aquara_gateway
+          - binary_sensor.ping_gh_cucina
+          - binary_sensor.ping_gh_camera
+          - binary_sensor.ping_netatmo_relay
+          - binary_sensor.ping_dafang1_cam
+          - binary_sensor.ping_dafang2_cam
+          - binary_sensor.ping_mijia360_cam
+          - binary_sensor.ping_pi_zero
+          - binary_sensor.ping_shelly_sala
+          - binary_sensor.ping_shelly_livia
+          - binary_sensor.ping_shelly_faretti
+          - binary_sensor.ping_shelly_studio
+          - binary_sensor.ping_shelly_cucina
+          - binary_sensor.ping_shelly_condizionatori
+          - binary_sensor.ping_sonoff_ripostiglio
+          - binary_sensor.ping_plug_cucina
+          - binary_sensor.ping_plug_lavatrice
+          - binary_sensor.ping_plug_forno
+          - binary_sensor.ping_plug_lavastoviglie  
+        to: 'off'
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- HA device offline --*"
+        message: "{{ trigger.to_state.attributes.friendly_name }} is offline"
+
+## Notify if core device are online #############################
+  - alias: Core Domotic Devices Online
+    initial_state: true
+    hide_entity: true
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.ping_broadlink_rm_mini_3
+          - binary_sensor.ping_mysensors_gateway 
+          - binary_sensor.ping_philips_hue_bridge
+          - binary_sensor.ping_zyxel_router
+          - binary_sensor.ping_xiaomi_aquara_gateway
+          - binary_sensor.ping_gh_cucina
+          - binary_sensor.ping_gh_camera
+          - binary_sensor.ping_netatmo_relay
+          - binary_sensor.ping_dafang1_cam
+          - binary_sensor.ping_dafang2_cam
+          - binary_sensor.ping_mijia360_cam
+          - binary_sensor.ping_pi_zero
+          - binary_sensor.ping_shelly_sala
+          - binary_sensor.ping_shelly_livia
+          - binary_sensor.ping_shelly_faretti
+          - binary_sensor.ping_shelly_studio
+          - binary_sensor.ping_shelly_cucina
+          - binary_sensor.ping_shelly_condizionatori
+          - binary_sensor.ping_sonoff_ripostiglio 
+          - binary_sensor.ping_plug_cucina
+          - binary_sensor.ping_plug_lavatrice
+          - binary_sensor.ping_plug_forno
+          - binary_sensor.ping_plug_lavastoviglie 
+        to: 'on'
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- HA device online again --*"
+        message: "{{ trigger.to_state.attributes.friendly_name }} è online"
+
+## Notify me when I get a new public IP from my ISP #############
+  - alias: Notify Of New External IP e upgrade Cloudflare
+    initial_state: true
+    hide_entity: true
+    trigger:
+      platform: state
+      entity_id: sensor.external_ip
+    condition:
+      - condition: template
+        value_template: "{% if trigger.from_state and trigger.to_state %} true {% else %} false {% endif %}"
+      - condition: template
+        value_template: "{% if trigger.from_state.state == 'unknown' %} false {% else %} true {% endif %}"
+      - condition: template
+        value_template: "{% if trigger.to_state.state == 'unknown' %} false {% else %} true {% endif %}"
+      - condition: template
+        value_template: "{{ trigger.from_state.state != trigger.to_state.state }}"
+    action:
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: "*-- IP WAN CHANGED --*"
+        message: "External IP changed from {{ trigger.from_state.state }} to {{ trigger.to_state.state }}"
+    - service: cloudflare.update_records
+
+#################################################################
+#                                                               #
+#                             END                               #
+#                                                               #
+#################################################################

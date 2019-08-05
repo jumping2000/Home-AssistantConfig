@@ -1,0 +1,249 @@
+#################################################################
+#                                                               #
+#                    Packages/washing Machine                   #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+#https://philhawthorne.com/making-dumb-dishwashers-and-washing-machines-smart-alerts-when-the-dishes-and-clothes-are-cleaned/
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'washing_machine'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+
+    sensor.washing_machine_status:
+      <<: *customize
+      icon: mdi:washing-machine
+
+#################################################################
+#                                                               #
+#                            SENSOR                             #
+#                                                               #
+#################################################################  
+sensor:
+  - platform: template
+    sensors:
+      washing_machine_status:
+        entity_id: input_select.washing_machine_status
+        value_template: '{{ states.input_select.washing_machine_status.state}}'
+        friendly_name: 'Status Lavatrice'
+
+#################################################################
+#                                                               #
+#                 INPUT BOOLEAN SELECT DATETIME                 #
+#                                                               #
+#################################################################  
+input_select:
+  washing_machine_status:
+    name: Stato Lavatrice
+    options:
+      - Idle
+      - Running
+      - Finishing
+      - Clean
+    initial: Idle
+
+#################################################################
+#                                                               #
+#                            GROUP                              #
+#                                                               #
+#################################################################  
+group:
+  washing_machine:
+    name: 'Washing Machine'
+    control: hidden
+    entities:
+      - sensor.washing_machine_status
+      - switch.plug_lavatrice
+      - sensor.lavatrice_power
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+# When power is detected, and the washing machine is not in 
+# the Running state, change the status of the washing machine
+# to Running. 
+# The status check will ensure we don't try to put the state 
+# to Running each time the power level changes, and we're already
+# in the Running state.
+ 
+  - alias: Lavatrice active quando rileva potenza
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.lavatrice_power
+      above: 10
+      for:
+        minutes: 1
+    condition:
+      condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.washing_machine_status
+        state: Idle
+      - condition: state
+        entity_id: sensor.washing_machine_status
+        state: Clean
+      - condition: state
+        entity_id: sensor.washing_machine_status
+        state: Finishing
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.washing_machine_status
+        option: Running
+
+#################################################################
+# When the power drops, move the state of the washing machine to Finishing.
+  - alias: Lavatrice finished quando non rileva potenza
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.lavatrice_power
+      below: 6
+      for:
+        minutes: 1
+    condition:
+    - condition: state
+      entity_id: input_select.washing_machine_status
+      state: Running
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.washing_machine_status
+        option: Finishing
+
+#################################################################
+# Wait 10 minutes for us to be in the Finishing state before we
+# decide the washing machine has finished. This way, if the 
+# washing machine is in between cycles and the power drops, we 
+# won't mark the washing machine cycle as finished too early.
+ 
+  - alias: Lavatrice clean dopo il timeout
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_select.washing_machine_status
+      to: Finishing
+      for:
+        minutes: 10
+    condition:
+    - condition: state
+      entity_id: input_select.washing_machine_status
+      state: Finishing
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.washing_machine_status
+        option: Clean
+
+#################################################################
+# When we open the washing machine door, reset the status back to
+# idle, so we don't spam people that the washing machine has 
+# finished, and someone has already emptied it
+  - alias: Lavatrice idle quando apertura oblo
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.0x00158d0002bf5143_contact
+      to: 'on'
+    condition:
+    - condition: state
+      entity_id: input_select.washing_machine_status
+      state: Clean
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.washing_machine_status
+        option: Idle
+
+#################################################################
+  - alias: Manda alert quando lavatrice inizia
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.washing_machine_status
+      from: 'Idle'
+      to: 'Running'
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: '*--Washing Machine--*'
+        message: 'Lavatrice iniziata'
+
+#################################################################
+  - alias: Manda alert quando lavatrice finita
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.washing_machine_status
+      to: 'Clean'
+    - platform: state
+      entity_id: sensor.family
+      to: 'A casa'
+    - platform: time_pattern
+      minutes: '/5'
+    condition:
+      condition: and
+      conditions:
+      - condition: state
+        entity_id: input_select.washing_machine_status
+        state: 'Clean'
+      - condition: template
+# Don't send this alert if it was last triggered less than 20 minutes ago (1,200 seconds)
+        value_template: >
+          {% if states.automation.manda_alert_quando_lavatrice_finita.last_triggered is not none %}
+            {% if as_timestamp(now()) | int - as_timestamp(states.automation.manda_alert_quando_lavatrice_finita.attributes.last_triggered) | int > 1200 %} True {% else %} False
+            {% endif %}
+          {% else %}
+          False
+          {% endif %}
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: "*-- Attenzione --*"
+        message: "Lavatrice finita, i panni sono pronti per essere stesi"
+
+#    - service_template: >
+#        {% if (is_state('device_tracker.phil', 'home')) and (is_state('device_tracker.helen', 'home'))  %}
+#          notify.phil_and_helen
+#        {% elif is_state('device_tracker.phil', 'home') %}
+#          notify.phil
+#        {% elif is_state('device_tracker.helen', 'home') %}
+#          notify.helen
+#        {% endif %}
+#      data:
+#      - condition: time
+#        after: '08:30:00'
+#        before: '22:30:00'
+#      - condition: state
+#        entity_id: sensor.family
+#        state: 'Casa'
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

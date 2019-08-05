@@ -1,0 +1,79 @@
+#################################################################
+#                                                               #
+#                       Packages / Iframe                     #
+#                                                               #
+#################################################################
+################################################
+## Customize
+################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'iframe'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## Script
+    ################################################
+
+    script.grafana_webhook:
+      <<: *customize
+      friendly_name: "Grafana Webhook"
+      hidden: true
+      icon: mdi:webhook
+
+#################################################################
+#                                                               #
+#                           InfluxDB                            #
+#                                                               #
+#################################################################
+influxdb:
+  host: a0d7b954-influxdb
+  port: 8086
+  database: !secret influxdb_db
+  username: !secret influxdb_user
+  password: !secret influxdb_pass
+  max_retries: 3
+  default_measurement: state
+
+#################################################################
+#                                                               #
+#                         Panel iFrame                          #
+#                                                               #
+#################################################################
+panel_iframe:
+  grafana:
+    title: 'Grafana'
+    icon: mdi:chart-pie
+    url: 'https://grafana.jumping.pw'
+
+#################################################################
+#                                                               #
+#                             Script                            #
+#                                                               #
+#################################################################
+script:
+  grafana_webhook:
+    sequence:
+      - condition: template
+        value_template: >-
+          {{ state != 'ok' and state != 'no_data' }}
+      - service: notify.telegram
+        data_template:
+          message: >-
+            {{ ruleName }} is {{ state }}.
+            {% for match in evalMatches %}
+              {{ match.metric }}: {{ match.value }}
+            {% endfor %}

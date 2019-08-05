@@ -1,0 +1,249 @@
+#################################################################
+#                                                               #
+#                    Packages/Dishwashwer                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+#https://philhawthorne.com/making-dumb-dishwashers-and-washing-machines-smart-alerts-when-the-dishes-and-clothes-are-cleaned/
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'dishwasher'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+
+    sensor.dishwasher_status:
+      <<: *customize
+      icon: mdi:dishwasher
+
+#################################################################
+#                                                               #
+#                            SENSOR                             #
+#                                                               #
+#################################################################  
+sensor:
+  - platform: template
+    sensors:
+      dishwasher_status:
+        entity_id: input_select.dishwasher_status
+        value_template: '{{ states.input_select.dishwasher_status.state }}'
+        friendly_name: 'Status lavastoviglie'
+
+#################################################################
+#                                                               #
+#                 INPUT BOOLEAN SELECT DATETIME                 #
+#                                                               #
+#################################################################  
+input_select:
+  dishwasher_status:
+    name: Stato Lavastoviglie
+    options:
+      - Dirty
+      - Running
+      - Drying
+      - Clean
+    initial: Dirty
+
+#################################################################
+#                                                               #
+#                            TIMER                              #
+#                                                               #
+################################################################# 
+timer:
+  dishwasher:
+    duration: '02:00:00'
+
+#################################################################
+#                                                               #
+#                            GROUP                              #
+#                                                               #
+#################################################################  
+group:
+  dishwasher:
+    name: 'dishwasher'
+    control: hidden
+    entities:
+      - sensor.dishwasher_status
+      - switch.plug_lavastoviglie
+      - sensor.lavastoviglie_power
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+# When power is detected, and the dishwasher is not in 
+# the Running state, change the status of the dishwasher
+# to Running. 
+# The status check will ensure we don't try to put the state 
+# to Running each time the power level changes, and we're already
+# in the Running state.
+ 
+  - alias: Lavastoviglie active quando rileva potenza
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.lavastoviglie_power
+      above: 15
+      for:
+        minutes: 2
+    condition:
+      condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.dishwasher_status
+        state: Dirty
+      - condition: state
+        entity_id: sensor.dishwasher_status
+        state: Clean
+      - condition: state
+        entity_id: sensor.dishwasher_status
+        state: Drying
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.dishwasher_status
+        option: Running
+ 
+#################################################################
+# When the power drops below 6, move the state of the 
+# dishwasher to Drying.
+  - alias: lavastoviglie drying quando non rileva potenza
+    initial_state: true
+    trigger:
+    - platform: numeric_state
+      entity_id: sensor.lavastoviglie_power
+      below: 6
+    condition:
+    - condition: state
+      entity_id: input_select.dishwasher_status
+      state: Running
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.dishwasher_status
+        option: Drying
+
+################################################################# 
+# Wait 10 minutes for us to be in the Drying state before we
+# decide the dishwasher has finished. This way, if the 
+# dishwasher is in between cycles and the power drops, we 
+# won't mark the dishwasher cycle as finished too early.
+ 
+  - alias: lavastoviglie clean dopo il timeout
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_select.dishwasher_status
+      to: Drying
+      for:
+        minutes: 10
+    condition:
+    - condition: state
+      entity_id: input_select.dishwasher_status
+      state: Drying
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.dishwasher_status
+        option: Clean
+    - service: timer.start
+      data:
+        entity_id: timer.dishwasher
+
+################################################################# 
+# After 2 hour reset the status back to
+# Dirty, so we don't spam people that the dishwasher has 
+# finished, and someone has already emptied it
+  - alias: lavastoviglie dirty dopo due ore
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.dishwasher
+    - platform: numeric_state
+      entity_id: sensor.lavastoviglie_power
+      below: 2
+    condition:
+    - condition: state
+      entity_id: input_select.dishwasher_status
+      state: Clean
+    action:
+    - service: input_select.select_option
+      data:
+        entity_id: input_select.dishwasher_status
+        option: Dirty
+
+#################################################################
+  - alias: Manda alert quando lavastoviglie inizia
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.dishwasher_status
+      from: 'Dirty'
+      to: 'Running'
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: '*--Disher Washer--*'
+        message: 'Lavastoviglie iniziata'
+
+#################################################################
+  - alias: Manda alert quando lavastoviglie finita
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.dishwasher_status
+      to: 'Clean'
+    - platform: state
+      entity_id: sensor.family
+      to: 'A casa'
+    - platform: time_pattern
+      minutes: '/5'
+    condition:
+      condition: and
+      conditions:
+      - condition: state
+        entity_id: input_select.dishwasher_status
+        state: 'Clean'
+      - condition: template
+# Don't send this alert if it was last triggered less than 20 minutes ago (1,200 seconds)
+        value_template: >
+          {% if states.automation.manda_alert_quando_lavastoviglie_finita.last_triggered is not none %}
+            {% if as_timestamp(now()) | int - as_timestamp(states.automation.manda_alert_quando_lavastoviglie_finita.attributes.last_triggered) | int > 1200 %} true {% else %} false
+            {% endif %}
+          {% else %}
+          false
+          {% endif %}
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        title: "*-- Attenzione --*"
+        message: "La lavastoviglie è finita, puoi mettere a posto i piatti"
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

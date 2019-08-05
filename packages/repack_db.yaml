@@ -1,0 +1,222 @@
+#################################################################
+#                                                               #
+#                      Packages/Repack DB                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'repack_db'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+    
+    ################################################
+    ## input
+    ################################################
+    input_boolean.repack_db:
+      <<: *customize
+      friendly_name: "Repack DB HA"
+      icon: mdi:database-refresh
+
+    input_datetime.repack_time:
+      <<: *customize
+      icon: mdi:clock-outline
+    
+    input_text.repack_status:
+      <<: *customize
+      icon: mdi:database-check
+
+    input_text.previous_dimension_db:
+      <<: *customize
+      icon: mdi:database-plus
+    
+    script.repack_db:
+      <<: *customize
+      friendly_name: Repack DB
+    
+#    sensor.db_size:
+#      <<: *customize
+#      friendly_name: "Dimensioni HA DB"
+#      icon: mdi:database
+
+#########################################################
+#                                                       #
+#                       GROUP                           #
+#                                                       #
+#########################################################
+group:
+  repackdb_package:
+    name: Repack DB Package
+    entities:
+      - input_boolean.repack_db
+      - input_datetime.repack_time
+      - input_number.day_to_keep
+      - input_text.repack_status
+      - input_text.previous_dimension_db
+      - script.repack_db
+
+#########################################################
+#                                                       #
+#                       SENSOR                          #
+#                                                       #
+#########################################################
+#sensor:
+#https://www.home-assistant.io/components/sensor.filesize/
+#  platform: filesize
+#  file_paths:
+#    - /config/home-assistant_v2.db
+#########################################################
+#                                                       #
+#                       SCRIPT                          #
+#                                                       #
+#########################################################
+script:
+  repack_db:
+    alias: Repack DB
+    sequence:
+    - service: recorder.purge
+      data_template:
+        keep_days: "{{ states('input_number.day_to_keep') | int }}"
+        repack: true
+
+#########################################################
+#                                                       #
+#                        INPUT                          #
+#                                                       #
+#########################################################
+input_boolean:
+  repack_db:
+    name: "Repack DB HA"
+    initial: 'on'
+    icon: mdi:refresh
+
+#########################################################
+input_datetime:
+  repack_time:
+    name: "Orario Repack"
+    has_date: false
+    has_time: true
+    initial: '01:32'
+    icon: mdi:clock-outline
+
+#########################################################
+input_text:
+  repack_status:
+    name: "Stato Repack"
+    initial: "-"
+    icon: mdi:database-check
+
+  previous_dimension_db:
+    name: "Dimensioni precedenti del DB"
+    initial: "-"
+    icon: mdi:database-plus
+
+#########################################################
+input_number:
+  day_to_keep:
+    name: "Day to keep"
+    min: 1
+    max: 10
+    step: 1
+    initial: 3
+    mode: box
+    icon: mdi:calendar-today
+
+#########################################################
+#                                                       #
+#                     AUTOMAZIONI                       #
+#                                                       #
+#########################################################
+automation:
+#########################################################
+# pulisce il DB una volta al giorno nell'orario scelto 
+# NB sensor.time è obbligatorio
+# cambiare a proprio piacimento il servizio 
+# di notifica telegram
+#########################################################
+  - alias: purge DB
+    initial_state: true
+    trigger:
+      platform: template
+      value_template: >-
+        {{ states('sensor.time') == (states.input_datetime.repack_time.attributes.timestamp | int | timestamp_custom('%H:%M', False)) }}
+    condition:
+    - condition: state
+      entity_id: input_boolean.repack_db
+      state: 'on'
+    action:
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.repack_status
+        value: "Avviato repack su DB alle {{states('sensor.time')}}"
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.previous_dimension_db
+        value: "{{ states('sensor.db_size') }}"
+    - service: automation.turn_on
+      entity_id: automation.verifica_purge_db
+    - service: script.turn_on
+      entity_id: script.repack_db
+#    - wait_template: "{{ (states('sensor.db_size') |float ) < (states('input_text.previous_dimension_db') |float) }}"
+#      timeout: '00:10:00'
+#      continue_on_timeout: 'false
+#################################################################
+
+  - alias: verifica purge DB
+    initial_state: false
+    trigger:
+#    - platform: state
+#      entity_id: sensor.db_size
+      platform: template
+      value_template: >-
+        {{ (states('sensor.db_size') |float ) < (states('input_text.previous_dimension_db') |float) }}
+    condition:
+    - condition: state
+      entity_id: input_boolean.repack_db
+      state: 'on'
+    - condition: template
+      value_template: >
+        {{ (states('sensor.db_size') |float) > (trigger.from_state.state |float)}}
+#    - condition: template
+#      value_template: >-
+#        {{ ((states('sensor.db_size') | float) < (states('input_text.previous_dimension_db') | float)) and ((states('sensor.db_size') | float) > trigger.from_state.state) }}
+    action:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data_template:
+        mute: 1
+        title: '*-- Repack DB Home Assistant --*'
+        message: >
+          Repack DB completato alle {{ states('sensor.time') }},
+          dimensione precedente DB: {{ states('input_text.previous_dimension_db') }}, 
+          dimensione attuale DB: {{ states('sensor.db_size') }}
+          From: {{ trigger.from_state.state }} to: {{ trigger.to_state.state }}
+          Ridotto del {{ (((trigger.from_state.state|float) / (states('input_text.previous_dimension_db')|float)) * 100 - 100) |round(2)|replace('-','') }}
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.repack_status
+        value: Ridotto del {{ (((trigger.from_state.state|float) / (states('input_text.previous_dimension_db')|float)) * 100 - 100) |round(2)|replace('-','') }}
+    - service: automation.turn_off
+      entity_id: automation.verifica_purge_db
+
+#################################################################
+#                                                               #
+#                   END CONFIGURATION                           #
+#                                                               #
+#################################################################

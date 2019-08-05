@@ -1,0 +1,298 @@
+
+####################################################
+#                                                  #
+#                  MULTIEMDIA                      #
+#                                                  #
+####################################################
+icon: mdi:cast
+title: Multimedia
+path: multimedia
+cards:
+#### RADIO GOOGLE HOME ####
+- type: vertical-stack
+  cards:
+  - type: entities
+    show_header_toggle: false
+    title: Radio
+    entities:    
+    - input_select.radio_station
+    - input_select.chromecast_radio
+    - script.radio
+    - script.stop_playback
+    - script.pause_playback
+    - input_number.google_mini_sala
+    - input_number.google_mini_camera
+    - input_number.gruppo_casa_gh
+
+#### REMOTE LG CUSTOM UI ####
+- type: vertical-stack
+  cards:
+### prima riga  
+    - type: "custom:button-card"
+      name: LG TV
+      style:
+        - background-color: rgb(28, 128, 199)
+        - color: white
+### c2 riga
+    - type: horizontal-stack            
+      cards:
+        - type: "custom:button-card"
+          entity: media_player.lg_tv_salotto
+          size: 30%
+          icon: mdi:power
+          show_state: true
+          styles:
+            card:
+              - font-size: 10px
+              - font-weight: bold
+          state:
+            - value: 'off'
+              color: red
+            - value: 'on'
+              color: green
+        - type: "custom:button-card"
+          name: TV
+          icon: mdi:television-box
+          size: 30%
+          entity: script.lg_tv_off
+          styles:
+            card:
+              - font-size: 10px
+              - font-weight: bold
+        - type: "custom:button-card"
+          name: AV
+          icon: mdi:video-input-hdmi
+          size: 30%
+          entity: script.lg_tv_input
+          styles:
+            card:
+              - font-size: 10px
+              - font-weight: bold
+        - type: "custom:button-card"
+          name: Menù
+          icon: mdi:menu
+          size: 30%
+          entity: script.menu
+          styles:
+            card:
+              - font-size: 10px
+              - font-weight: bold
+        - type: "custom:button-card"
+          name: Apps
+          icon: mdi:apps
+          size: 30%
+          entity: script.apps
+          styles:
+            card:
+              - font-size: 10px
+              - font-weight: bold
+### 3 riga 
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          name: Netflix
+          size: 25%
+        - type: "custom:button-card"
+          icon: mdi:arrow-up-drop-circle
+          entity: script.lg_tv_up
+          size: 25%
+          show_name: false
+        - type: "custom:button-card"
+          name: Infinity
+          size: 25%
+
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          color_off: rgb(28, 128, 199)
+          icon: mdi:arrow-left-drop-circle
+          show_name: false
+          entity: script.lg_tv_left
+          size: 25%
+        - type: "custom:button-card"
+          color_off: rgb(28, 128, 199)
+          icon: mdi:check
+          show_name: false
+          entity: script.lg_tv_ok
+          size: 25%
+        - type: "custom:button-card"
+          color_off: rgb(28, 128, 199)
+          icon: mdi:arrow-right-drop-circle
+          show_name: false
+          entity: script.lg_tv_right
+          size: 25%
+
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          name: Info
+          color_off: rgb(28, 128, 199)
+          icon: mdi:settings
+          size: 25%
+          show_name: false
+          entity: script.lg_tv_info
+        - type: "custom:button-card"
+          color_off: rgb(28, 128, 199)
+          icon: mdi:arrow-down-drop-circle
+          show_name: false
+          entity: script.lg_tv_down
+          size: 25%
+        - type: "custom:button-card"
+          name: Back
+          color_off: rgb(28, 128, 199)
+          icon: mdi:arrow-left
+          size: 25%
+          show_name: false
+          entity: script.lg_tv_back
+
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          color_type: card
+          color: red
+          style:
+           - background-color: red
+          entity: script.lg_tv_red
+          show_name: false
+          show_icon: false
+        - type: "custom:button-card"
+          color_type: icon
+          color: green
+          entity: script.lg_tv_green
+          show_name: false
+          show_icon: false
+        - type: "custom:button-card"
+          color_type: card
+          color: yellow
+          entity: script.lg_tv_yellow
+          show_name: false
+          show_icon: false
+        - type: "custom:button-card"
+          color_type: card
+          color: blue
+          entity: script.lg_tv_blue
+          show_name: false
+          show_icon: false
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          icon: mdi:volume-plus
+          size: 25%
+          entity: script.lg_tv_volup
+          show_name: false
+        - type: "custom:button-card"
+          color_type: blank-card
+        - type: "custom:button-card"
+          icon: mdi:chevron-up
+          size: 25%
+          entity: script.lg_tv_next
+          show_name: false
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          icon: mdi:volume-minus
+          size: 25%
+          entity: script.lg_tv_voldown
+          show_name: false
+        - type: "custom:button-card"
+          icon: mdi:volume-off
+          size: 25%
+          entity: script.lg_tv_mute
+          show_name: false
+        - type: "custom:button-card"
+          icon: mdi:chevron-down
+          size: 25%
+          entity: script.lg_tv_prev
+          show_name: false
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          entity: script.lg_tv_1
+          icon: mdi:numeric-1-box-outline
+          show_name: false
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.lg_tv_2
+          icon: mdi:numeric-2-box-outline
+          show_name: false
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.lg_tv_3
+          icon: mdi:numeric-3-box-outline
+          show_name: false
+          size: 25%
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          entity: script.lg_tv_4
+          icon: mdi:numeric-4-box-outline
+          show_name: false
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.lg_tv_5
+          icon: mdi:numeric-5-box-outline
+          show_name: false
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.lg_tv_6
+          icon: mdi:numeric-6-box-outline
+          show_name: false
+          size: 25%
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          entity: script.lg_tv_7
+          icon: mdi:numeric-7-box-outline
+          show_name: false
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.lg_tv_8
+          icon: mdi:numeric-8-box-outline
+          show_name: false
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.lg_tv_9
+          icon: mdi:numeric-9-box-outline
+          show_name: false
+          size: 25%
+    - type: horizontal-stack
+      cards:
+        - type: "custom:button-card"
+          entity: script.help
+          icon: mdi:comment-question
+          show_name: false
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.lg_tv_0
+          show_name: false
+          icon: mdi:numeric-0-box-outline
+          size: 25%
+        - type: "custom:button-card"
+          entity: script.last_view
+          icon: mdi:repeat
+          show_name: false
+          size: 25%
+
+    - type: media-control
+      entity: media_player.salotto
+
+#### XIAOMI AUDIO ####  
+- type: vertical-stack
+  cards:
+  - type: media-control
+    entity: media_player.bedroom
+  - type: entities
+    show_header_toggle: false
+    title: Xiaomi Audio
+    entities:
+    - input_number.xg_loop_delay
+    - script.xg_play_sel_sound
+    - input_boolean.xg_mute_gateway_sounds
+    - script.xg_play_sel_sound_loop
+    - script.xg_play_sel_sound_single
+    - input_number.xg_gateway_volume
+    - input_select.xg_gateway_sound
+
+#- media_player.gruppo_media
+#    - type: media-control
+#      entity: media_player.lg_tv_salotto

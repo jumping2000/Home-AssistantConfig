@@ -1,0 +1,150 @@
+#################################################################
+#                                                               #
+#                    Packages/Controllo carichi                 #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'controllo_carichi'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## 
+    ################################################
+
+
+#################################################################
+#                                                               #
+#                             INPUT                             #
+#                                                               #
+#################################################################
+input_select: 
+  soglia_carico:
+    name: Soglia Accensione Carico (W)
+    icon: mdi:beaker-outline
+    options:
+      - 100
+      - 3200
+      - 3400
+      - 3600
+      - 3800
+    initial: 3200
+
+input_number:
+  tempo_intervento:
+    name: Tempo d'intervento
+    mode: box
+    icon: mdi:timelapse
+    min: 0
+    max: 20
+    step: 1
+    initial: 2
+
+#################################################################
+#                                                               #
+#                           SENSORS                             #
+#                                                               #
+#################################################################
+binary_sensor:
+  - platform: template
+    sensors:
+      soglia_180_min:
+        entity_id: sensor.time
+        friendly_name: "Superamento Soglia 180 minuti"
+        value_template: >-
+          {{ states("sensor.jmp_energy_12_12_2")|int >= states("input_select.soglia_carico")|int }} 
+
+  - platform: template
+    sensors:
+      soglia_instantanea:
+        entity_id: sensor.time
+        friendly_name: "Superamento Soglia instantanea"
+        value_template: >-
+          {{ states("sensor.jmp_energy_12_12_2")|int >= 4000 }}
+
+#################################################################
+sensor:
+  - platform: template
+    sensors:
+      tempo_superamento_soglia_180_min:
+        entity_id: sensor.time
+        value_template: >-
+          {% if is_state("binary_sensor.soglia_180_min","on") %}
+          {{(as_timestamp(now())-as_timestamp(states.binary_sensor.soglia_180_min.last_updated)) | int }}
+          {% else %}
+          0
+          {% endif %}        
+
+  - platform: history_stats
+    name: Tempo mensile in ExtraSoglia
+    entity_id: binary_sensor.soglia_180_min
+    state: 'on'
+    type: time
+    start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+    duration:
+      days: 30
+
+#################################################################
+#                                                               #
+#                           SCRIPT                              #
+#                                                               #
+#################################################################
+script:
+  avvertimento_potenza:
+    sequence:
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        volume: 0.5
+        title: "- ATTENZIONE POTENZA ELEVATA -"
+        message: "Consumo elevato: spegnere qualche elettrodomestico"
+    - delay: 00:00:20
+    - wait_template: "{{ is_state('script.my_notify', 'off') }}"
+    - service: script.my_notify
+      data:
+        volume: 0.5
+        title: "- ATTENZIONE POTENZA ELEVATA -"
+        message: "Consumo elevato: spegnere qualche elettrodomestico"
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+##NOTIFY IF WATT >3300
+  - alias: Innesco Controllo Potenza
+    initial_state: true
+    trigger:
+    - platform: template
+      value_template: '{{states.sensor.tempo_superamento_soglia_180_min.state|float > states.input_number.tempo_intervento.state|int * 60}}'   
+    - platform: state
+      entity_id: binary_sensor.soglia_instantanea
+      to: 'on'
+    action:
+    - service: script.turn_on
+      entity_id: script.avvertimento_potenza
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

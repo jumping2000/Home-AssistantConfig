@@ -1,0 +1,133 @@
+#################################################################
+#                                                               #
+#                       Packages/Presence                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'mqtt_conf'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+#################################################################
+#                                                               #
+#                             MQTT                              #
+#                                                               #
+#################################################################
+
+mqtt:
+  broker: !secret mqtt_broker
+  port: 1883
+  birth_message:
+    topic: 'homeassistant/status'
+    payload: 'online'
+  will_message:
+    topic: 'homeassistant/status'
+    payload: 'offline'
+  client_id: home-assistant
+  username: !secret mqtt_user
+  password: !secret mqtt_pass
+  discovery: true
+  discovery_prefix: homeassistant
+  keepalive: 60
+#################################################################
+#                                                               #
+#                           Sensori                             #
+#                                                               #
+################################################################# 
+sensor:
+### MQTT invalid config - mosquitto not running properly ###
+  - platform: template
+    sensors:
+      mqtt_offline:
+        value_template: >-
+          {% if [mqtt] in states.persistent_notification.invalid_config.state %}
+              Yes
+          {% else %}
+              No
+          {% endif %}
+
+input_text:
+  clear_mqtt_topic:
+    name: MQTT Topic to Clear
+    initial: ''
+
+#################################################################
+#                                                               #
+#                       SHELL e SCRIPT                          #
+#                                                               #
+#################################################################
+shell_command:
+  clean_mqtt: "/bin/bash /config/www/script/clean_mqtt.sh 192.168.1.101"
+
+script:
+  clean_mqtt:
+    sequence:
+      - service: shell_command.clean_mqtt
+#################################################################
+#                                                               #
+#                         Automation                            #
+#                                                               #
+################################################################# 
+automation:
+### If Mosquitto config fails, notify  ###
+  - alias: 'Notify if Mosquitto not OK'
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: sensor.mqtt_offline
+      to: 'Yes'
+    action:
+    - delay:
+        seconds: 10
+    - service: scipt.my_notify
+      data:
+        mute: 1
+        title: '*-- Home Assistant issue --*'
+        message: ' MQTT was not running properly.'
+
+##########################################################
+#### MQTT CLEAR
+##########################################################
+  - alias: Clear MQTT Topic
+    initial_state: true
+    trigger:
+    - platform: state
+      entity_id: input_text.clear_mqtt_topic
+    condition:
+    - condition: template
+      value_template: >-
+        {{ ('hub/' in states("input_text.clear_mqtt_topic")) or ('cmnd/' in states("input_text.clear_mqtt_topic")) }}
+    action:
+    - service: mqtt.publish
+      data_template:
+        topic: "{{ states.input_text.clear_mqtt_topic.state }}"
+        retain: true
+    - service: script.my_notify
+      data_template:
+#        mute: 1
+        title: '*-- Attenzione --*'
+        message: "Cancellato il topic: {{ states.input_text.clear_mqtt_topic.state }}"
+#################################################################
+#                                                               #
+#                             END                               #
+#                                                               #
+#################################################################

@@ -1,0 +1,74 @@
+####################################################
+#                                                  #
+#                     DOCKER                       #
+#                                                  #
+####################################################
+icon: mdi:docker
+title: Docker
+path: docker
+cards:
+####################################################  
+## 1 colonna
+#################################################### 
+- type: vertical-stack
+  cards:
+  - type: entities
+    title: Sensori HA-Dockermon
+    show_header_toggle: false
+    entities:
+    - binary_sensor.hadockermon_ha_dockermon
+    - binary_sensor.hadockermon_hassio_supervisor
+    - binary_sensor.hadockermon_homeassistant
+    - binary_sensor.hadockermon_nextcloud
+    - binary_sensor.hadockermon_plex
+    - binary_sensor.hadockermon_rutorrent
+    - binary_sensor.hadockermon_radarr
+    - type: custom:fold-entity-row
+      head:
+        type: section
+        label: Container critici
+      items:
+      - entity: input_text.container_1
+      - entity: input_text.container_2
+      - entity: input_text.container_3
+      - entity: input_text.container_4
+      - entity: input_text.container_5
+    - type: section
+      label: Configurazione
+    - input_datetime.container_off
+    - input_number.tempo_ripetizione
+    - sensor.container_status
+    - sensor.container_critici_on
+#      - entity: input_select.container_status
+#        - entity: input_select.lista_container_critici
+
+####################################################  
+## 2 colonna
+####################################################  
+- type: vertical-stack
+  cards:
+  - type: entities
+    title: Container Monitor
+    show_header_toggle: false
+    entities:
+    - type: section
+      label: Addon
+    - entity: switch.grafana
+    - entity: switch.mosquitto 
+    - entity: switch.mariadb
+    - entity: switch.influxdb
+    - entity: switch.nginx
+    - entity: switch.google_assistant_web_server
+    - entity: switch.zigbee2mqtt
+    - entity: switch.appdaemon
+    - entity: switch.esphome
+    - entity: switch.glances
+    - type: section
+      label: Container
+    - entity: switch.ha_dockermon_ha_dockermon
+    - entity: switch.ha_dockermon_hassio_supervisor
+    - entity: switch.ha_dockermon_homeassistant
+    - entity: switch.ha_dockermon_nextcloud
+    - entity: switch.ha_dockermon_plex
+    - entity: switch.ha_dockermon_rutorrent
+    - entity: switch.ha_dockermon_radarr

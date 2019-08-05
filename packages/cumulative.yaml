@@ -1,0 +1,181 @@
+#################################################################
+#                                                               #
+#                       Packages/Presence                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'cumulative'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+        
+    ################################
+    ## Sensor
+    ################################
+    sensor.rain_month:
+      <<: *customize
+      friendly_name: "Pioggia Mensile"
+      icon: mdi:weather-rainy 
+
+    sensor.rain_day:
+      <<: *customize
+      friendly_name: "Pioggia Day"
+      icon: mdi:water
+
+    sensor.rain_year:
+      <<: *customize
+      friendly_name: "Pioggia Annuale"
+      icon: mdi:weather-rainy
+
+#################################################################
+#                                                               #
+#                           Group                               #
+#                                                               #
+################################################################# 
+utility_meter:
+  rain_month:
+    source: sensor.jmp_rain_17_17_3
+    cycle: monthly
+
+  rain_day:
+    source: sensor.jmp_rain_17_17_3
+    cycle: daily
+
+  rain_year:
+    source: sensor.jmp_rain_17_17_3
+    cycle: yearly
+
+#################################################################
+#                                                               #
+#                          Sensors                              #
+#                                                               #
+################################################################# 
+sensor:
+#--------------------------------------------------- 
+  - platform: file
+    name: gas meter
+    file_path: /config/gaslog.txt
+
+  - platform: file
+    name: salt meter
+    file_path: /config/saltlog.txt
+
+  - platform: file
+    name: water meter
+    file_path: /config/waterlog.txt
+ 
+#################################################################
+#                                                               #
+#                       input number                            #
+#                                                               #
+#################################################################
+input_number: 
+  gas_meter:
+    name: Gas meter
+    min: 9500
+    max: 9900
+    step: 1
+    unit_of_measurement: mc  
+    icon: mdi:gas-cylinder
+
+  water_meter:
+    name: Water meter
+    min: 500
+    max: 800
+    step: 1
+    unit_of_measurement: mc  
+    icon: mdi:water-pump
+
+input_datetime:
+  salt_meter:
+    name: Refill Sale 25Kg
+    has_date: true
+    has_time: false
+    icon: mdi:desktop-tower
+    
+#################################################################
+#                                                               #
+#                         Automations                           #
+#                                                               #
+#################################################################
+# scrive su file i valori giornalieri del sensore
+automation:
+  - alias: 'Startup Daily sensor'
+    initial_state: true
+    trigger:
+      platform: homeassistant
+      event: start
+    action: 
+#    - service: input_number.set_value
+#      data_template:
+#        entity_id: input_number.midnight_rain
+#        value: '{{ states.sensor.rain_mezzanotte.state.split(" ")[1]|float(2) }}'
+#    - service: input_number.set_value
+#      data_template:
+#        entity_id: input_number.midnight_energy
+#        value: '{{ states.sensor.energy_mezzanotte.state.split(" ")[1]|float(2) }}'
+    - service: input_number.set_value
+      data_template:
+        entity_id: input_number.gas_meter
+        value: '{{ states.sensor.gas_meter.state.split(" ")[1]|float(2) }}'
+    - service: input_number.set_value
+      data_template:
+        entity_id: input_number.water_meter
+        value: '{{ states.sensor.water_meter.state.split(" ")[1]|float(2) }}'
+
+#---------------------------------------------------
+  - alias: 'Write gas meter sensor'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: input_number.gas_meter
+    action:    
+    - service: notify.gas
+      data_template:
+        message: "{{ states.input_number.gas_meter.state }}"
+
+#---------------------------------------------------
+  - alias: 'Write salt meter sensor'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: input_datetime.salt_meter
+    action:    
+    - service: notify.salt
+      data_template:
+        message: "{{ states.input_datetime.salt_meter.state }}"
+
+#---------------------------------------------------
+  - alias: 'Write water meter sensor'
+    initial_state: true
+    trigger:
+      platform: state
+      entity_id: input_number.water_meter
+    action:    
+    - service: notify.water
+      data_template:
+        message: "{{ states.input_number.water_meter.state }}"
+
+#################################################################
+#                                                               #
+#                  END OF CONFIGURATION FILE                    #
+#                                                               #
+#################################################################

@@ -1,0 +1,98 @@
+
+####################################################
+#                                                  #
+#                      NEWS                        #
+#                                                  #
+####################################################
+icon: mdi:newspaper
+title: News
+path: news
+panel: true
+cards:
+
+####################################################
+## 1 colonna
+- type: custom:layout-card
+  layout: vertical
+  cards:
+  - type: custom:auto-entities
+    card:
+      type: entities
+      title: 17 Track
+      show_header_toggle: false 
+    filter:
+      include:
+      - entity_id: "sensor.seven*"
+        options:
+          secondary_info: last-changed
+
+
+    
+  - break
+  
+####################################################
+## 2 colonna
+#  - type: custom:list-card
+#    entity: sensor.articoli_hassiohelp
+#    title: "\U0001F4F0 Articoli HassioHelp"
+#    row_limit: 10
+#    columns:
+#      - title: 'Titolo'
+#        add_link: link
+#        field: title
+#      - title: Data
+#        field: published
+
+#  - type: custom:list-card
+#    entity: sensor.news_ansa
+#    title: "\U0001F4F0 News Ansa"
+#    row_limit: 10
+#    columns:
+#      - title: 'Titolo'
+#        add_link: link
+#        field: title
+#      - title: Descrizione
+#        field: summary
+#      - title: Data
+#        field: published
+#        style:
+#          - white-space: nowrap
+
+  - type: entities
+    show_header_toggle: false
+    entities:
+    - input_boolean.news_notifica_telegram
+
+  - type: 'custom:home-feed-card'
+    title: "\U0001F4F0 Articoli HassioHelp"
+    show_empty: false
+    id_filter: ^feed_.*
+    entities:
+      - entity: sensor.articoli_hassiohelp
+        multiple_items: true
+        list_attribute: entries
+        timestamp_property: created
+        max_items: 5
+        content_template: '{{published}}: [{{title}}]({{link}})'
+
+  - break
+  
+####################################################
+## 3 colonna
+  - type: entities
+    show_header_toggle: false
+    title: YouTube Channel
+    entities:
+    - sensor.techno_dad_life
+
+  - type: 'custom:home-feed-card'
+    title: "\U0001F4F0 News Ansa"
+    show_empty: false
+    id_filter: ^feed_.*
+    entities:
+      - entity: sensor.news_ansa
+        multiple_items: true
+        list_attribute: entries
+        timestamp_property: created
+        max_items: 10
+        content_template: '{{published}}: [{{title}}]({{link}})'

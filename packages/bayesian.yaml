@@ -1,0 +1,134 @@
+#################################################################
+#                                                               #
+#                       Packages/Sensori                        #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'bayesian'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+    ################################################
+    ## sensor
+    ################################################
+
+    sensor.night_time:
+      <<: *customize
+      friendly_name: Notte fonda
+
+    sensor.time_in_bed_template:
+      <<: *customize
+      friendly_name: Sonno nel letto
+      icon: mdi:bed-empty
+
+####################################################
+#                                                  #
+#                   SENSORS                        #
+#                                                  #
+####################################################
+#sensor:
+#  - platform: template
+#    sensors:
+#      time_in_bed_template:
+#        value_template: '{{ states.sensor.time_in_bed.attributes.value }}'
+
+#  - platform: history_stats
+#    name: 'Time in bed'
+#    entity_id: binary_sensor.in_bed_template
+#    state: 'on'
+#    type: time
+#    end: '{{ now() }}'
+#    duration:
+#      hours: 24
+####################################################
+#                                                  #
+#                BYNARY SENSORS                    #
+#                                                  #
+####################################################
+binary_sensor:
+# True if it is night time (Between 23:00 and 7:30)
+  - platform: template
+    sensors:
+      night_time:
+        friendly_name: Night time
+        entity_id:
+        - sensor.time
+        value_template: '{{not(strptime("07:30", "%H:%M").time() < now().time() < strptime("23:00", "%H:%M").time())}}'
+
+# Is on for 5 minutes after motion detectors trigger
+      motion_detected:
+        friendly_name: Motion detected
+        delay_off:
+          minutes: 5
+        entity_id:
+        - group.pir_sensors
+        value_template: "{{is_state('group.pir_sensors', 'on')}}"  
+  
+  - platform: bayesian
+    name: 'In Bed'
+    prior: 0.33 
+    # 33% chance that we are in bed (8 hrs out of 24hrs)
+    probability_threshold: 0.93
+    observations:
+    # we are in bed -> luci spente in camera
+    - entity_id: 'light.bedroom'
+      platform: 'state'
+      to_state: 'off'
+      prob_given_true: 0.6
+      prob_given_false: 0.4
+    # we are in bed -> luci spente 
+    - entity_id: 'group.yeelights'
+      platform: 'state'
+      to_state: 'off'
+      prob_given_true: 0.6
+      prob_given_false: 0.4
+    # we are in bed -> luci spente in sala 
+    - entity_id: 'group.living_room_lights'
+      platform: 'state'
+      to_state: 'off'
+      prob_given_true: 0.6
+      prob_given_false: 0.4
+    # we are in bed -> vey likely no motion is detected
+    - entity_id: 'binary_sensor.motion_detected'
+      platform: 'state'
+      to_state: 'off'
+      # 90% chance that if we are in bed no motion is detected
+      # 50% chance that if we are not in bed no motion is detected
+      prob_given_true: 0.8
+      prob_given_false: 0.2     
+    - entity_id: 'binary_sensor.night_time'
+      platform: state
+      to_state: 'on'
+      # 90% chance that if we are in bed it is night
+      # 10% chance that if we are not in bed it is night
+      prob_given_true: 0.9 
+      prob_given_false: 0.1 
+    - entity_id: 'switch.imac_studio'
+      platform: 'state'
+      to_state: 'off'
+      prob_given_true: 0.8
+      prob_given_false: 0.3
+ 
+#################################################################
+#                                                               #
+#                             END                               #
+#                                                               #
+#################################################################

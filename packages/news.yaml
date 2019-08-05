@@ -1,0 +1,113 @@
+#################################################################
+#                                                               #
+#                       Packages/Presence                       #
+#                                                               #
+#################################################################
+
+#################################################################
+#                                                               #
+#                          Customize                            #
+#                                                               #
+#################################################################
+homeassistant:
+  customize:
+    ################################################
+    ## Node Anchors
+    ################################################
+
+    package.node_anchors:
+      customize: &customize
+        package: 'news'
+        version: '0.1'
+        author: 'Gianpi - www.hassiohelp.eu'
+
+      expose: &expose
+        <<: *customize
+        haaska_hidden: false
+        homebridge_hidden: false
+
+#################################################################
+#                                                               #
+#                        FEEDREADER                             #
+#                                                               #
+#################################################################
+feedreader:
+  urls:
+    - https://hassiohelp.eu/feed/
+    - https://www.ansa.it/sito/notizie/topnews/topnews_rss.xml
+    - https://www.ansa.it/sito/notizie/tecnologia/tecnologia_rss.xml
+  scan_interval:
+    minutes: 10
+  max_entries: 20
+
+#################################################################
+#                                                               #
+#                        INPUT BOOLEAN                          #
+#                                                               #
+#################################################################
+input_boolean:
+  news_notifica_telegram:
+    name: Invia Notifica Telegram
+    icon: mdi:telegram
+
+#################################################################
+#                                                               #
+#                            SENSOR                             #
+#                                                               #
+#################################################################
+sensor:
+  - platform: feedparser
+    name: Articoli HassioHelp
+    feed_url: 'https://hassiohelp.eu/feed/'
+    date_format: '%d/%m/%Y'
+    inclusions:
+      - title
+      - link
+      - summary
+      - authors
+      - published
+
+  - platform: feedparser
+    name: News Ansa
+    feed_url: 'https://www.ansa.it/sito/notizie/topnews/topnews_rss.xml'
+    date_format: '%d/%m/%Y'
+    inclusions:
+      - title
+      - link
+      - summary
+      - authors
+      - published
+
+#################################################################
+#                                                               #
+#                          AUTOMATION                           #
+#                                                               #
+#################################################################
+automation:
+  - alias: Nuovo articolo Hassio help
+    initial_state: true
+    trigger:
+      platform: event
+      event_type: feedreader
+    condition:
+    - condition: state
+      entity_id: input_boolean.news_notifica_telegram
+      state: 'on'
+    - condition: template
+      value_template: >-
+        {{ trigger.event.data.feed_url == 'https://hassiohelp.eu/feed'}}
+    action:
+    - service: script.my_notify
+      data_template:
+#        title: '*Nuovo Articolo Hassio Help*'
+        mute: 1
+        message: >-
+          {{trigger.event.data.title}}
+        link: >-
+          {{trigger.event.data.link}}
+
+#################################################################
+#                                                               #
+#                     END OF CONFIGURATION FILE                 #
+#                                                               #
+#################################################################

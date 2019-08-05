@@ -1,0 +1,270 @@
+
+####################################################
+#                                                  #
+#                    SENSORI                       #
+#                                                  #
+####################################################
+icon: mdi:file-document-box-multiple
+title: Sensori
+path: sensori
+panel: true
+cards:
+- type: custom:layout-card
+  layout: vertical
+  cards:
+#prima colonna
+#  - type: entities
+#    title: Sonno
+#    show_header_toggle: false 
+#    entities:
+#          - sensor.time_in_bed_template
+#          - sensor.time_in_bed
+#    - binary_sensor.in_bed
+  - type: glance
+    columns: 3
+    title: Nut Beacon
+    entities:
+    - sensor.nut2_presence
+    - sensor.realistic_nut2_rssi
+    - sensor.nut2_distance
+    - sensor.nut3_presence
+    - sensor.realistic_nut3_rssi
+    - sensor.nut3_distance
+
+  - type: entities
+    title: Consumi Gas/H2O/Sale
+    show_header_toggle: false 
+    entities:
+    - input_number.gas_meter
+    - input_number.water_meter
+    - input_datetime.salt_meter
+  - type: glance
+    title: Sensori Gas
+    columns: 3
+    entities:
+    - entity: sensor.jmp_gas_sensor_18_18_1
+      icon: mdi:smog
+    - entity: sensor.jmp_gas_sensor_18_18_2
+      icon: mdi:smog
+    - entity: sensor.jmp_gas_sensor_18_18_3
+      icon: mdi:smog
+    - entity: sensor.jmp_gas_sensor_18_18_4
+      icon: mdi:smog
+    - entity: sensor.jmp_gas_sensor_18_18_5
+      icon: mdi:smog
+    - entity: sensor.jmp_gas_sensor_18_18_6
+      icon: mdi:smog
+    
+  - break
+#seconda colonna
+
+  - type: plant-status
+    title: Sansevieria
+    entity: plant.sansevieria
+  - type: plant-status
+    title: Orchidea
+    entity: plant.orchidea
+  - type: glance
+    columns: 4
+    title: Pioggia
+    entities:
+    - sensor.jmp_rain_17_17_1
+    - sensor.jmp_rain_17_17_2
+#    - sensor.jmp_rain_17_17_3
+    - sensor.rain_month
+    - sensor.rain_day
+
+  - type: custom:mini-graph-card
+    entities:
+      - sensor.rain_day
+    name: Pioggia
+    hours_to_show: 24 
+    points_per_hour: 1
+    line_width: 4
+    hour24: true
+    line_color: 'blue'
+    show:
+      legend: true
+      labels: true
+      graph: bar
+
+
+  - break
+#terza colonna        
+
+  - type: horizontal-stack
+    cards:
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.jmp_bedroom_13_13_2
+      color_thresholds:
+        - value: 0
+          color: blue
+        - value: 10
+          color: yellow
+        - value: 20
+          color: orange
+        - value: 27
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.jmp_livia_21_21_1
+      color_thresholds:
+        - value: 0
+          color: blue
+        - value: 10
+          color: yellow
+        - value: 20
+          color: orange
+        - value: 27
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+      extrema: true
+      
+  - type: horizontal-stack
+    cards:
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.jmp_studio_22_22_1
+      color_thresholds:
+        - value: 0
+          color: lightblue
+        - value: 10
+          color: yellow
+        - value: 20
+          color: orange
+        - value: 27
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.term_ingresso
+      color_thresholds:
+        - value: 0
+          color: lightblue
+        - value: 10
+          color: yellow
+        - value: 20
+          color: orange
+        - value: 27
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+      
+  - type: horizontal-stack
+    cards:
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.temperature_158d0001d6be78
+      color_thresholds:
+        - value: 0
+          color: lightblue
+        - value: 10
+          color: yellow
+        - value: 20
+          color: orange
+        - value: 27
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.jmp_weather_16_16_2
+      color_thresholds:
+        - value: 0
+          color: lightblue
+        - value: 10
+          color: yellow
+        - value: 20
+          color: orange
+        - value: 27
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+
+  - type: horizontal-stack
+    cards:
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.jmp_weather_14_14_1
+      color_thresholds:
+        - value: 0
+          color: lightblue
+        - value: 10
+          color: yellow
+        - value: 20
+          color: orange
+        - value: 30
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.xiaomipressure_sala
+      color_thresholds:
+        - value: 970
+          color: lightblue
+        - value: 990
+          color: green
+        - value: 1010
+          color: yellow
+        - value: 1030
+          color: orange
+        - value: 1050
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+#### HUM 
+  - type: horizontal-stack
+    cards:
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.jmp_weather_16_16_3
+      color_thresholds:
+        - value: 20
+          color: lightblue
+        - value: 35
+          color: green
+        - value: 50
+          color: yellow
+        - value: 60
+          color: orange
+        - value: 75
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
+
+    - type: custom:mini-graph-card
+      entities: 
+      - sensor.humidity_158d0001d6be78
+      color_thresholds:
+        - value: 20
+          color: lightblue
+        - value: 35
+          color: green
+        - value: 50
+          color: yellow
+        - value: 60
+          color: orange
+        - value: 75
+          color: red
+      hours_to_show: 12
+      points_per_hour: 12
+      line_width: 4
