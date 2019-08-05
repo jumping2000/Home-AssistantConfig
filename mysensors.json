@@ -42,7 +42,7 @@
                 "type": 13,
                 "description": "KWH ENERGY_12",
                 "values": {
-                    "18": "2105.0840"
+                    "18": "2105.0879"
                 }
             },
             "3": {
@@ -50,7 +50,7 @@
                 "type": 23,
                 "description": "Pulse Count ENERGY_12",
                 "values": {
-                    "24": "2105084"
+                    "24": "2105088"
                 }
             }
         },
@@ -69,7 +69,7 @@
                 "type": 22,
                 "description": "MQ2_Smoke GAS-SENSOR_18",
                 "values": {
-                    "37": "32.08"
+                    "37": "32.73"
                 }
             },
             "2": {
@@ -77,7 +77,7 @@
                 "type": 22,
                 "description": "MQ2_LPG GAS-SENSOR_18",
                 "values": {
-                    "37": "7.21"
+                    "37": "7.33"
                 }
             },
             "3": {
@@ -85,7 +85,7 @@
                 "type": 22,
                 "description": "MQ2_Alcohol GAS-SENSOR_18",
                 "values": {
-                    "37": "12.99"
+                    "37": "13.39"
                 }
             },
             "4": {
@@ -93,7 +93,7 @@
                 "type": 22,
                 "description": "MQ135_CO2 GAS-SENSOR_18",
                 "values": {
-                    "37": "7.17"
+                    "37": "7.14"
                 }
             },
             "5": {
@@ -101,7 +101,7 @@
                 "type": 22,
                 "description": "MQ135_NH4 GAS-SENSOR_18",
                 "values": {
-                    "37": "9.22"
+                    "37": "9.29"
                 }
             },
             "6": {
@@ -109,7 +109,7 @@
                 "type": 22,
                 "description": "MQ135_Sulfide GAS-SENSOR_",
                 "values": {
-                    "37": "3.80"
+                    "37": "3.94"
                 }
             }
         },
